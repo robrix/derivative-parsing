@@ -17,6 +17,9 @@ spec = do
     prop "returns parse trees" $
       \ a -> parseNull (Ret [a]) `shouldBe` [a :: Char]
 
+    prop "has the null derivative" $
+      \ a c -> parseNull (Ret [a :: Char] `deriv` c) `shouldBe` []
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
