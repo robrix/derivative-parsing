@@ -2,12 +2,13 @@ module Derivative.Parser.Spec where
 
 import Derivative.Parser
 import Test.Hspec
+import Test.Hspec.QuickCheck
 
 spec :: Spec
 spec = do
   describe "deriv" $ do
-    it "returns matching characters from literal parsers" $
-      parseNull (Lit 'c' `deriv` 'c') `shouldBe` "c"
+    prop "returns matching characters from literal parsers" $
+      \ c -> parseNull (Lit c `deriv` c) `shouldBe` [c]
 
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
