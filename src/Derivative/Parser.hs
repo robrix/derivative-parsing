@@ -37,6 +37,12 @@ data Parser a where
   Eps :: Parser a
 
 
+-- Algorithm
+
+compact :: Parser a -> Parser a
+compact a = a
+
+
 -- Instances
 
 instance Functor Parser where
