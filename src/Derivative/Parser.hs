@@ -8,6 +8,12 @@ import Control.Applicative
 literal :: String -> Parser String
 literal string = sequenceA (Lit <$> string)
 
+commaSep1 :: Parser a -> Parser [a]
+commaSep1 = sep1 (Lit ',')
+
+commaSep :: Parser a -> Parser [a]
+commaSep = sep (Lit ',')
+
 sep1 :: Parser sep -> Parser a -> Parser [a]
 sep1 s p = (:) <$> p <*> many (s *> p)
 
