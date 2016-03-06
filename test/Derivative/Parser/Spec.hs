@@ -5,6 +5,10 @@ import Test.Hspec
 
 spec :: Spec
 spec = do
+  describe "deriv" $ do
+    it "returns matching characters from literal parsers" $
+      parseNull (Lit 'c' `deriv` 'c') `shouldBe` "c"
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
