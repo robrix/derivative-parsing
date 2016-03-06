@@ -10,7 +10,7 @@ spec :: Spec
 spec = do
   describe "parseNull" $ do
     describe "Lit" $ do
-      prop "does not contain parse trees" $
+      prop "is empty" $
         \ a -> parseNull (Lit a) `shouldBe` []
 
     describe "Ret" $ do
