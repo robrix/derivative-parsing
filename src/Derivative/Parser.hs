@@ -42,6 +42,8 @@ data Parser a where
 compact :: Parser a -> Parser a
 compact (Cat Nul _) = Nul
 compact (Cat _ Nul) = Nul
+compact (Alt Nul p) = Right <$> p
+compact (Alt p Nul) = Left <$> p
 compact a = a
 
 
