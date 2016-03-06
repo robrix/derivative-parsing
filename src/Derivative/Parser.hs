@@ -43,6 +43,7 @@ deriv :: Parser a -> Char -> Parser a
 deriv (Cat a b) c = Cat (deriv a c) b <|> Cat (Ret (parseNull a)) (deriv b c)
 deriv (Alt a b) c = Alt (deriv a c) (deriv b c)
 deriv (Rep p) c = (:) <$> deriv p c <*> Rep p
+deriv (Map f p) c = Map f (deriv p c)
 deriv (App f p) c = App (deriv f c) p <|> App (Ret (parseNull f)) (deriv p c)
 deriv (Lit c') c = if c == c' then Ret [c] else Nul
 deriv _ _ = Nul
