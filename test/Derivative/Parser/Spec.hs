@@ -27,6 +27,10 @@ spec = do
       prop "returns ambiguous parse trees" $
         \ a b -> parseNull (pure a `Alt` pure b) `shouldBe` [Left a, Right b :: Either Char Char]
 
+    describe "Rep" $ do
+      prop "contains the empty sequence" $
+        \ p -> parseNull (Rep (getBlind p :: Parser Char)) `shouldBe` [[]]
+
     describe "Map" $ do
       prop "applies a function to its parse trees" $
         \ c -> parseNull (Map succ (Lit c) `deriv` c) `shouldBe` [succ c]
