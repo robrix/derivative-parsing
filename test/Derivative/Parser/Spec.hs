@@ -42,6 +42,10 @@ spec = do
     prop "obeys the composition law" $
       \ c f g -> parseNull (fmap (getBlind f :: Char -> Char) (fmap (getBlind g) (Lit c)) `deriv` c) `shouldBe` parseNull (fmap (getBlind f . getBlind g) (Lit c) `deriv` c)
 
+  describe "Applicative" $ do
+    prop "obeys the identity law" $
+      \ c -> parseNull (pure id <*> Lit c `deriv` c) `shouldBe` parseNull (Lit c `deriv` c)
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
