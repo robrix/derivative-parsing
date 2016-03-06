@@ -49,6 +49,9 @@ spec = do
     prop "obeys the composition law" $
       \ u v w -> parseNull (pure (.) <*> (getBlind u :: Parser (Char -> Char)) <*> getBlind v <*> Lit w `deriv` w) `shouldBe` parseNull (getBlind u <*> (getBlind v <*> Lit w) `deriv` w)
 
+    prop "obeys the homomorphism law" $
+      \ x f -> parseNull (pure (getBlind f :: Char -> Char) <*> pure x) `shouldBe` parseNull (pure (getBlind f x))
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
