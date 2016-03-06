@@ -46,6 +46,7 @@ compact (Cat (Ret [t]) b) = (,) t <$> b
 compact (Cat a (Ret [t])) = flip (,) t <$> a
 compact (Alt Nul p) = Right <$> p
 compact (Alt p Nul) = Left <$> p
+compact (Map f (Ret as)) = Ret (f <$> as)
 compact (Rep Nul) = Ret []
 compact a = a
 
