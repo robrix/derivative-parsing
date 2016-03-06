@@ -40,6 +40,7 @@ data Parser a where
 -- Algorithm
 
 parseNull :: Parser a -> [a]
+parseNull (Rep _) = [[]]
 parseNull (Ret as) = as
 parseNull _ = []
 
