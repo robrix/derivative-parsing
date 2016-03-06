@@ -48,6 +48,10 @@ spec = do
         parseNull (Eps :: Parser Char) `shouldBe` []
 
   describe "deriv" $ do
+    describe "Rep" $ do
+      prop "produces a list of successful parses" $
+        \ c -> parseNull (Rep (Lit c) `deriv` c) `shouldBe` [[c]]
+
     describe "Lit" $ do
       prop "produces matching characters" $
         \ c -> parseNull (Lit c `deriv` c) `shouldBe` [c]
