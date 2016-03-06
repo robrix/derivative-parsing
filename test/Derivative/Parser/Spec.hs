@@ -64,3 +64,9 @@ varName = literal "x"
 
 data Lam = Var String | Abs String Lam | App' Lam Lam
   deriving (Eq, Show)
+
+
+-- Instances
+
+instance Arbitrary a => Arbitrary (Parser a) where
+  arbitrary = pure <$> arbitrary
