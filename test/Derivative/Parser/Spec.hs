@@ -80,4 +80,8 @@ data Lam = Var String | Abs String Lam | App' Lam Lam
 -- Instances
 
 instance Arbitrary a => Arbitrary (Parser a) where
-  arbitrary = pure <$> arbitrary
+  arbitrary = oneof
+    [ pure <$> arbitrary
+    , pure Nul
+    , pure Eps
+    ]
