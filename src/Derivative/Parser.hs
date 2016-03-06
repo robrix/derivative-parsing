@@ -39,6 +39,16 @@ data Parser a where
 
 -- Algorithm
 
+deriv :: Parser a -> Char -> Parser a
+deriv (Cat a b) c = Cat (deriv a c) b <|> Cat (Ret (parseNull a)) (deriv b c)
+deriv (Alt a b) c = Alt (deriv a c) (deriv b c)
+deriv (Rep p) c = (:) <$> deriv p c <*> Rep p
+deriv (Map f p) c = Map f (deriv p c)
+deriv (App f p) c = App (deriv f c) p <|> App (Ret (parseNull f)) (deriv p c)
+deriv (Bnd p f) c = Bnd (deriv p c) f
+deriv (Lit c') c = if c == c' then Ret [c] else Nul
+deriv _ _ = Nul
+
 parseNull :: Parser a -> [a]
 parseNull (Cat a b) = (,) <$> parseNull a <*> parseNull b
 parseNull (Alt a b) = (Left <$> parseNull a) ++ (Right <$> parseNull b)
