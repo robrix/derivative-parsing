@@ -39,6 +39,16 @@ data Parser a where
 
 -- Algorithm
 
+parseNull :: Parser a -> [a]
+parseNull (Cat a b) = (,) <$> parseNull a <*> parseNull b
+parseNull (Alt a b) = (Left <$> parseNull a) ++ (Right <$> parseNull b)
+parseNull (Rep _) = [[]]
+parseNull (Map f p) = f <$> parseNull p
+parseNull (App f a) = parseNull f <*> parseNull a
+parseNull (Bnd p f) = (f <$> parseNull p) >>= parseNull
+parseNull (Ret as) = as
+parseNull _ = []
+
 compact :: Parser a -> Parser a
 compact (Cat Nul _) = Nul
 compact (Cat _ Nul) = Nul
