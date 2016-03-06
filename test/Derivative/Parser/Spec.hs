@@ -6,11 +6,11 @@ import Test.Hspec.QuickCheck
 
 spec :: Spec
 spec = do
-  describe "deriv" $ do
-    prop "returns matching characters from literal parsers" $
+  describe "Lit" $ do
+    prop "produces matching characters" $
       \ c -> parseNull (Lit c `deriv` c) `shouldBe` [c]
 
-    prop "returns the null parser for unmatched characters" $
+    prop "fails on unmatched characters" $
       \ c -> parseNull (Lit c `deriv` succ c) `shouldBe` []
 
   describe "grammar" $ do
