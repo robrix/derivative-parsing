@@ -15,7 +15,7 @@ spec = do
 
   describe "Ret" $ do
     prop "returns parse trees" $
-      \ a -> parseNull (Ret [a]) `shouldBe` [a :: Char]
+      \ a -> parseNull (Ret [a :: Char]) `shouldBe` [a]
 
     prop "has the null derivative" $
       \ a c -> parseNull (Ret [a :: Char] `deriv` c) `shouldBe` []
