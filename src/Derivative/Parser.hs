@@ -40,6 +40,7 @@ data Parser a where
 -- Algorithm
 
 deriv :: Parser a -> Char -> Parser a
+deriv (Alt a b) c = Alt (deriv a c) (deriv b c)
 deriv (Rep p) c = (:) <$> deriv p c <*> Rep p
 deriv (Lit c') c = if c == c' then Ret [c] else Nul
 deriv _ _ = Nul
