@@ -44,7 +44,7 @@ spec = do
 
   describe "Applicative" $ do
     prop "obeys the identity law" $
-      \ c -> parseNull (pure id <*> Lit c `deriv` c) `shouldBe` parseNull (Lit c `deriv` c)
+      \ v -> parseNull (pure id <*> Lit v `deriv` v) `shouldBe` parseNull (Lit v `deriv` v)
 
     prop "obeys the composition law" $
       \ u v w -> parseNull (pure (.) <*> pure (getBlind u :: Char -> Char) <*> pure (getBlind v :: Char -> Char) <*> Lit w `deriv` w) `shouldBe` parseNull (pure (getBlind u) <*> (pure (getBlind v) <*> Lit w) `deriv` w)
