@@ -46,6 +46,9 @@ spec = do
     prop "obeys the identity law" $
       \ c -> parseNull (pure id <*> Lit c `deriv` c) `shouldBe` parseNull (Lit c `deriv` c)
 
+    prop "obeys the composition law" $
+      \ c u v -> parseNull (pure (.) <*> pure (getBlind u :: Char -> Char) <*> pure (getBlind v :: Char -> Char) <*> Lit c `deriv` c) `shouldBe` parseNull (pure (getBlind u) <*> (pure (getBlind v) <*> Lit c) `deriv` c)
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
