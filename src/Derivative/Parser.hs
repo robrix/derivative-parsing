@@ -18,3 +18,7 @@ data Parser a where
 
 instance Functor Parser where
   fmap = Map
+
+instance Applicative Parser where
+  pure = Ret . pure
+  (<*>) = App
