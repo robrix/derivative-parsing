@@ -3,6 +3,12 @@ module Derivative.Parser where
 
 import Control.Applicative
 
+-- API
+
+literal :: String -> Parser String
+literal string = sequenceA (Lit <$> string)
+
+
 -- Types
 
 -- | A parser type encoding concatenation, alternation, repetition, &c. as first-order constructors.
