@@ -44,6 +44,7 @@ compact (Cat Nul _) = Nul
 compact (Cat _ Nul) = Nul
 compact (Alt Nul p) = Right <$> p
 compact (Alt p Nul) = Left <$> p
+compact (Rep Nul) = Ret []
 compact a = a
 
 
