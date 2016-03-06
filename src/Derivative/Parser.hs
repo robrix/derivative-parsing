@@ -3,6 +3,8 @@ module Derivative.Parser where
 
 import Control.Applicative
 
+-- Types
+
 -- | A parser type encoding concatenation, alternation, repetition, &c. as first-order constructors.
 data Parser a where
   Cat :: Parser a -> Parser b -> Parser (a, b)
