@@ -1,5 +1,6 @@
 module Derivative.Parser.Spec where
 
+import Control.Applicative
 import Derivative.Parser
 import Test.Hspec
 import Test.Hspec.QuickCheck
@@ -54,6 +55,10 @@ spec = do
 
     prop "obeys the interchange law" $
       \ u y -> parseNull ((getBlind u :: Parser (Char -> Char)) <*> pure y) `shouldBe` parseNull (pure ($ y) <*> getBlind u)
+
+  describe "Alternative" $ do
+    prop "obeys the some law" $
+      \ v -> parseNull (some (getBlind v :: Parser Char)) `shouldBe` parseNull ((:) <$> getBlind v <*> many (getBlind v))
 
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
