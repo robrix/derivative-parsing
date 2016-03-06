@@ -24,10 +24,10 @@ spec = do
 
   describe "Alt" $ do
     prop "returns left parse trees in Left" $
-      \ c -> parseNull (Lit c `Alt` Lit (succ c) `deriv` c) `shouldBe` [Left c]
+      \ a -> parseNull (pure a `Alt` empty) `shouldBe` [Left a :: Either Char Char]
 
     prop "returns right parse trees in Right" $
-      \ c -> parseNull (Lit (succ c) `Alt` Lit c `deriv` c) `shouldBe` [Right c]
+      \ b -> parseNull (empty `Alt` pure b) `shouldBe` [Right b :: Either Char Char]
 
     prop "returns ambiguous parse trees" $
       \ a b -> parseNull (pure a `Alt` pure b) `shouldBe` [Left a, Right b :: Either Char Char]
