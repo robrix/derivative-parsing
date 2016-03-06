@@ -37,6 +37,21 @@ data Parser a where
   Eps :: Parser a
 
 
+-- Algorithm
+
+compact :: Parser a -> Parser a
+compact (Cat Nul _) = Nul
+compact (Cat _ Nul) = Nul
+compact (Cat (Ret [t]) b) = (,) t <$> b
+compact (Cat a (Ret [t])) = flip (,) t <$> a
+compact (Alt Nul p) = Right <$> p
+compact (Alt p Nul) = Left <$> p
+compact (Map f (Ret as)) = Ret (f <$> as)
+compact (Map g (Map f p)) = g . f <$> p
+compact (Rep Nul) = Ret []
+compact a = a
+
+
 -- Instances
 
 instance Functor Parser where
