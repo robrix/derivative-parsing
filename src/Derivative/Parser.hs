@@ -12,3 +12,9 @@ data Parser a where
   Ret :: [a] -> Parser a
   Nul :: Parser a
   Eps :: Parser a
+
+
+-- Instances
+
+instance Functor Parser where
+  fmap = Map
