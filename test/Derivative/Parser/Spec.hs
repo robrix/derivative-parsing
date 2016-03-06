@@ -17,6 +17,10 @@ spec = do
       prop "returns parse trees" $
         \ a -> parseNull (Ret [a :: Char]) `shouldBe` [a]
 
+    describe "Cat" $ do
+      prop "returns pairs of its parse trees" $
+        \ a b -> parseNull (pure a `Cat` pure b) `shouldBe` [(a, b) :: (Char, Char)]
+
     describe "Alt" $ do
       prop "returns left parse trees in Left" $
         \ a -> parseNull (pure a `Alt` empty) `shouldBe` [Left a :: Either Char Char]
