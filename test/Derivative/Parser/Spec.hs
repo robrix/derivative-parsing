@@ -9,14 +9,6 @@ import Test.QuickCheck
 spec :: Spec
 spec = do
   describe "parseNull" $ do
-    describe "Lit" $ do
-      prop "is empty" $
-        \ a -> parseNull (Lit a) `shouldBe` []
-
-    describe "Ret" $ do
-      prop "returns parse trees" $
-        \ a -> parseNull (Ret [a :: Char]) `shouldBe` [a]
-
     describe "Cat" $ do
       prop "returns pairs of its parse trees" $
         \ a b -> parseNull (pure a `Cat` pure b) `shouldBe` [(a, b) :: (Char, Char)]
@@ -39,13 +31,21 @@ spec = do
       prop "applies a function to its parse trees" $
         \ c -> parseNull (Map succ (Lit c) `deriv` c) `shouldBe` [succ c]
 
-    describe "Eps" $ do
-      it "is empty" $
-        parseNull (Eps :: Parser Char) `shouldBe` []
+    describe "Lit" $ do
+      prop "is empty" $
+        \ a -> parseNull (Lit a) `shouldBe` []
+
+    describe "Ret" $ do
+      prop "returns parse trees" $
+        \ a -> parseNull (Ret [a :: Char]) `shouldBe` [a]
 
     describe "Nul" $ do
       it "is empty" $
         parseNull (Nul :: Parser Char) `shouldBe` []
+
+    describe "Eps" $ do
+      it "is empty" $
+        parseNull (Eps :: Parser Char) `shouldBe` []
 
   describe "deriv" $ do
     describe "Lit" $ do
