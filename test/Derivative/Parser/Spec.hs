@@ -34,6 +34,9 @@ spec = do
     prop "applies a function to its parse trees" $
       \ c -> parseNull (Map succ (Lit c) `deriv` c) `shouldBe` [succ c]
 
+    prop "obeys the identity Functor law" $
+      \ c -> parseNull (Map id (Lit c) `deriv` c) `shouldBe` parseNull (Lit c `deriv` c)
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
