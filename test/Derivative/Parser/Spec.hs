@@ -9,19 +9,9 @@ import Test.QuickCheck
 spec :: Spec
 spec = do
   describe "parseNull" $ do
-    describe "Lit" $ do
-      prop "produces matching characters" $
-        \ c -> parseNull (Lit c `deriv` c) `shouldBe` [c]
-
-      prop "fails on unmatched characters" $
-        \ c -> parseNull (Lit c `deriv` succ c) `shouldBe` []
-
     describe "Ret" $ do
       prop "returns parse trees" $
         \ a -> parseNull (Ret [a :: Char]) `shouldBe` [a]
-
-      prop "has the null derivative" $
-        \ a c -> parseNull (Ret [a :: Char] `deriv` c) `shouldBe` []
 
     describe "Alt" $ do
       prop "returns left parse trees in Left" $
@@ -36,6 +26,19 @@ spec = do
     describe "Map" $ do
       prop "applies a function to its parse trees" $
         \ c -> parseNull (Map succ (Lit c) `deriv` c) `shouldBe` [succ c]
+
+  describe "deriv" $ do
+    describe "Lit" $ do
+      prop "produces matching characters" $
+        \ c -> parseNull (Lit c `deriv` c) `shouldBe` [c]
+
+      prop "fails on unmatched characters" $
+        \ c -> parseNull (Lit c `deriv` succ c) `shouldBe` []
+
+    describe "Ret" $ do
+      prop "has the null derivative" $
+        \ a c -> parseNull (Ret [a :: Char] `deriv` c) `shouldBe` []
+
 
   describe "Functor" $ do
     prop "obeys the identity law" $
