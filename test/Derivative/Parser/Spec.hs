@@ -5,8 +5,8 @@ import Test.Hspec
 
 spec :: Spec
 spec = do
-  describe "fmap" $ do
-    it "does a thing" $ True `shouldBe` True
+  describe "grammar" $ do
+    it "parses a literal ‘x’ as a variable name" $ (varName `parse` "x") `shouldBe` ["x"]
 
 
 -- Grammar
