@@ -6,7 +6,8 @@ import Test.Hspec
 spec :: Spec
 spec = do
   describe "grammar" $ do
-    it "parses a literal ‘x’ as a variable name" $ (varName `parse` "x") `shouldBe` ["x"]
+    it "parses a literal ‘x’ as a variable name" $
+      varName `parse` "x" `shouldBe` ["x"]
 
 
 -- Grammar
