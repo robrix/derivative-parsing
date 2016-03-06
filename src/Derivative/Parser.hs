@@ -11,6 +11,9 @@ literal string = sequenceA (Lit <$> string)
 sep1 :: Parser sep -> Parser a -> Parser [a]
 sep1 s p = (:) <$> p <*> many (s *> p)
 
+sep :: Parser sep -> Parser a -> Parser [a]
+sep s p = s `sep1` p <|> pure []
+
 
 -- Types
 
