@@ -30,7 +30,7 @@ spec = do
       \ c -> parseNull (Lit (succ c) `Alt` Lit c `deriv` c) `shouldBe` [Right c]
 
     prop "returns ambiguous parse trees" $
-      \ a b -> parseNull (Ret [a] `Alt` Ret [b]) `shouldBe` [Left a, Right b :: Either Char Char]
+      \ a b -> parseNull (pure a `Alt` pure b) `shouldBe` [Left a, Right b :: Either Char Char]
 
   describe "Map" $ do
     prop "applies a function to its parse trees" $
