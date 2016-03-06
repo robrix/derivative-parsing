@@ -39,6 +39,9 @@ data Parser a where
 
 -- Algorithm
 
+deriv :: Parser a -> Char -> Parser a
+deriv _ _ = Nul
+
 parseNull :: Parser a -> [a]
 parseNull (Cat a b) = (,) <$> parseNull a <*> parseNull b
 parseNull (Alt a b) = (Left <$> parseNull a) ++ (Right <$> parseNull b)
