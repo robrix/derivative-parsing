@@ -36,7 +36,6 @@ data Parser a where
   Alt :: Parser a -> Parser b -> Parser (Either a b)
   Rep :: Parser a -> Parser [a]
   Map :: (a -> b) -> Parser a -> Parser b
-  App :: Parser (a -> b) -> Parser a -> Parser b
   Bnd :: Parser a -> (a -> Parser b) -> Parser b
   Lit :: Char -> Parser Char
   Ret :: [a] -> Parser a
@@ -51,7 +50,6 @@ deriv (Cat a b) c = Cat (deriv a c) b <|> Cat (Ret (parseNull a)) (deriv b c)
 deriv (Alt a b) c = Alt (deriv a c) (deriv b c)
 deriv (Rep p) c = (:) <$> deriv p c <*> Rep p
 deriv (Map f p) c = Map f (deriv p c)
-deriv (App f p) c = App (deriv f c) p <|> App (Ret (parseNull f)) (deriv p c)
 deriv (Bnd p f) c = Bnd (deriv p c) f
 deriv (Lit c') c = if c == c' then Ret [c] else Nul
 deriv _ _ = Nul
@@ -61,7 +59,6 @@ parseNull (Cat a b) = (,) <$> parseNull a <*> parseNull b
 parseNull (Alt a b) = (Left <$> parseNull a) ++ (Right <$> parseNull b)
 parseNull (Rep _) = [[]]
 parseNull (Map f p) = f <$> parseNull p
-parseNull (App f a) = parseNull f <*> parseNull a
 parseNull (Bnd p f) = (f <$> parseNull p) >>= parseNull
 parseNull (Ret as) = as
 parseNull _ = []
@@ -86,7 +83,7 @@ instance Functor Parser where
 
 instance Applicative Parser where
   pure = Ret . pure
-  (<*>) = App
+  a <*> b = fmap (uncurry ($)) (Cat (fmap ($) a) b)
 
 instance Alternative Parser where
   empty = Eps
