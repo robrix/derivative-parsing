@@ -13,6 +13,10 @@ spec = do
     prop "fails on unmatched characters" $
       \ c -> parseNull (Lit c `deriv` succ c) `shouldBe` []
 
+  describe "Ret" $ do
+    prop "returns parse trees" $
+      \ a -> parseNull (Ret [a]) `shouldBe` [a :: Char]
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
