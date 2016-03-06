@@ -95,5 +95,5 @@ instance Alternative Parser where
   many = Rep
 
 instance Monad Parser where
-  return = Ret . pure
+  return = pure
   (>>=) = Bnd
