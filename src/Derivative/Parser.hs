@@ -7,6 +7,7 @@ data Parser a where
   Rep :: Parser a -> Parser [a]
   Map :: Parser a -> (a -> b) -> Parser b
   App :: Parser (a -> b) -> Parser a -> Parser b
+  Bnd :: Parser a -> (a -> Parser b) -> Parser b
   Lit :: Char -> Parser Char
   Ret :: [a] -> Parser a
   Nul :: Parser a
