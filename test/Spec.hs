@@ -1,2 +1,6 @@
+import qualified Derivative.Parser.Spec
+import Test.Hspec
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = hspec . parallel $ do
+  describe "Derivative.Parser" Derivative.Parser.Spec.spec
