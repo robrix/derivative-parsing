@@ -5,6 +5,10 @@ import Control.Applicative
 
 -- API
 
+parse :: Parser a -> String -> [a]
+parse p = parseNull . foldl ((compact .) . deriv) p
+
+
 literal :: String -> Parser String
 literal string = sequenceA (Lit <$> string)
 
