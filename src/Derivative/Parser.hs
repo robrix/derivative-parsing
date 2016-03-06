@@ -39,6 +39,9 @@ data Parser a where
 
 -- Algorithm
 
+parseNull :: Parser a -> [a]
+parseNull _ = []
+
 compact :: Parser a -> Parser a
 compact (Cat Nul _) = Nul
 compact (Cat _ Nul) = Nul
