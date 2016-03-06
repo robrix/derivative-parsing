@@ -31,6 +31,14 @@ spec = do
       prop "applies a function to its parse trees" $
         \ c -> parseNull (Map succ (Lit c) `deriv` c) `shouldBe` [succ c]
 
+    describe "Eps" $ do
+      it "is empty" $
+        parseNull (Eps :: Parser Char) `shouldBe` []
+
+    describe "Nul" $ do
+      it "is empty" $
+        parseNull (Nul :: Parser Char) `shouldBe` []
+
   describe "deriv" $ do
     describe "Lit" $ do
       prop "produces matching characters" $
