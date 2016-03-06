@@ -40,6 +40,7 @@ data Parser a where
 -- Algorithm
 
 parseNull :: Parser a -> [a]
+parseNull (Ret as) = as
 parseNull _ = []
 
 compact :: Parser a -> Parser a
