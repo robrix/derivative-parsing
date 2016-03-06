@@ -9,6 +9,10 @@ import Test.QuickCheck
 spec :: Spec
 spec = do
   describe "parseNull" $ do
+    describe "Lit" $ do
+      prop "does not contain parse trees" $
+        \ a -> parseNull (Lit a) `shouldBe` []
+
     describe "Ret" $ do
       prop "returns parse trees" $
         \ a -> parseNull (Ret [a :: Char]) `shouldBe` [a]
