@@ -44,6 +44,7 @@ parseNull (Cat a b) = (,) <$> parseNull a <*> parseNull b
 parseNull (Alt a b) = (Left <$> parseNull a) ++ (Right <$> parseNull b)
 parseNull (Rep _) = [[]]
 parseNull (Map f p) = f <$> parseNull p
+parseNull (App f a) = parseNull f <*> parseNull a
 parseNull (Ret as) = as
 parseNull _ = []
 
