@@ -36,10 +36,10 @@ spec = do
       \ c -> parseNull (Map succ (Lit c) `deriv` c) `shouldBe` [succ c]
 
   describe "Functor" $ do
-    prop "obeys the identity Functor law" $
+    prop "obeys the identity law" $
       \ c -> parseNull (fmap id (Lit c) `deriv` c) `shouldBe` parseNull (Lit c `deriv` c)
 
-    prop "obeys the composition Functor law" $
+    prop "obeys the composition law" $
       \ c f g -> parseNull (fmap (getBlind f :: Char -> Char) (fmap (getBlind g) (Lit c)) `deriv` c) `shouldBe` parseNull (fmap (getBlind f . getBlind g) (Lit c) `deriv` c)
 
   describe "grammar" $ do
