@@ -3,6 +3,7 @@ module Derivative.Parser.Spec where
 import Derivative.Parser
 import Test.Hspec
 import Test.Hspec.QuickCheck
+import Test.QuickCheck
 
 spec :: Spec
 spec = do
@@ -36,6 +37,9 @@ spec = do
 
     prop "obeys the identity Functor law" $
       \ c -> parseNull (Map id (Lit c) `deriv` c) `shouldBe` parseNull (Lit c `deriv` c)
+
+    prop "obeys the composition Functor law" $
+      \ c f g -> parseNull (Map (getBlind f :: Char -> Char) (Map (getBlind g) (Lit c)) `deriv` c) `shouldBe` parseNull (Map (getBlind f . getBlind g) (Lit c) `deriv` c)
 
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
