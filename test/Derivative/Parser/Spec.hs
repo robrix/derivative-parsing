@@ -27,6 +27,9 @@ spec = do
     prop "returns right parse trees in Right" $
       \ c -> parseNull (Lit (succ c) `Alt` Lit c `deriv` c) `shouldBe` [Right c]
 
+    prop "returns ambiguous parse trees" $
+      \ c -> parseNull (Lit c `Alt` Lit c `deriv` c) `shouldBe` [Left c, Right c]
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
