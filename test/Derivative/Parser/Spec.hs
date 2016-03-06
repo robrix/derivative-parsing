@@ -30,6 +30,10 @@ spec = do
     prop "returns ambiguous parse trees" $
       \ c -> parseNull (Lit c `Alt` Lit c `deriv` c) `shouldBe` [Left c, Right c]
 
+  describe "Map" $ do
+    prop "applies a function to its parse trees" $
+      \ c -> parseNull (Map succ (Lit c) `deriv` c) `shouldBe` [succ c]
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
