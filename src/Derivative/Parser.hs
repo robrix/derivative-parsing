@@ -1,6 +1,8 @@
 {-# LANGUAGE GADTs #-}
 module Derivative.Parser where
 
+import Control.Applicative
+
 data Parser a where
   Cat :: Parser a -> Parser b -> Parser (a, b)
   Alt :: Parser a -> Parser b -> Parser (Either a b)
@@ -22,3 +24,9 @@ instance Functor Parser where
 instance Applicative Parser where
   pure = Ret . pure
   (<*>) = App
+
+instance Alternative Parser where
+  empty = Eps
+  (<|>) = (fmap (either id id) .) . Alt
+  some v = (:) <$> v <*> many v
+  many = Rep
