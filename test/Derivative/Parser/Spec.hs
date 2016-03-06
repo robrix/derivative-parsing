@@ -35,11 +35,12 @@ spec = do
     prop "applies a function to its parse trees" $
       \ c -> parseNull (Map succ (Lit c) `deriv` c) `shouldBe` [succ c]
 
+  describe "Functor" $ do
     prop "obeys the identity Functor law" $
-      \ c -> parseNull (Map id (Lit c) `deriv` c) `shouldBe` parseNull (Lit c `deriv` c)
+      \ c -> parseNull (fmap id (Lit c) `deriv` c) `shouldBe` parseNull (Lit c `deriv` c)
 
     prop "obeys the composition Functor law" $
-      \ c f g -> parseNull (Map (getBlind f :: Char -> Char) (Map (getBlind g) (Lit c)) `deriv` c) `shouldBe` parseNull (Map (getBlind f . getBlind g) (Lit c) `deriv` c)
+      \ c f g -> parseNull (fmap (getBlind f :: Char -> Char) (fmap (getBlind g) (Lit c)) `deriv` c) `shouldBe` parseNull (fmap (getBlind f . getBlind g) (Lit c) `deriv` c)
 
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
