@@ -6,6 +6,9 @@ import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
 
+{-# ANN module "HLint: ignore Redundant do" #-}
+{-# ANN module "HLint: ignore Functor law" #-}
+
 spec :: Spec
 spec = do
   describe "parseNull" $ do
