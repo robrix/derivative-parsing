@@ -30,3 +30,7 @@ instance Alternative Parser where
   (<|>) = (fmap (either id id) .) . Alt
   some v = (:) <$> v <*> many v
   many = Rep
+
+instance Monad Parser where
+  return = Ret . pure
+  (>>=) = Bnd
