@@ -40,6 +40,8 @@ data Parser a where
 -- Algorithm
 
 compact :: Parser a -> Parser a
+compact (Cat Nul _) = Nul
+compact (Cat _ Nul) = Nul
 compact a = a
 
 
