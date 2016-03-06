@@ -41,6 +41,7 @@ data Parser a where
 
 parseNull :: Parser a -> [a]
 parseNull (Cat a b) = (,) <$> parseNull a <*> parseNull b
+parseNull (Alt a b) = (Left <$> parseNull a) ++ (Right <$> parseNull b)
 parseNull (Rep _) = [[]]
 parseNull (Ret as) = as
 parseNull _ = []
