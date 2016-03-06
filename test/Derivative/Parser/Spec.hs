@@ -16,6 +16,9 @@ spec = do
       prop "is empty when its left operand is empty" $
         \ b -> parseNull (Nul `Cat` pure b) `shouldBe` ([] :: [(Char, Char)])
 
+      prop "is empty when its right operand is empty" $
+        \ a -> parseNull (pure a `Cat` Nul) `shouldBe` ([] :: [(Char, Char)])
+
     describe "Alt" $ do
       prop "returns left parse trees in Left" $
         \ a -> parseNull (pure a `Alt` empty) `shouldBe` [Left a :: Either Char Char]
