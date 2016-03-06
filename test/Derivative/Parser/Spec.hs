@@ -10,6 +10,9 @@ spec = do
     prop "returns matching characters from literal parsers" $
       \ c -> parseNull (Lit c `deriv` c) `shouldBe` [c]
 
+    prop "returns the null parser for unmatched characters" $
+      \ c -> parseNull (Lit c `deriv` succ c) `shouldBe` []
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
