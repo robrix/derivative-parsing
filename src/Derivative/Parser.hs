@@ -2,6 +2,7 @@
 module Derivative.Parser where
 
 data Parser a where
+  Cat :: Parser a -> Parser b -> Parser (a, b)
   Alt :: Parser a -> Parser b -> Parser (Either a b)
   Rep :: Parser a -> Parser [a]
   Lit :: Char -> Parser Char
