@@ -40,6 +40,7 @@ data Parser a where
 -- Algorithm
 
 deriv :: Parser a -> Char -> Parser a
+deriv (Lit c') c = if c == c' then Ret [c] else Nul
 deriv _ _ = Nul
 
 parseNull :: Parser a -> [a]
