@@ -86,7 +86,7 @@ instance Applicative Parser where
   (<*>) = (fmap (uncurry ($)) .) . Cat
 
 instance Alternative Parser where
-  empty = Eps
+  empty = Nul
   (<|>) = (fmap (either id id) .) . Alt
   some v = (:) <$> v <*> many v
   many = Rep
