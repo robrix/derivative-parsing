@@ -83,7 +83,7 @@ instance Functor Parser where
 
 instance Applicative Parser where
   pure = Ret . pure
-  a <*> b = fmap (uncurry ($)) (Cat (fmap ($) a) b)
+  a <*> b = fmap (uncurry ($)) (Cat a b)
 
 instance Alternative Parser where
   empty = Eps
