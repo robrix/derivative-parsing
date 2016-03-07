@@ -63,6 +63,9 @@ spec = do
       prop "produces a list of successful parses" $
         \ c -> parseNull (Rep (Lit c) `deriv` c) `shouldBe` [[c]]
 
+      prop "produces no parse trees when unsuccessful" $
+        \ c -> parseNull (Rep (Lit c) `deriv` succ c) `shouldBe` []
+
     describe "Lit" $ do
       prop "produces matching characters" $
         \ c -> parseNull (Lit c `deriv` c) `shouldBe` [c]
