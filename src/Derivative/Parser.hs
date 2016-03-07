@@ -25,7 +25,7 @@ sep :: Parser sep -> Parser a -> Parser [a]
 sep s p = s `sep1` p <|> pure []
 
 oneOf :: (Foldable t, Alternative f) => t a -> f a
-oneOf = foldl (flip ((<|>) . pure)) empty
+oneOf = foldr ((<|>) . pure) empty
 
 
 -- Types
