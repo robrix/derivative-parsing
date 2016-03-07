@@ -9,6 +9,7 @@ import Test.QuickCheck
 {-# ANN module "HLint: ignore Redundant do" #-}
 {-# ANN module "HLint: ignore Functor law" #-}
 {-# ANN module "HLint: ignore Monad law, left identity" #-}
+{-# ANN module "HLint: ignore Monad law, right identity" #-}
 
 spec :: Spec
 spec = do
@@ -101,6 +102,9 @@ spec = do
   describe "Monad" $ do
     prop "obeys the left identity law" $
       \ k a -> parseNull (return (a :: Char) >>= getBlind k) `shouldBe` parseNull (getBlind k a :: Parser Char)
+
+    prop "obeys the right identity law" $
+      \ m -> parseNull (getBlind m >>= return) `shouldBe` parseNull (getBlind m :: Parser Char)
 
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
