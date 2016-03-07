@@ -66,6 +66,10 @@ spec = do
       prop "produces no parse trees when unsuccessful" $
         \ c -> parseNull (Rep (Lit c) `deriv` succ c) `shouldBe` []
 
+    describe "Map" $ do
+      prop "distributes over Map" $
+        \ f c -> parseNull (Map (getBlind f :: Char -> Char) (pure c)) `shouldBe` [getBlind f c]
+
     describe "Lit" $ do
       prop "produces matching characters" $
         \ c -> parseNull (Lit c `deriv` c) `shouldBe` [c]
