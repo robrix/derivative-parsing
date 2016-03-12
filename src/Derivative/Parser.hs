@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE FlexibleInstances, GADTs, GeneralizedNewtypeDeriving #-}
 module Derivative.Parser
 ( alt
 , cat
@@ -26,28 +26,28 @@ parse p = parseNull . foldl ((compact .) . deriv) p
 
 
 cat :: Parser a -> Parser b -> Parser (a, b)
-cat = Cat
+Parser a `cat` Parser b = Parser . F $ Cat a b
 
 alt :: Parser a -> Parser b -> Parser (Either a b)
-alt = Alt
+Parser a `alt` Parser b = Parser . F $ Alt a b
 
 lit :: Char -> Parser Char
-lit = Lit
+lit = Parser . F . Lit
 
 nul :: Parser a
-nul = Nul
+nul = Parser $ F Nul
 
 eps :: Parser a
-eps = Eps
+eps = Parser $ F Eps
 
 literal :: String -> Parser String
-literal string = sequenceA (Lit <$> string)
+literal string = sequenceA (Parser . F . Lit <$> string)
 
 commaSep1 :: Parser a -> Parser [a]
-commaSep1 = sep1 (Lit ',')
+commaSep1 = sep1 (Parser (F (Lit ',')))
 
 commaSep :: Parser a -> Parser [a]
-commaSep = sep (Lit ',')
+commaSep = sep (Parser (F (Lit ',')))
 
 sep1 :: Parser sep -> Parser a -> Parser [a]
 sep1 s p = (:) <$> p <*> many (s *> p)
@@ -62,66 +62,79 @@ oneOf = foldr ((<|>) . pure) empty
 -- Types
 
 -- | A parser type encoding concatenation, alternation, repetition, &c. as first-order constructors.
-data Parser a where
-  Cat :: Parser a -> Parser b -> Parser (a, b)
-  Alt :: Parser a -> Parser b -> Parser (Either a b)
-  Rep :: Parser a -> Parser [a]
-  Map :: (a -> b) -> Parser a -> Parser b
-  Bnd :: Parser a -> (a -> Parser b) -> Parser b
-  Lit :: Char -> Parser Char
-  Ret :: [a] -> Parser a
-  Nul :: Parser a
-  Eps :: Parser a
+data ParserF f a where
+  Cat :: f a -> f b -> ParserF f (a, b)
+  Alt :: f a -> f b -> ParserF f (Either a b)
+  Rep :: f a -> ParserF f [a]
+  Map :: (a -> b) -> f a -> ParserF f b
+  Bnd :: f a -> (a -> f b) -> ParserF f b
+  Lit :: Char -> ParserF f Char
+  Ret :: [a] -> ParserF f a
+  Nul :: ParserF f a
+  Eps :: ParserF f a
 
+newtype Fix f a = F { unF :: f (Fix f) a }
+
+newtype Parser a = Parser { unParser :: Fix ParserF a }
+  deriving (Alternative, Applicative, Functor, Monad)
 
 -- Algorithm
 
 deriv :: Parser a -> Char -> Parser a
-deriv (Cat a b) c = Cat (deriv a c) b <|> Cat (Ret (parseNull a)) (deriv b c)
-deriv (Alt a b) c = Alt (deriv a c) (deriv b c)
-deriv (Rep p) c = (:) <$> deriv p c <*> Rep p
-deriv (Map f p) c = Map f (deriv p c)
-deriv (Bnd p f) c = Bnd (deriv p c) f
-deriv (Lit c') c = if c == c' then Ret [c] else Nul
-deriv _ _ = Nul
+deriv (Parser f) c = Parser (deriv' f c)
+
+deriv' :: Fix ParserF a -> Char -> Fix ParserF a
+deriv' (F parser) c = case parser of
+  Cat a b -> F (Cat (deriv' a c) b) <|> F (Cat (F (Ret (parseNull' a))) (deriv' b c))
+  Alt a b -> F (Alt (deriv' a c) (deriv' b c))
+  Rep p -> (:) <$> deriv' p c <*> F (Rep p)
+  Map f p -> F (Map f (deriv' p c))
+  Bnd p f -> F (Bnd (deriv' p c) f)
+  Lit c' -> F $ if c == c' then Ret [c] else Nul
+  _ -> F Nul
 
 parseNull :: Parser a -> [a]
-parseNull (Cat a b) = (,) <$> parseNull a <*> parseNull b
-parseNull (Alt a b) = (Left <$> parseNull a) ++ (Right <$> parseNull b)
-parseNull (Rep _) = [[]]
-parseNull (Map f p) = f <$> parseNull p
-parseNull (Bnd p f) = (f <$> parseNull p) >>= parseNull
-parseNull (Ret as) = as
-parseNull _ = []
+parseNull = parseNull' . unParser
+
+parseNull' :: Fix ParserF a -> [a]
+parseNull' (F parser) = case parser of
+  Cat a b -> (,) <$> parseNull' a <*> parseNull' b
+  Alt a b -> (Left <$> parseNull' a) ++ (Right <$> parseNull' b)
+  Rep _ -> [[]]
+  Map f p -> f <$> parseNull' p
+  Bnd p f -> (f <$> parseNull' p) >>= parseNull'
+  Ret as -> as
+  _ -> []
 
 compact :: Parser a -> Parser a
-compact (Cat Nul _) = Nul
-compact (Cat _ Nul) = Nul
-compact (Cat (Ret [t]) b) = (,) t <$> b
-compact (Cat a (Ret [t])) = flip (,) t <$> a
-compact (Alt Nul p) = Right <$> p
-compact (Alt p Nul) = Left <$> p
-compact (Map f (Ret as)) = Ret (f <$> as)
-compact (Map g (Map f p)) = g . f <$> p
-compact (Rep Nul) = Ret []
-compact a = a
+compact (Parser (F parser)) = Parser $ case parser of
+  Cat (F Nul) _ -> F Nul
+  Cat _ (F Nul) -> F Nul
+  Cat (F (Ret [t])) b -> (,) t <$> b
+  Cat a (F (Ret [t])) -> flip (,) t <$> a
+  Alt (F Nul) p -> Right <$> p
+  Alt p (F Nul) -> Left <$> p
+  Map f (F (Ret as)) -> F (Ret (f <$> as))
+  Map g (F (Map f p)) -> (g . f <$> p)
+  Rep (F Nul) -> F (Ret [])
+  a -> F a
 
 
 -- Instances
 
-instance Functor Parser where
-  fmap = Map
+instance Functor (Fix ParserF) where
+  fmap = (F .) . Map
 
-instance Applicative Parser where
-  pure = Ret . pure
-  (<*>) = (fmap (uncurry ($)) .) . Cat
+instance Applicative (Fix ParserF) where
+  pure = F . Ret . pure
+  (<*>) = (fmap (uncurry ($)) .) . (F .) . Cat
 
-instance Alternative Parser where
-  empty = Nul
-  (<|>) = (fmap (either id id) .) . Alt
+instance Alternative (Fix ParserF) where
+  empty = F Nul
+  (<|>) = (fmap (either id id) .) . (F .) . Alt
   some v = (:) <$> v <*> many v
-  many = Rep
+  many = F . Rep
 
-instance Monad Parser where
+instance Monad (Fix ParserF) where
   return = pure
-  (>>=) = Bnd
+  (>>=) = (F .) . Bnd
