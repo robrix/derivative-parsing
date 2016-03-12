@@ -1,5 +1,16 @@
 {-# LANGUAGE GADTs #-}
-module Derivative.Parser where
+module Derivative.Parser
+( commaSep
+, commaSep1
+, deriv
+, literal
+, oneOf
+, parse
+, parseNull
+, Parser(..)
+, sep
+, sep1
+) where
 
 import Control.Applicative
 
