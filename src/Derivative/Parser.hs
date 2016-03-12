@@ -5,6 +5,7 @@ module Derivative.Parser
 , commaSep
 , commaSep1
 , deriv
+, lit
 , literal
 , oneOf
 , parse
@@ -27,6 +28,9 @@ cat = Cat
 
 alt :: Parser a -> Parser b -> Parser (Either a b)
 alt = Alt
+
+lit :: Char -> Parser Char
+lit = Lit
 
 literal :: String -> Parser String
 literal string = sequenceA (Lit <$> string)
