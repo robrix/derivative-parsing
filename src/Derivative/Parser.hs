@@ -81,6 +81,7 @@ newtype Fix f a = F { unF :: f (Fix f) a }
 newtype Parser a = Parser { unParser :: Fix ParserF a }
   deriving (Alternative, Applicative, Functor, Monad)
 
+
 -- Algorithm
 
 deriv :: Parser a -> Char -> Parser a
