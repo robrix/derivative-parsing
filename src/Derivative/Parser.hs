@@ -124,6 +124,13 @@ compact (Parser (F parser)) = Parser $ case parser of
   a -> F a
 
 
+-- Implementation details
+
+-- See http://www.timphilipwilliams.com/posts/2013-01-16-fixing-gadts.html for details about the higher-order functionality implemented here.
+
+class HFunctor h where
+  hfmap :: (forall a. f a -> g a) -> (forall a. h f a -> h g a)
+
 -- Instances
 
 instance Functor (ParserF (Fix ParserF)) where
