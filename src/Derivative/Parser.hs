@@ -76,7 +76,7 @@ data ParserF f a where
   Nul :: ParserF f a
   Eps :: ParserF f a
 
-newtype Fix f a = F { unF :: f (Fix f) a }
+newtype Fix f a = F { out :: f (Fix f) a }
 
 newtype Parser a = Parser { unParser :: Fix ParserF a }
   deriving (Alternative, Applicative, Functor, Monad)
