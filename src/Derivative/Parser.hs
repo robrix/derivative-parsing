@@ -34,6 +34,9 @@ Parser a `alt` Parser b = Parser . F $ Alt a b
 lit :: Char -> Parser Char
 lit = Parser . F . Lit
 
+ret :: [a] -> Parser a
+ret = Parser . F . Ret
+
 nul :: Parser a
 nul = Parser $ F Nul
 
