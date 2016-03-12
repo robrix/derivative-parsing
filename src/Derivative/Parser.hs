@@ -5,6 +5,7 @@ module Derivative.Parser
 , commaSep
 , commaSep1
 , deriv
+, eps
 , lit
 , literal
 , nul
@@ -35,6 +36,9 @@ lit = Lit
 
 nul :: Parser a
 nul = Nul
+
+eps :: Parser a
+eps = Eps
 
 literal :: String -> Parser String
 literal string = sequenceA (Lit <$> string)
