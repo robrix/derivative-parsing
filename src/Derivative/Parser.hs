@@ -133,6 +133,18 @@ class HFunctor h where
 
 -- Instances
 
+instance HFunctor ParserF where
+  hfmap f p = case p of
+    Cat a b -> Cat (f a) (f b)
+    Alt a b -> Alt (f a) (f b)
+    Rep p -> Rep (f p)
+    Map g p -> Map g (f p)
+    Bnd p g -> Bnd (f p) (f . g)
+    Lit c -> Lit c
+    Ret as -> Ret as
+    Nul -> Nul
+    Eps -> Eps
+
 instance Functor (ParserF (Fix ParserF)) where
   fmap = (. F) . Map
 
