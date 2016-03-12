@@ -126,6 +126,9 @@ compact (Parser (F parser)) = Parser $ case parser of
 
 -- Instances
 
+instance Functor (ParserF (Fix ParserF)) where
+  fmap = (. F) . Map
+
 instance Functor (Fix ParserF) where
   fmap = (F .) . Map
 
