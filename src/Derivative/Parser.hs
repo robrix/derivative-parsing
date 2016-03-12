@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleInstances, GADTs, GeneralizedNewtypeDeriving, RankNTypes #-}
 module Derivative.Parser
 ( alt
 , cat
@@ -127,6 +127,9 @@ compact (Parser (F parser)) = Parser $ case parser of
 -- Implementation details
 
 -- See http://www.timphilipwilliams.com/posts/2013-01-16-fixing-gadts.html for details about the higher-order functionality implemented here.
+
+hcata :: HFunctor h => (forall out. h f out -> f out) -> (forall out. Fix h out -> f out)
+hcata algebra = algebra . hfmap (hcata algebra) . out
 
 class HFunctor h where
   hfmap :: (forall a. f a -> g a) -> (forall a. h f a -> h g a)
