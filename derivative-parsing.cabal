@@ -17,6 +17,9 @@ library
   exposed-modules:     Derivative.Parser
   build-depends:       base >= 4.7 && < 5
   default-language:    Haskell2010
+  ghc-options:         -Wall
+                       -fno-warn-unused-binds
+                       -fno-warn-name-shadowing
 
 executable derivative-parsing
   hs-source-dirs:      app
