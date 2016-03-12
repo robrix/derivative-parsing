@@ -7,6 +7,7 @@ module Derivative.Parser
 , deriv
 , lit
 , literal
+, nul
 , oneOf
 , parse
 , parseNull
@@ -31,6 +32,9 @@ alt = Alt
 
 lit :: Char -> Parser Char
 lit = Lit
+
+nul :: Parser a
+nul = Nul
 
 literal :: String -> Parser String
 literal string = sequenceA (Lit <$> string)
