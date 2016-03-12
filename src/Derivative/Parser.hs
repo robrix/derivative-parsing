@@ -1,7 +1,8 @@
 {-# LANGUAGE GADTs #-}
 module Derivative.Parser
-( commaSep
+( alt
 , cat
+, commaSep
 , commaSep1
 , deriv
 , literal
@@ -23,6 +24,9 @@ parse p = parseNull . foldl ((compact .) . deriv) p
 
 cat :: Parser a -> Parser b -> Parser (a, b)
 cat = Cat
+
+alt :: Parser a -> Parser b -> Parser (Either a b)
+alt = Alt
 
 literal :: String -> Parser String
 literal string = sequenceA (Lit <$> string)
