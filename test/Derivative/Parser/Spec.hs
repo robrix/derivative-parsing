@@ -2,6 +2,7 @@ module Derivative.Parser.Spec where
 
 import Control.Applicative
 import Derivative.Parser
+import Prelude hiding (abs)
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck hiding (label)
@@ -173,6 +174,15 @@ ws = oneOf $ lit <$> " \t\r\n"
 
 var :: Parser Lam
 var = Var <$> varName `label` "var"
+
+abs :: Parser Lam
+abs = Abs <$> (literal "\\" *> optional ws *> varName <* optional ws) <*> (lit '.' *> optional ws *> lam) `label` "abs"
+
+app :: Parser Lam
+app = App' <$> lam <*> (ws *> lam) `label` "app"
+
+lam :: Parser Lam
+lam = abs <|> var <|> app `label` "lambda"
 
 
 -- Types
