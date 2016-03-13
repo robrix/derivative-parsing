@@ -163,6 +163,9 @@ spec = do
     it "the derivative on cyclic grammars terminates" $
       (do { x <- return $! lam `deriv` 'x' ; x `seq` return $! True } ) `shouldReturn` True
 
+    it "compaction terminates on cyclic grammars" $
+      (do { x <- return $! compact $! lam ; x `seq` return $! True } ) `shouldReturn` True
+
 
 -- Grammar
 
