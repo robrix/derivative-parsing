@@ -6,6 +6,7 @@ module Derivative.Parser
 , commaSep1
 , deriv
 , eps
+, getLabel
 , label
 , lit
 , literal
@@ -53,6 +54,10 @@ infixl 2 `label`
 
 label :: Parser a -> String -> Parser a
 label = ((Parser . F) .) . Lab . unParser
+
+getLabel :: Parser a -> Maybe String
+getLabel parser | Lab _ s <- out $ unParser parser = Just s
+                | otherwise = Nothing
 
 literal :: String -> Parser String
 literal string = sequenceA (Parser . F . Lit <$> string)
