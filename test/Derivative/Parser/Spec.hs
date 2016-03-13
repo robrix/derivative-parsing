@@ -108,6 +108,9 @@ spec = do
     prop "obeys the some law" $
       \ v -> parseNull (some (getBlind v :: Parser Char)) `shouldBe` parseNull ((:) <$> getBlind v <*> many (getBlind v))
 
+    prop "obeys the many law" $
+      \ v -> parseNull (many (lit v)) `shouldBe` parseNull (some (lit v) <|> pure "")
+
     describe "(<|>)" $ do
       prop "is not right-biased" $
         \ c -> parseNull ((lit c <|> lit (succ c)) `deriv` c) `shouldBe` [c]
