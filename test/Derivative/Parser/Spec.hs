@@ -138,6 +138,9 @@ cyclic = cyclic `label` "cyclic"
 varName :: Parser String
 varName = literal "x"
 
+ws :: Parser Char
+ws = oneOf $ lit <$> " \t\r\n"
+
 
 -- Types
 
