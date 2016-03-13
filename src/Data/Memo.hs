@@ -6,21 +6,23 @@ import Control.Arrow
 import Data.IORef
 import System.IO.Unsafe
 
-applyPartial :: Eq key => IORef [(key, value)] -> value -> ((Maybe key, input) -> value) -> (Maybe key, input) -> value
+applyPartial :: Eq key => IORef [(key, value)] -> Maybe value -> ((Maybe key, input) -> value) -> (Maybe key, input) -> value
 applyPartial ref from f arg | (Just key, _) <- arg = unsafePerformIO $ do
                               table <- readIORef ref
                               maybe (write ref key) return (key `lookup` table)
                             | otherwise = f arg
   where write ref key = do
-          modifyIORef' ref (insert key from)
+          _ <- case from of
+            Just from -> modifyIORef' ref (insert key from)
+            _ -> return ()
           let result = f arg
           result `seq` modifyIORef' ref (insert key result)
           return $! result
 
 memoOn :: Eq key => (input -> Maybe key) -> value -> (input -> value) -> input -> value
-memoOn on from = (. (on &&& id)) . memoPartial from . (. snd)
+memoOn on from = (. (on &&& id)) . memoPartial (Just from) . (. snd)
 
-memoPartial :: Eq key => value -> ((Maybe key, input) -> value) -> (Maybe key, input) -> value
+memoPartial :: Eq key => Maybe value -> ((Maybe key, input) -> value) -> (Maybe key, input) -> value
 memoPartial from f = unsafePerformIO $ do
   ref <- newIORef []
   ref `seq` return $! applyPartial ref from f
