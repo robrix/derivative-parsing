@@ -21,6 +21,7 @@ module Derivative.Parser
 ) where
 
 import Control.Applicative
+import Data.Memo
 import Data.Monoid hiding (Alt)
 
 -- API
@@ -136,7 +137,9 @@ compact (Parser (F parser)) = Parser $ case parser of
 size :: Parser a -> Int
 size (Parser parser) = getSum $ getConst $ hcata size parser
   where size :: ParserF (Const (Sum Int)) a -> Const (Sum Int) a
-        size = Const . mappend (Sum 1) . hfoldMap getConst
+        size = memoOn getLabel mempty $ Const . mappend (Sum 1) . hfoldMap getConst
+        getLabel p | Lab _ s <- p = Just s
+                   | otherwise = Nothing
 
 
 -- Implementation details
