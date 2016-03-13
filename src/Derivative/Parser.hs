@@ -147,6 +147,9 @@ hcata algebra = algebra . hfmap (hcata algebra) . out
 class HFunctor h where
   hfmap :: (forall a. f a -> g a) -> (forall a. h f a -> h g a)
 
+class HFoldable h where
+  hfoldMap :: Monoid m => (forall b. f b -> m) -> h f a -> m
+
 -- Instances
 
 instance HFunctor ParserF where
