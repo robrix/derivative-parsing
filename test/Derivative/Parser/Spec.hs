@@ -119,7 +119,7 @@ spec = do
 
     prop "is 1 + the sum for nonterminals" $
       \ a b -> let binary = [ (size .) . cat, (size .) . alt ]
-                   unary = [ size . fmap id, size . (>>= return), size . many ] in
+                   unary = [ size . fmap id, size . (>>= return), size . many, size . (`label` "") ] in
         (binary <*> [ lit a ] <*> [ lit b ]) ++ (unary <*> [ lit a ]) `shouldBe` (3 <$ binary) ++ (2 <$ unary)
 
     it "terminates on labeled cyclic grammars" $
