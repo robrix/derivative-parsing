@@ -20,6 +20,7 @@ module Derivative.Parser
 ) where
 
 import Control.Applicative
+import Data.Monoid hiding (Alt)
 
 -- API
 
@@ -163,6 +164,15 @@ instance HFunctor ParserF where
     Ret as -> Ret as
     Nul -> Nul
     Eps -> Eps
+
+instance HFoldable ParserF where
+  hfoldMap f p = case p of
+    Cat a b -> f a <> f b
+    Alt a b -> f a <> f b
+    Rep p -> f p
+    Map _ p -> f p
+    Bnd p _ -> f p
+    _ -> mempty
 
 instance Functor (ParserF (HFix ParserF)) where
   fmap = (. F) . Map
