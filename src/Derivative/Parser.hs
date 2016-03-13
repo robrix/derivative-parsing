@@ -4,6 +4,7 @@ module Derivative.Parser
 , cat
 , commaSep
 , commaSep1
+, compact
 , deriv
 , eps
 , getLabel
