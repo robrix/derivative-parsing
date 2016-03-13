@@ -6,6 +6,7 @@ module Derivative.Parser
 , commaSep1
 , deriv
 , eps
+, label
 , lit
 , literal
 , nul
@@ -45,6 +46,9 @@ nul = Parser $ F Nul
 
 eps :: Parser a
 eps = Parser $ F Eps
+
+label :: Parser a -> String -> Parser a
+label = ((Parser . F) .) . Lab . unParser
 
 literal :: String -> Parser String
 literal string = sequenceA (Parser . F . Lit <$> string)
