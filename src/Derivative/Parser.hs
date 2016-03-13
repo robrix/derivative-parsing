@@ -47,6 +47,8 @@ nul = Parser $ F Nul
 eps :: Parser a
 eps = Parser $ F Eps
 
+infixl 2 `label`
+
 label :: Parser a -> String -> Parser a
 label = ((Parser . F) .) . Lab . unParser
 
