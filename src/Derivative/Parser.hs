@@ -22,6 +22,7 @@ module Derivative.Parser
 
 import Control.Applicative
 import Data.Memo
+import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
 
 -- API
