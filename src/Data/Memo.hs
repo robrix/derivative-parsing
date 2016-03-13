@@ -16,5 +16,10 @@ applyPartial ref from f arg | (Just key, _) <- arg = unsafePerformIO $ do
           result `seq` modifyIORef' ref (insert key result)
           return $! result
 
+memoPartial :: Eq key => value -> ((Maybe key, input) -> value) -> (Maybe key, input) -> value
+memoPartial from f = unsafePerformIO $ do
+  ref <- newIORef []
+  ref `seq` return $! applyPartial ref from f
+
 insert :: key -> value -> Table key value -> [(key, value)]
 insert key value = ((key, value) :)
