@@ -4,7 +4,7 @@ import Control.Applicative
 import Derivative.Parser
 import Test.Hspec
 import Test.Hspec.QuickCheck
-import Test.QuickCheck
+import Test.QuickCheck hiding (label)
 
 {-# ANN module "HLint: ignore Redundant do" #-}
 {-# ANN module "HLint: ignore Functor law" #-}
@@ -122,12 +122,18 @@ spec = do
                    unary = [ size . fmap id, size . (>>= return), size . many ] in
         (binary <*> [ lit a ] <*> [ lit b ]) ++ (unary <*> [ lit a ]) `shouldBe` (3 <$ binary) ++ (2 <$ unary)
 
+    it "terminates on labeled cyclic grammars" $
+      size cyclic `shouldBe` 1
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
 
 
 -- Grammar
+
+cyclic :: Parser ()
+cyclic = cyclic `label` "cyclic"
 
 varName :: Parser String
 varName = literal "x"
