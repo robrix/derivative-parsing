@@ -117,6 +117,11 @@ spec = do
     prop "is 1 for terminals" $
       \ a b -> let terminals = [ ret a, lit b, nul, eps ] in sum (size <$> terminals) `shouldBe` length terminals
 
+    prop "is 1 + the sum for nonterminals" $
+      \ a b -> let binary = [ (size .) . cat, (size .) . alt ]
+                   unary = [ size . fmap id, size . (>>= return), size . many ] in
+        (binary <*> [ lit a ] <*> [ lit b ]) ++ (unary <*> [ lit a ]) `shouldBe` (3 <$ binary) ++ (2 <$ unary)
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
