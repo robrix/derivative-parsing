@@ -19,8 +19,8 @@ applyPartial ref from f arg | (Just key, _) <- arg = unsafePerformIO $ do
           result `seq` modifyIORef' ref (insert key result)
           return $! result
 
-memoOn :: Eq key => (input -> Maybe key) -> value -> (input -> value) -> input -> value
-memoOn on from = (. (on &&& id)) . memoPartial (Just from) . (. snd)
+memoOn :: Eq key => (input -> Maybe key) -> Maybe value -> (input -> value) -> input -> value
+memoOn on from = (. (on &&& id)) . memoPartial from . (. snd)
 
 memoPartial :: Eq key => Maybe value -> ((Maybe key, input) -> value) -> (Maybe key, input) -> value
 memoPartial from f = unsafePerformIO $ do
