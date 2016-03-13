@@ -125,15 +125,9 @@ compact (Parser (F parser)) = Parser $ case parser of
   a -> F a
 
 size :: Parser a -> Int
-size (Parser parser) = getConst $ hcata size parser
-  where size :: ParserF (Const Int) a -> Const Int a
-        size parser = Const $ 1 + case parser of
-          Cat a b -> getConst a + getConst b
-          Alt a b -> getConst a + getConst b
-          Rep p -> getConst p
-          Map _ p -> getConst p
-          Bnd p _ -> getConst p
-          _ -> 0
+size (Parser parser) = getSum $ getConst $ hcata size parser
+  where size :: ParserF (Const (Sum Int)) a -> Const (Sum Int) a
+        size = Const . mappend (Sum 1) . hfoldMap getConst
 
 
 -- Implementation details
