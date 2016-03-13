@@ -76,8 +76,6 @@ data ParserF f a where
   Nul :: ParserF f a
   Eps :: ParserF f a
 
-newtype Fix f a = F { out :: f (Fix f) a }
-
 newtype Parser a = Parser { unParser :: Fix ParserF a }
   deriving (Alternative, Applicative, Functor, Monad)
 
@@ -127,6 +125,8 @@ compact (Parser (F parser)) = Parser $ case parser of
 -- Implementation details
 
 -- See http://www.timphilipwilliams.com/posts/2013-01-16-fixing-gadts.html for details about the higher-order functionality implemented here.
+
+newtype Fix f a = F { out :: f (Fix f) a }
 
 hcata :: HFunctor h => (forall out. h f out -> f out) -> (forall out. Fix h out -> f out)
 hcata algebra = algebra . hfmap (hcata algebra) . out
