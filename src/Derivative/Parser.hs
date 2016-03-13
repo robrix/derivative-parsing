@@ -76,7 +76,7 @@ data ParserF f a where
   Nul :: ParserF f a
   Eps :: ParserF f a
 
-newtype Parser a = Parser { unParser :: Fix ParserF a }
+newtype Parser a = Parser { unParser :: HFix ParserF a }
   deriving (Alternative, Applicative, Functor, Monad)
 
 
@@ -85,7 +85,7 @@ newtype Parser a = Parser { unParser :: Fix ParserF a }
 deriv :: Parser a -> Char -> Parser a
 deriv (Parser f) c = Parser (deriv' f c)
 
-deriv' :: Fix ParserF a -> Char -> Fix ParserF a
+deriv' :: HFix ParserF a -> Char -> HFix ParserF a
 deriv' (F parser) c = case parser of
   Cat a b -> F (Cat (deriv' a c) b) <|> F (Cat (F (Ret (parseNull' a))) (deriv' b c))
   Alt a b -> F (Alt (deriv' a c) (deriv' b c))
@@ -98,7 +98,7 @@ deriv' (F parser) c = case parser of
 parseNull :: Parser a -> [a]
 parseNull = parseNull' . unParser
 
-parseNull' :: Fix ParserF a -> [a]
+parseNull' :: HFix ParserF a -> [a]
 parseNull' (F parser) = case parser of
   Cat a b -> (,) <$> parseNull' a <*> parseNull' b
   Alt a b -> (Left <$> parseNull' a) ++ (Right <$> parseNull' b)
@@ -126,9 +126,9 @@ compact (Parser (F parser)) = Parser $ case parser of
 
 -- See http://www.timphilipwilliams.com/posts/2013-01-16-fixing-gadts.html for details about the higher-order functionality implemented here.
 
-newtype Fix f a = F { out :: f (Fix f) a }
+newtype HFix f a = F { out :: f (HFix f) a }
 
-hcata :: HFunctor h => (forall out. h f out -> f out) -> (forall out. Fix h out -> f out)
+hcata :: HFunctor h => (forall out. h f out -> f out) -> (forall out. HFix h out -> f out)
 hcata algebra = algebra . hfmap (hcata algebra) . out
 
 class HFunctor h where
@@ -148,22 +148,22 @@ instance HFunctor ParserF where
     Nul -> Nul
     Eps -> Eps
 
-instance Functor (ParserF (Fix ParserF)) where
+instance Functor (ParserF (HFix ParserF)) where
   fmap = (. F) . Map
 
-instance Functor (Fix ParserF) where
+instance Functor (HFix ParserF) where
   fmap = (F .) . Map
 
-instance Applicative (Fix ParserF) where
+instance Applicative (HFix ParserF) where
   pure = F . Ret . pure
   (<*>) = (fmap (uncurry ($)) .) . (F .) . Cat
 
-instance Alternative (Fix ParserF) where
+instance Alternative (HFix ParserF) where
   empty = F Nul
   (<|>) = (fmap (either id id) .) . (F .) . Alt
   some v = (:) <$> v <*> many v
   many = F . Rep
 
-instance Monad (Fix ParserF) where
+instance Monad (HFix ParserF) where
   return = pure
   (>>=) = (F .) . Bnd
