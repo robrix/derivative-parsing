@@ -16,6 +16,7 @@ module Derivative.Parser
 , ret
 , sep
 , sep1
+, size
 ) where
 
 import Control.Applicative
@@ -121,6 +122,17 @@ compact (Parser (F parser)) = Parser $ case parser of
   Map g (F (Map f p)) -> (g . f <$> p)
   Rep (F Nul) -> F (Ret [])
   a -> F a
+
+size :: Parser a -> Int
+size (Parser parser) = getConst $ hcata size parser
+  where size :: ParserF (Const Int) a -> Const Int a
+        size parser = Const $ 1 + case parser of
+          Cat a b -> getConst a + getConst b
+          Alt a b -> getConst a + getConst b
+          Rep p -> getConst p
+          Map _ p -> getConst p
+          Bnd p _ -> getConst p
+          _ -> 0
 
 
 -- Implementation details
