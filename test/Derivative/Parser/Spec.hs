@@ -129,6 +129,9 @@ spec = do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
 
+    it "parses whitespace one character at a time" $
+      parseNull (ws `deriv` ' ') `shouldBe` " "
+
 
 -- Grammar
 
