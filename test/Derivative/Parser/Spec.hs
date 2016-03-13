@@ -138,6 +138,9 @@ spec = do
     it "parses repeated whitespace strings" $
       many ws `parse` "   " `shouldBe` [ "   " ]
 
+    it "maps parse forests into abstract syntax trees" $
+      var `parse` "x" `shouldBe` [ Var "x" ]
+
 
 -- Grammar
 
