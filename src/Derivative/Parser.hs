@@ -133,8 +133,7 @@ compact = Parser . compact' . unParser
 
 compact' :: HFix ParserF a -> HFix ParserF a
 compact' parser = hcata recur parser
-  where recur :: ParserF (HFix ParserF) out -> HFix ParserF out
-        recur parser = case parser of
+  where recur parser = case parser of
           Cat (F Nul) _ -> F Nul
           Cat _ (F Nul) -> F Nul
           Cat (F (Ret [t])) b -> (,) t <$> b
