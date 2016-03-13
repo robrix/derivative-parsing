@@ -106,12 +106,14 @@ spec = do
     prop "obeys the some law" $
       \ v -> parseNull (some (getBlind v :: Parser Char)) `shouldBe` parseNull ((:) <$> getBlind v <*> many (getBlind v))
 
+
   describe "Monad" $ do
     prop "obeys the left identity law" $
       \ k a -> parseNull (return (a :: Char) >>= getBlind k) `shouldBe` parseNull (getBlind k a :: Parser Char)
 
     prop "obeys the right identity law" $
       \ m -> parseNull (getBlind m >>= return) `shouldBe` parseNull (getBlind m :: Parser Char)
+
 
   describe "size" $ do
     prop "is 1 for terminals" $
@@ -124,6 +126,7 @@ spec = do
 
     it "terminates on labeled cyclic grammars" $
       size cyclic `shouldBe` 1
+
 
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
