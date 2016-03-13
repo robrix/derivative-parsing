@@ -1,5 +1,5 @@
 module Data.Memo
-(
+( memoOn
 ) where
 
 import Control.Arrow
