@@ -78,6 +78,7 @@ data ParserF f a where
   Ret :: [a] -> ParserF f a
   Nul :: ParserF f a
   Eps :: ParserF f a
+  Lab :: f a -> String -> ParserF f a
 
 newtype Parser a = Parser { unParser :: HFix ParserF a }
   deriving (Alternative, Applicative, Functor, Monad)
@@ -96,6 +97,7 @@ deriv' (F parser) c = case parser of
   Map f p -> F (Map f (deriv' p c))
   Bnd p f -> F (Bnd (deriv' p c) f)
   Lit c' -> F $ if c == c' then Ret [c] else Nul
+  Lab p _ -> deriv' p c
   _ -> F Nul
 
 parseNull :: Parser a -> [a]
@@ -109,6 +111,7 @@ parseNull' (F parser) = case parser of
   Map f p -> f <$> parseNull' p
   Bnd p f -> (f <$> parseNull' p) >>= parseNull'
   Ret as -> as
+  Lab p _ -> parseNull' p
   _ -> []
 
 compact :: Parser a -> Parser a
@@ -158,6 +161,7 @@ instance HFunctor ParserF where
     Ret as -> Ret as
     Nul -> Nul
     Eps -> Eps
+    Lab p s -> Lab (f p) s
 
 instance HFoldable ParserF where
   hfoldMap f p = case p of
@@ -166,6 +170,7 @@ instance HFoldable ParserF where
     Rep p -> f p
     Map _ p -> f p
     Bnd p _ -> f p
+    Lab p _ -> f p
     _ -> mempty
 
 instance Functor (ParserF (HFix ParserF)) where
