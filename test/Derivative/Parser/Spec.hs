@@ -135,6 +135,9 @@ spec = do
     it "parses whitespace a single character string of whitespace" $
       ws `parse` " " `shouldBe` " "
 
+    it "parses repeated whitespace strings" $
+      many ws `parse` "   " `shouldBe` [ "   " ]
+
 
 -- Grammar
 
