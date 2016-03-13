@@ -108,6 +108,10 @@ spec = do
     prop "obeys the some law" $
       \ v -> parseNull (some (getBlind v :: Parser Char)) `shouldBe` parseNull ((:) <$> getBlind v <*> many (getBlind v))
 
+    describe "(<|>)" $ do
+      prop "returns ambiguous parses" $
+        \ c -> parseNull ((lit c <|> lit c) `deriv` c) `shouldBe` [c, c]
+
 
   describe "Monad" $ do
     prop "obeys the left identity law" $
