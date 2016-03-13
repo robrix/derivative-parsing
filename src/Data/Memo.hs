@@ -2,6 +2,7 @@ module Data.Memo
 (
 ) where
 
+import Control.Arrow
 import Data.IORef
 import System.IO.Unsafe
 
@@ -15,6 +16,9 @@ applyPartial ref from f arg | (Just key, _) <- arg = unsafePerformIO $ do
           let result = f arg
           result `seq` modifyIORef' ref (insert key result)
           return $! result
+
+memoOn :: Eq key => (input -> Maybe key) -> value -> (input -> value) -> input -> value
+memoOn on from = (. (on &&& id)) . memoPartial from . (. snd)
 
 memoPartial :: Eq key => value -> ((Maybe key, input) -> value) -> (Maybe key, input) -> value
 memoPartial from f = unsafePerformIO $ do
