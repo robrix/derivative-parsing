@@ -89,6 +89,7 @@ spec = do
     prop "obeys the composition law" $
       \ c f g -> parseNull (fmap (getBlind f :: Char -> Char) (fmap (getBlind g) (lit c)) `deriv` c) `shouldBe` parseNull (fmap (getBlind f . getBlind g) (lit c) `deriv` c)
 
+
   describe "Applicative" $ do
     prop "obeys the identity law" $
       \ v -> parseNull (pure id <*> lit v `deriv` v) `shouldBe` parseNull (lit v `deriv` v)
@@ -101,6 +102,7 @@ spec = do
 
     prop "obeys the interchange law" $
       \ u y -> parseNull ((getBlind u :: Parser (Char -> Char)) <*> pure y) `shouldBe` parseNull (pure ($ y) <*> getBlind u)
+
 
   describe "Alternative" $ do
     prop "obeys the some law" $
