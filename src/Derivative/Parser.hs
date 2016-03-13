@@ -13,6 +13,7 @@ module Derivative.Parser
 , parse
 , parseNull
 , Parser()
+, ret
 , sep
 , sep1
 ) where
