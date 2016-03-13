@@ -68,8 +68,8 @@ sep1 s p = (:) <$> p <*> many (s *> p)
 sep :: Parser sep -> Parser a -> Parser [a]
 sep s p = s `sep1` p <|> pure []
 
-oneOf :: (Foldable t, Alternative f) => t a -> f a
-oneOf = foldr ((<|>) . pure) empty
+oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
+oneOf = getAlt . foldMap Monoid.Alt
 
 
 -- Types
