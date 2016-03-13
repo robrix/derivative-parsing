@@ -152,6 +152,7 @@ class HFunctor h where
 class HFoldable h where
   hfoldMap :: Monoid m => (forall b. f b -> m) -> h f a -> m
 
+
 -- Instances
 
 instance HFunctor ParserF where
