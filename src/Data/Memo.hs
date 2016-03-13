@@ -25,5 +25,5 @@ memoPartial from f = unsafePerformIO $ do
   ref <- newIORef []
   ref `seq` return $! applyPartial ref from f
 
-insert :: key -> value -> Table key value -> [(key, value)]
+insert :: key -> value -> [(key, value)] -> [(key, value)]
 insert key value = ((key, value) :)
