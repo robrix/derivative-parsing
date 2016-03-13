@@ -131,17 +131,19 @@ compact :: Parser a -> Parser a
 compact = Parser . compact' . unParser
 
 compact' :: HFix ParserF a -> HFix ParserF a
-compact' (F parser) = case parser of
-  Cat (F Nul) _ -> F Nul
-  Cat _ (F Nul) -> F Nul
-  Cat (F (Ret [t])) b -> (,) t <$> b
-  Cat a (F (Ret [t])) -> flip (,) t <$> a
-  Alt (F Nul) p -> Right <$> p
-  Alt p (F Nul) -> Left <$> p
-  Map f (F (Ret as)) -> F (Ret (f <$> as))
-  Map g (F (Map f p)) -> (g . f <$> p)
-  Rep (F Nul) -> F (Ret [])
-  a -> F a
+compact' parser = hcata recur parser
+  where recur :: ParserF (HFix ParserF) out -> HFix ParserF out
+        recur parser = case parser of
+          Cat (F Nul) _ -> F Nul
+          Cat _ (F Nul) -> F Nul
+          Cat (F (Ret [t])) b -> (,) t <$> b
+          Cat a (F (Ret [t])) -> flip (,) t <$> a
+          Alt (F Nul) p -> Right <$> p
+          Alt p (F Nul) -> Left <$> p
+          Map f (F (Ret as)) -> F (Ret (f <$> as))
+          Map g (F (Map f p)) -> g . f <$> p
+          Rep (F Nul) -> F (Ret [])
+          a -> F a
 
 size :: Parser a -> Int
 size (Parser parser) = getSum $ getConst $ hcata size parser
