@@ -113,6 +113,10 @@ spec = do
     prop "obeys the right identity law" $
       \ m -> parseNull (getBlind m >>= return) `shouldBe` parseNull (getBlind m :: Parser Char)
 
+  describe "size" $ do
+    prop "is 1 for terminals" $
+      \ a b -> let terminals = [ ret a, lit b, nul, eps ] in sum (size <$> terminals) `shouldBe` length terminals
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
