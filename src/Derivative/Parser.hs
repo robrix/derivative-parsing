@@ -113,7 +113,7 @@ parseNull = parseNull' . unParser
 parseNull' :: HFix ParserF a -> [a]
 parseNull' (F parser) = case parser of
   Cat a b -> (,) <$> parseNull' a <*> parseNull' b
-  Alt a b -> (Left <$> parseNull' a) ++ (Right <$> parseNull' b)
+  Alt a b -> (Left <$> parseNull' a) <> (Right <$> parseNull' b)
   Rep _ -> [[]]
   Map f p -> f <$> parseNull' p
   Bnd p f -> (f <$> parseNull' p) >>= parseNull'
