@@ -109,6 +109,12 @@ spec = do
       \ v -> parseNull (some (getBlind v :: Parser Char)) `shouldBe` parseNull ((:) <$> getBlind v <*> many (getBlind v))
 
     describe "(<|>)" $ do
+      prop "is not right-biased" $
+        \ c -> parseNull ((lit c <|> lit (succ c)) `deriv` c) `shouldBe` [c]
+
+      prop "is not left-biased" $
+        \ c -> parseNull ((lit (succ c) <|> lit c) `deriv` c) `shouldBe` [c]
+
       prop "returns ambiguous parses" $
         \ c -> parseNull ((lit c <|> lit c) `deriv` c) `shouldBe` [c, c]
 
