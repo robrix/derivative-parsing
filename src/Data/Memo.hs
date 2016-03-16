@@ -31,6 +31,16 @@ applyStable ref f arg = unsafePerformIO $ do
       result `seq` modifyIORef' ref (insert name result)
       return $! result
 
+apply :: Eq a => IORef [(a, b)] -> (a -> b) -> a -> b
+apply ref f arg = unsafePerformIO $ do
+  table <- readIORef ref
+  case arg `lookup` table of
+    Just result -> return result
+    _ -> do
+      let result = f arg
+      result `seq` modifyIORef' ref (insert arg result)
+      return $! result
+
 memoOn :: Eq key => (input -> Maybe key) -> Maybe value -> (input -> value) -> input -> value
 memoOn on from = (. (on &&& id)) . memoPartial from . (. snd)
 
