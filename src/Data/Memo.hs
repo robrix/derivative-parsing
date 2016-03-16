@@ -41,6 +41,11 @@ apply ref f arg = unsafePerformIO $ do
       result `seq` modifyIORef' ref (insert arg result)
       return $! result
 
+memoStable :: (a -> b) -> a -> b
+memoStable f = unsafePerformIO $ do
+  ref <- newIORef []
+  ref `seq` return $! applyStable ref f
+
 memoOn :: Eq key => (input -> Maybe key) -> Maybe value -> (input -> value) -> input -> value
 memoOn on from = (. (on &&& id)) . memoPartial from . (. snd)
 
