@@ -1,6 +1,9 @@
 {-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
 module Data.Memo
-( memoOn
+( memo
+, hmemoFix
+, memoOn
+, memoStable
 ) where
 
 import Control.Arrow
