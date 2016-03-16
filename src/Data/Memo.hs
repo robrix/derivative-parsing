@@ -52,6 +52,11 @@ hmemoStable f = unsafePerformIO $ do
   ref <- newIORef []
   ref `seq` return $! applyStable ref f
 
+memo :: Eq a => (a -> b) -> a -> b
+memo f = unsafePerformIO $ do
+  ref <- newIORef []
+  ref `seq` return $! apply ref f
+
 memoOn :: Eq key => (input -> Maybe key) -> Maybe value -> (input -> value) -> input -> value
 memoOn on from = (. (on &&& id)) . memoPartial from . (. snd)
 
