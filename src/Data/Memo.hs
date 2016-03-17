@@ -75,8 +75,3 @@ hmemoFix :: forall f g. ((forall a. f a -> g a) -> (forall a. f a -> g a)) -> (f
 hmemoFix f = x
   where x :: (forall a. f a -> g a)
         x = hmemoStable (f x)
-
-hfix :: forall f g. ((forall a. f a -> g a) -> (forall a. f a -> g a)) -> (forall a. f a -> g a)
-hfix f = x
-  where x :: (forall a. f a -> g a)
-        x = f x
