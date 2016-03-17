@@ -165,9 +165,6 @@ newtype HFix f a = F { out :: f (HFix f) a }
 hcata :: HFunctor h => (forall out. h f out -> f out) -> (forall out. HFix h out -> f out)
 hcata algebra = algebra . hfmap (hcata algebra) . out
 
-hmemoCata :: HFunctor h => (forall a. h f a -> f a) -> HFix h a -> f a
-hmemoCata algebra = hfix $ \ self -> hmemoStable $ algebra . hfmap self . out
-
 
 -- Instances
 
