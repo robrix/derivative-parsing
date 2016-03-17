@@ -50,7 +50,7 @@ memoStable f = unsafePerformIO $ do
   ref <- newIORef []
   ref `seq` return $! applyStable ref f
 
-hmemoStable :: (forall a. f a -> g a) -> (forall a. f a -> g a)
+hmemoStable :: forall f g a. (forall a. f a -> g a) -> f a -> g a
 hmemoStable f = unsafePerformIO $ do
   ref <- newIORef []
   ref `seq` return $! applyStable ref f
