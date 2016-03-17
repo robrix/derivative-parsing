@@ -23,6 +23,7 @@ module Derivative.Parser
 ) where
 
 import Control.Applicative
+import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Memo
 import qualified Data.Monoid as Monoid
@@ -165,9 +166,6 @@ hcata algebra = algebra . hfmap (hcata algebra) . out
 
 hmemoCata :: HFunctor h => (forall a. h f a -> f a) -> (forall a. HFix h a -> f a)
 hmemoCata algebra = hmemoFix $ \ self -> algebra . hfmap self . out
-
-class HFoldable h where
-  hfoldMap :: Monoid m => (forall b. f b -> m) -> h f a -> m
 
 
 -- Instances
