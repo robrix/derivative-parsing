@@ -1,7 +1,6 @@
 {-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
 module Data.Memo
 ( memo
-, hmemoFix
 , hmemoStable
 , memoOn
 , memoStable
@@ -72,6 +71,3 @@ memoPartial from f = unsafePerformIO $ do
 
 insert :: key -> value -> [(key, value)] -> [(key, value)]
 insert key value = ((key, value) :)
-
-hmemoFix :: forall f g a. (forall a. (forall a. f a -> g a) -> f a -> g a) -> f a -> g a
-hmemoFix f = hfix $ \ self -> hmemoStable $ f self
