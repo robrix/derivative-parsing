@@ -7,7 +7,6 @@ module Data.Memo
 ) where
 
 import Control.Arrow
-import Data.Higher.Function
 import Data.IORef
 import System.IO.Unsafe
 import System.Mem.StableName
