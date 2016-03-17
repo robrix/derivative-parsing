@@ -73,5 +73,5 @@ insert key value = ((key, value) :)
 
 hmemoFix :: forall f g a. (forall a. (forall a. f a -> g a) -> f a -> g a) -> f a -> g a
 hmemoFix f = x
-  where x :: (forall a. f a -> g a)
+  where x :: forall a. f a -> g a
         x = hmemoStable (f x)
