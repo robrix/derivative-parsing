@@ -2,6 +2,7 @@
 module Data.Memo
 ( memo
 , hmemoFix
+, hmemoStable
 , memoOn
 , memoStable
 ) where
