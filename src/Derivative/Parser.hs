@@ -24,6 +24,7 @@ module Derivative.Parser
 
 import Control.Applicative
 import Data.Higher.Foldable
+import Data.Higher.Function
 import Data.Higher.Functor
 import Data.Memo
 import qualified Data.Monoid as Monoid
@@ -165,7 +166,7 @@ hcata :: HFunctor h => (forall out. h f out -> f out) -> (forall out. HFix h out
 hcata algebra = algebra . hfmap (hcata algebra) . out
 
 hmemoCata :: HFunctor h => (forall a. h f a -> f a) -> HFix h a -> f a
-hmemoCata algebra = hmemoFix $ \ self -> algebra . hfmap self . out
+hmemoCata algebra = hfix $ \ self -> hmemoStable $ algebra . hfmap self . out
 
 
 -- Instances
