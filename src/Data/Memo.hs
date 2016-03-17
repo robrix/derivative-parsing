@@ -7,6 +7,7 @@ module Data.Memo
 ) where
 
 import Control.Arrow
+import Data.Higher.Function
 import Data.IORef
 import System.IO.Unsafe
 import System.Mem.StableName
@@ -72,6 +73,4 @@ insert :: key -> value -> [(key, value)] -> [(key, value)]
 insert key value = ((key, value) :)
 
 hmemoFix :: forall f g a. (forall a. (forall a. f a -> g a) -> f a -> g a) -> f a -> g a
-hmemoFix f = x
-  where x :: forall a. f a -> g a
-        x = hmemoStable (f x)
+hmemoFix f = hfix $ \ self -> hmemoStable $ f self
