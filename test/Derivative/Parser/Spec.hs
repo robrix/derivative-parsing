@@ -164,7 +164,7 @@ spec = do
       (do { x <- return $! (deriv $! lam) $! 'x' ; x `seq` return $! True } ) `shouldReturn` True
 
     it "compaction terminates on cyclic grammars" $
-      (do { x <- return $! compact $! lam ; x `seq` return $! True } ) `shouldReturn` True
+      (do { x <- return $! compact $! (lam `deriv` 'x') ; x `seq` return $! True } ) `shouldReturn` True
 
     it "parseNull terminates on cyclic grammars" $
       parseNull (lam `deriv` 'x') `shouldBe` [ Var "x" ]
