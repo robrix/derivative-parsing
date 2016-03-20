@@ -3,6 +3,7 @@ module Data.Memo
 ( memo
 , memoOn
 , memoStable
+, memoStableFrom
 ) where
 
 import Control.Arrow
@@ -51,6 +52,11 @@ memoStable :: (a -> b) -> a -> b
 memoStable f = unsafePerformIO $ do
   ref <- newIORef []
   ref `seq` return $! applyStable ref Nothing f
+
+memoStableFrom :: b -> (a -> b) -> a -> b
+memoStableFrom from f = unsafePerformIO $ do
+  ref <- newIORef []
+  ref `seq` return $! applyStable ref (Just from) f
 
 memo :: Eq a => (a -> b) -> a -> b
 memo f = unsafePerformIO $ do
