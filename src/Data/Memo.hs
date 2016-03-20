@@ -1,7 +1,6 @@
 {-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
 module Data.Memo
 ( memo
-, hmemoStable
 , memoOn
 , memoStable
 ) where
@@ -47,11 +46,6 @@ apply ref f arg = unsafePerformIO $ do
 
 memoStable :: (a -> b) -> a -> b
 memoStable f = unsafePerformIO $ do
-  ref <- newIORef []
-  ref `seq` return $! applyStable ref f
-
-hmemoStable :: forall f g a. (forall a. f a -> g a) -> f a -> g a
-hmemoStable f = unsafePerformIO $ do
   ref <- newIORef []
   ref `seq` return $! applyStable ref f
 
