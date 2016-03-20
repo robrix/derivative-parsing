@@ -23,8 +23,8 @@ applyPartial ref from f arg | (Just key, _) <- arg = unsafePerformIO $ do
           result `seq` modifyIORef' ref (insert key result)
           return $! result
 
-applyStable :: IORef [(StableName a, b)] -> (a -> b) -> a -> b
-applyStable ref f arg = unsafePerformIO $ do
+applyStable :: IORef [(StableName a, b)] -> Maybe b -> (a -> b) -> a -> b
+applyStable ref from f arg = unsafePerformIO $ do
   name <- makeStableName arg
   table <- readIORef ref
   case name `lookup` table of
@@ -47,7 +47,7 @@ apply ref f arg = unsafePerformIO $ do
 memoStable :: (a -> b) -> a -> b
 memoStable f = unsafePerformIO $ do
   ref <- newIORef []
-  ref `seq` return $! applyStable ref f
+  ref `seq` return $! applyStable ref Nothing f
 
 memo :: Eq a => (a -> b) -> a -> b
 memo f = unsafePerformIO $ do
