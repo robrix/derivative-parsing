@@ -149,9 +149,9 @@ compact' = hcata recur
           a -> F a
 
 size :: Parser a -> Int
-size (Parser parser) = getSum $ getConst $ hcata size parser
+size (Parser parser) = getSum $ getConst $ hcata (hmemoStable size) parser
   where size :: ParserF (Const (Sum Int)) a -> Const (Sum Int) a
-        size = memoOn getLabel (Just mempty) $ Const . mappend (Sum 1) . hfoldMap getConst
+        size = Const . mappend (Sum 1) . hfoldMap getConst
         getLabel p | Lab _ s <- p = Just s
                    | otherwise = Nothing
 
