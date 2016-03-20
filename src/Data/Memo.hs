@@ -30,6 +30,9 @@ applyStable ref from f arg = unsafePerformIO $ do
   case name `lookup` table of
     Just value -> return value
     _ -> do
+      _ <- case from of
+        Just from -> modifyIORef' ref (insert name from)
+        _ -> return ()
       let result = f arg
       result `seq` modifyIORef' ref (insert name result)
       return $! result
