@@ -160,7 +160,7 @@ spec = do
     it "maps parse forests into abstract syntax trees" $
       var `parse` "x" `shouldBe` [ Var "x" ]
 
-    it "the derivative on cyclic grammars terminates" $
+    it "the derivative terminates on cyclic grammars" $
       (do { x <- return $! (deriv $! lam) $! 'x' ; x `seq` return $! True } ) `shouldReturn` True
 
     it "compaction terminates on cyclic grammars" $
