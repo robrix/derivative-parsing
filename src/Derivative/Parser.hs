@@ -24,7 +24,6 @@ module Derivative.Parser
 
 import Control.Applicative
 import Data.Higher.Foldable
-import Data.Higher.Function
 import Data.Higher.Functor
 import Data.Memo
 import qualified Data.Monoid as Monoid
