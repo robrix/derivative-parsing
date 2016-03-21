@@ -97,7 +97,7 @@ data ParserF f a where
   Lab :: f a -> String -> ParserF f a
 
 newtype Parser a = Parser { unParser :: HFix ParserF a }
-  deriving (Alternative, Applicative, Functor, Monad)
+  deriving (Alternative, Applicative, Functor, Monad, Show)
 
 
 -- Algorithm
