@@ -209,3 +209,18 @@ instance Alternative (HFix ParserF) where
 instance Monad (HFix ParserF) where
   return = pure
   (>>=) = (F .) . Bnd
+
+instance Show (HFix ParserF a) where
+  showsPrec n = showsPrec n . out
+
+instance Show (ParserF (HFix ParserF) a) where
+  showsPrec n (Cat a b) = showsPrec n a . showString " `cat` " . showsPrec n b
+  showsPrec n (Alt a b) = showsPrec n a . showString " `alt` " . showsPrec n b
+  showsPrec n (Rep p) = showParen (n >= 10) $ showString "many " . showsPrec 10 p
+  showsPrec n (Map _ p) = showParen (n >= 4) $ showString "f <$> " . showsPrec 4 p
+  showsPrec n (Bnd p _) = showParen (n >= 1) $ showsPrec 1 p . showString ">>= f"
+  showsPrec _ (Lit c) = showString ("lit '" ++ (c : "'"))
+  showsPrec _ (Ret _) = showString "[…]"
+  showsPrec _ Nul = showString "nul"
+  showsPrec _ Eps = showString "eps"
+  showsPrec n (Lab p s) = showParen (n >= 2) $ showsPrec 2 p . showString " `label` " . shows s
