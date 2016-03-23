@@ -1,6 +1,7 @@
 {-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
 module Data.Memo
 ( memo
+, memoFrom
 , memoOn
 , memoStable
 , memoStableFrom
@@ -65,6 +66,11 @@ memo :: Eq a => (a -> b) -> a -> b
 memo f = unsafePerformIO $ do
   ref <- newIORef []
   ref `seq` return $! apply ref Nothing f
+
+memoFrom :: Eq a => b -> (a -> b) -> a -> b
+memoFrom from f = unsafePerformIO $ do
+  ref <- newIORef []
+  ref `seq` return $! apply ref (Just from) f
 
 memoOn :: Eq key => (input -> Maybe key) -> Maybe value -> (input -> value) -> input -> value
 memoOn on from = (. (on &&& id)) . memoPartial from . (. snd)
