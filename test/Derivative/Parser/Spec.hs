@@ -135,6 +135,9 @@ spec = do
     prop "shows literals" $
       \ c -> show (lit c) `shouldBe` "lit '" ++ [c] ++ "'"
 
+    it "shows concatenations" $
+      show (lit 'a' `cat` lit 'b') `shouldBe` "lit 'a' `cat` lit 'b'"
+
 
   describe "size" $ do
     prop "is 1 for terminals" $
