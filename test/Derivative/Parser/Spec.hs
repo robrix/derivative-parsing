@@ -131,6 +131,11 @@ spec = do
       \ m -> parseNull (getBlind m >>= return) `shouldBe` parseNull (getBlind m :: Parser Char)
 
 
+  describe "Show" $ do
+    prop "shows literals" $
+      \ c -> show (lit c) `shouldBe` "lit '" ++ [c] ++ "'"
+
+
   describe "size" $ do
     prop "is 1 for terminals" $
       \ a b -> let terminals = [ ret a, lit b, nul, eps ] in sum (size <$> terminals) `shouldBe` length terminals
