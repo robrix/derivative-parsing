@@ -138,6 +138,9 @@ spec = do
     it "shows concatenations" $
       show (lit 'a' `cat` lit 'b') `shouldBe` "lit 'a' `cat` lit 'b'"
 
+    it "terminates for cyclic grammars" $
+      show cyclic `shouldBe` "cyclic `label` \"cyclic\""
+
 
   describe "size" $ do
     prop "is 1 for terminals" $
