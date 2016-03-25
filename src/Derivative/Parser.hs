@@ -237,8 +237,8 @@ instance Monoid a => Monad (Const a) where
   return = pure
   Const a >>= _ = Const a
 
-instance Show a => Show (ParserF (Const a) out) where
-  show p = getConst $ go (hfmap (Const . show . getConst) p)
+instance Show (ParserF (Const String) out) where
+  show p = getConst $ go p
     where go (Cat a b) = a <> Const " `cat` " <> b
           go (Alt a b) = a <> Const " `alt` " <> b
           go (Rep p) = Const "many " <> p
