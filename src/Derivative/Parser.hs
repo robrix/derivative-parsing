@@ -217,16 +217,8 @@ instance Show (HFix ParserF a) where
   showsPrec n = showsPrec n . out
 
 instance Show (ParserF (HFix ParserF) a) where
-  showsPrec n (Cat a b) = showsPrec n a . showString " `cat` " . showsPrec n b
-  showsPrec n (Alt a b) = showsPrec n a . showString " `alt` " . showsPrec n b
-  showsPrec n (Rep p) = showParen (n >= 10) $ showString "many " . showsPrec 10 p
-  showsPrec n (Map _ p) = showParen (n >= 4) $ showString "f <$> " . showsPrec 4 p
-  showsPrec n (Bnd p _) = showParen (n >= 1) $ showsPrec 1 p . showString ">>= f"
-  showsPrec _ (Lit c) = showString ("lit '" ++ (c : "'"))
-  showsPrec _ (Ret _) = showString "[…]"
-  showsPrec _ Nul = showString "nul"
-  showsPrec _ Eps = showString "eps"
-  showsPrec n (Lab p s) = showParen (n >= 2) $ showsPrec 2 p . showString " `label` " . shows s
+  show p | Lab _ s <- p = getConst $ hcata (memoFrom (Const s) (Const . show)) (F p)
+         | otherwise = getConst $ hcata (memo (Const . show)) (F p)
 
 instance (Eq a, Monoid a) => Eq (ParserF (Const a) out) where
   Cat a1 b1 == Cat a2 b2 = a1 == a2 && b1 == b2
