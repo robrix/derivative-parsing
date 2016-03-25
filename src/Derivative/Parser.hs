@@ -23,6 +23,7 @@ module Derivative.Parser
 ) where
 
 import Control.Applicative
+import Data.Higher.Fix
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Memo
@@ -158,8 +159,6 @@ size (Parser parser) = getSum $ getConst $ hcata (memoFrom (Const (Sum 0)) size)
 -- Implementation details
 
 -- See http://www.timphilipwilliams.com/posts/2013-01-16-fixing-gadts.html for details about the higher-order functionality implemented here.
-
-newtype HFix f a = F { out :: f (HFix f) a }
 
 hcata :: HFunctor h => (forall out. h f out -> f out) -> (forall out. HFix h out -> f out)
 hcata algebra = algebra . hfmap (hcata algebra) . out
