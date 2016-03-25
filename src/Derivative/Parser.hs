@@ -211,6 +211,20 @@ instance Show (ParserF (HFix ParserF) a) where
   show p | Lab _ s <- p = getConst $ hcata (memoFrom (Const s) (Const . show)) (F p)
          | otherwise = getConst $ hcata (memo (Const . show)) (F p)
 
+instance Show (ParserF (Const String) out) where
+  show p = getConst $ go p
+    where go (Cat a b) = a <> Const " `cat` " <> b
+          go (Alt a b) = a <> Const " `alt` " <> b
+          go (Rep p) = Const "many " <> p
+          go (Map _ p) = Const "f <$> " <> p
+          go (Bnd p _) = p <> Const " >>= f"
+          go (Lit c) = Const ("lit '" ++ [c] ++ "'")
+          go (Ret _) = Const "ret […]"
+          go Nul = Const "nul"
+          go Eps = Const "eps"
+          go ~(Lab p s) = p <> Const (" `label` " ++ show s)
+          Const a <> Const b = Const (a ++ b)
+
 instance (Eq a, Monoid a) => Eq (ParserF (Const a) out) where
   Cat a1 b1 == Cat a2 b2 = a1 == a2 && b1 == b2
   Alt a1 b1 == Alt a2 b2 = a1 == a2 && b1 == b2
@@ -227,17 +241,3 @@ instance (Eq a, Monoid a) => Eq (ParserF (Const a) out) where
 instance Monoid a => Monad (Const a) where
   return = pure
   Const a >>= _ = Const a
-
-instance Show (ParserF (Const String) out) where
-  show p = getConst $ go p
-    where go (Cat a b) = a <> Const " `cat` " <> b
-          go (Alt a b) = a <> Const " `alt` " <> b
-          go (Rep p) = Const "many " <> p
-          go (Map _ p) = Const "f <$> " <> p
-          go (Bnd p _) = p <> Const " >>= f"
-          go (Lit c) = Const ("lit '" ++ [c] ++ "'")
-          go (Ret _) = Const "ret […]"
-          go Nul = Const "nul"
-          go Eps = Const "eps"
-          go ~(Lab p s) = p <> Const (" `label` " ++ show s)
-          Const a <> Const b = Const (a ++ b)
