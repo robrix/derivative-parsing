@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, GeneralizedNewtypeDeriving, RankNTypes #-}
+{-# LANGUAGE FlexibleInstances, GADTs, GeneralizedNewtypeDeriving #-}
 module Derivative.Parser
 ( alt
 , cat
@@ -154,14 +154,6 @@ size (Parser parser) = getSum $ getConst $ hcata (memoFrom (Const (Sum 0)) size)
         size = Const . mappend (Sum 1) . hfoldMap getConst
         getLabel p | Lab _ s <- p = Just s
                    | otherwise = Nothing
-
-
--- Implementation details
-
--- See http://www.timphilipwilliams.com/posts/2013-01-16-fixing-gadts.html for details about the higher-order functionality implemented here.
-
-hcata :: HFunctor h => (forall out. h f out -> f out) -> (forall out. HFix h out -> f out)
-hcata algebra = algebra . hfmap (hcata algebra) . out
 
 
 -- Instances
