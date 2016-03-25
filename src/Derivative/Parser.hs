@@ -212,7 +212,7 @@ instance Show (ParserF (HFix ParserF) a) where
          | otherwise = getConst $ hcata (memo (Const . show)) (F p)
 
 instance Show (ParserF (Const String) out) where
-  show p = getConst $ go p
+  show = getConst . go
     where go (Cat a b) = a <> Const " `cat` " <> b
           go (Alt a b) = a <> Const " `alt` " <> b
           go (Rep p) = Const "many " <> p
