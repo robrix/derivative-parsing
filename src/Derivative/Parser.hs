@@ -248,5 +248,5 @@ instance Show a => Show (ParserF (Const a) out) where
           go (Ret _) = Const "ret […]"
           go Nul = Const "nul"
           go Eps = Const "eps"
-          go ~(Lab p s) = p <> Const (" `label` " ++ s)
+          go ~(Lab p s) = p <> Const (" `label` " ++ show s)
           Const a <> Const b = Const (a ++ b)
