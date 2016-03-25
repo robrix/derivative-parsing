@@ -227,3 +227,17 @@ instance Show (ParserF (HFix ParserF) a) where
   showsPrec _ Nul = showString "nul"
   showsPrec _ Eps = showString "eps"
   showsPrec n (Lab p s) = showParen (n >= 2) $ showsPrec 2 p . showString " `label` " . shows s
+
+instance Show a => Show (ParserF (Const a) out) where
+  show p = getConst $ go (hfmap (Const . show . getConst) p)
+    where go (Cat a b) = a <> Const " `cat` " <> b
+          go (Alt a b) = a <> Const " `alt` " <> b
+          go (Rep p) = Const "many " <> p
+          go (Map _ p) = Const "f <$> " <> p
+          go (Bnd p _) = p <> Const " >>= f"
+          go (Lit c) = Const ("lit '" ++ [c] ++ "'")
+          go (Ret _) = Const "ret […]"
+          go Nul = Const "nul"
+          go Eps = Const "eps"
+          go ~(Lab p s) = p <> Const (" `label` " ++ s)
+          Const a <> Const b = Const (a ++ b)
