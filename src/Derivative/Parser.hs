@@ -228,6 +228,10 @@ instance Show (ParserF (HFix ParserF) a) where
   showsPrec _ Eps = showString "eps"
   showsPrec n (Lab p s) = showParen (n >= 2) $ showsPrec 2 p . showString " `label` " . shows s
 
+instance Monoid a => Monad (Const a) where
+  return = pure
+  Const a >>= _ = Const a
+
 instance Show a => Show (ParserF (Const a) out) where
   show p = getConst $ go (hfmap (Const . show . getConst) p)
     where go (Cat a b) = a <> Const " `cat` " <> b
