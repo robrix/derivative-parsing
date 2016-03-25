@@ -132,11 +132,8 @@ parseNull' (F parser) = case parser of
   _ -> []
 
 compact :: Parser a -> Parser a
-compact = Parser . compact' . unParser
-
-compact' :: HFix ParserF a -> HFix ParserF a
-compact' = hcata recur
-  where recur parser = case parser of
+compact = Parser . go . out . unParser
+  where go parser = case parser of
           Cat (F Nul) _ -> F Nul
           Cat _ (F Nul) -> F Nul
           Cat (F (Ret [t])) b -> (,) t <$> b
