@@ -14,11 +14,11 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Data.Graph
-                     , Data.Higher.Fix
+  exposed-modules:     Data.Higher.Fix
                      , Data.Higher.Foldable
                      , Data.Higher.Function
                      , Data.Higher.Functor
+                     , Data.Higher.Graph
                      , Data.Memo
                      , Derivative.Parser
   build-depends:       base >= 4.7 && < 5
