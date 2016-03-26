@@ -14,7 +14,8 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Data.Higher.Fix
+  exposed-modules:     Data.Graph
+                     , Data.Higher.Fix
                      , Data.Higher.Foldable
                      , Data.Higher.Function
                      , Data.Higher.Functor
