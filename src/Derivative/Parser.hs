@@ -26,6 +26,7 @@ import Control.Applicative
 import Data.Higher.Fix
 import Data.Higher.Foldable
 import Data.Higher.Functor
+import Data.Maybe
 import Data.Memo
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
@@ -203,8 +204,7 @@ instance Show (HFix ParserF a) where
   showsPrec n = showsPrec n . out
 
 instance Show (ParserF (HFix ParserF) a) where
-  show p | Lab _ s <- p = getConst $ hcata (memoFrom (Const s) (Const . show)) (F p)
-         | otherwise = getConst $ hcata (memo (Const . show)) (F p)
+  show p = getConst $ hcata (memoFrom (Const $ fromMaybe "" (getLabel (Parser $ F p))) (Const . show)) (F p)
 
 instance Show (ParserF (Const String) out) where
   show = getConst . go
