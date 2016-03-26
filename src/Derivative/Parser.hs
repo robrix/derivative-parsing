@@ -1,7 +1,6 @@
 {-# LANGUAGE FlexibleInstances, GADTs, GeneralizedNewtypeDeriving #-}
 module Derivative.Parser
-( alt
-, cat
+( cat
 , commaSep
 , commaSep1
 , compact
@@ -39,9 +38,6 @@ parse p = parseNull . foldl ((compact .) . deriv) p
 
 cat :: Parser a -> Parser b -> Parser (a, b)
 Parser a `cat` Parser b = Parser . F $ Cat a b
-
-alt :: Parser a -> Parser b -> Parser (Either a b)
-Parser a `alt` Parser b = Parser . F $ Alt a b
 
 lit :: Char -> Parser Char
 lit = Parser . F . Lit
@@ -88,7 +84,7 @@ oneOf = getAlt . foldMap Monoid.Alt
 -- | A parser type encoding concatenation, alternation, repetition, &c. as first-order constructors.
 data ParserF f a where
   Cat :: f a -> f b -> ParserF f (a, b)
-  Alt :: f a -> f b -> ParserF f (Either a b)
+  Alt :: f a -> f a -> ParserF f a
   Rep :: f a -> ParserF f [a]
   Map :: (a -> b) -> f a -> ParserF f b
   Bnd :: f a -> (a -> f b) -> ParserF f b
@@ -124,7 +120,7 @@ parseNull = parseNull' . unParser
 parseNull' :: HFix ParserF a -> [a]
 parseNull' = memoStableFrom [] $ \ (F parser) -> case parser of
   Cat a b -> (,) <$> parseNull' a <*> parseNull' b
-  Alt a b -> (Left <$> parseNull' a) <> (Right <$> parseNull' b)
+  Alt a b -> (parseNull' a) <> (parseNull' b)
   Rep _ -> [[]]
   Map f p -> f <$> parseNull' p
   Bnd p f -> (f <$> parseNull' p) >>= parseNull'
@@ -139,8 +135,8 @@ compact = Parser . go . out . unParser
           Cat _ (F Nul) -> F Nul
           Cat (F (Ret [t])) b -> (,) t <$> b
           Cat a (F (Ret [t])) -> flip (,) t <$> a
-          Alt (F Nul) p -> Right <$> p
-          Alt p (F Nul) -> Left <$> p
+          Alt (F Nul) p -> p
+          Alt p (F Nul) -> p
           Map f (F (Ret as)) -> F (Ret (f <$> as))
           Map g (F (Map f p)) -> g . f <$> p
           Rep (F Nul) -> F (Ret [])
@@ -189,7 +185,7 @@ instance Applicative (HFix ParserF) where
 
 instance Alternative (HFix ParserF) where
   empty = F Nul
-  (<|>) = (fmap (either id id) .) . (F .) . Alt
+  (<|>) = (F .) . Alt
   some v = (:) <$> v <*> many v
   many = F . Rep
 
@@ -209,7 +205,7 @@ instance Show (ParserF (HFix ParserF) a) where
 instance Show (ParserF (Const String) out) where
   show = getConst . go
     where go (Cat a b) = a <> Const " `cat` " <> b
-          go (Alt a b) = a <> Const " `alt` " <> b
+          go (Alt a b) = a <> Const " <|> " <> b
           go (Rep p) = Const "many " <> p
           go (Map _ p) = Const "f <$> " <> p
           go (Bnd p _) = p <> Const " >>= f"

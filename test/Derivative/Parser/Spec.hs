@@ -25,15 +25,15 @@ spec = do
       prop "is empty when its right operand is empty" $
         \ a -> parseNull (pure a `cat` nul) `shouldBe` ([] :: [(Char, Char)])
 
-    describe "alt" $ do
-      prop "returns left parse trees in Left" $
-        \ a -> parseNull (pure a `alt` empty) `shouldBe` [Left a :: Either Char Char]
+    describe "<|>" $ do
+      prop "returns left parse trees" $
+        \ a -> parseNull (pure a <|> empty) `shouldBe` [a :: Char]
 
-      prop "returns right parse trees in Right" $
-        \ b -> parseNull (empty `alt` pure b) `shouldBe` [Right b :: Either Char Char]
+      prop "returns right parse trees" $
+        \ b -> parseNull (empty <|> pure b) `shouldBe` [b :: Char]
 
       prop "returns ambiguous parse trees" $
-        \ a b -> parseNull (pure a `alt` pure b) `shouldBe` [Left a, Right b :: Either Char Char]
+        \ a b -> parseNull (pure a <|> pure b) `shouldBe` [a, b :: Char]
 
     describe "many" $ do
       prop "contains the empty sequence" $
@@ -147,7 +147,7 @@ spec = do
       \ a b -> let terminals = [ ret a, lit b, nul, eps ] in sum (size <$> terminals) `shouldBe` length terminals
 
     prop "is 1 + the sum for nonterminals" $
-      \ a b -> let binary = [ (size .) . cat, (size .) . alt ]
+      \ a b -> let binary = [ (size .) . cat, (size .) . (<|>) ]
                    unary = [ size . fmap id, size . (>>= return), size . many, size . (`label` "") ] in
         (binary <*> [ lit a ] <*> [ lit b ]) ++ (unary <*> [ lit a ]) `shouldBe` (3 <$ binary) ++ (2 <$ unary)
 
