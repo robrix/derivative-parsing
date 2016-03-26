@@ -213,7 +213,7 @@ instance Show (ParserF (Const String) out) where
           go (Ret _) = Const "ret […]"
           go Nul = Const "nul"
           go Eps = Const "eps"
-          go ~(Lab p s) = p <> Const (" `label` " ++ show s)
+          go (Lab p s) = p <> Const (" `label` " ++ show s)
           Const a <> Const b = Const (a ++ b)
 
 instance (Eq a, Monoid a) => Eq (ParserF (Const a) out) where
