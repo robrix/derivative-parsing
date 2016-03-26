@@ -48,14 +48,15 @@ memoStableFrom from f = unsafePerformIO $ do
   ref `seq` return $! applyStable ref (Just from) f
 
 memo :: Eq a => (a -> b) -> a -> b
-memo f = unsafePerformIO $ do
-  ref <- newIORef []
-  ref `seq` return $! apply ref Nothing f
+memo = memoWith Nothing
 
 memoFrom :: Eq a => b -> (a -> b) -> a -> b
-memoFrom from f = unsafePerformIO $ do
+memoFrom from = memoWith (Just from)
+
+memoWith :: Eq a => Maybe b -> (a -> b) -> a -> b
+memoWith from f = unsafePerformIO $ do
   ref <- newIORef []
-  ref `seq` return $! apply ref (Just from) f
+  ref `seq` return $! apply ref from f
 
 insert :: key -> value -> [(key, value)] -> [(key, value)]
 insert key value = ((key, value) :)
