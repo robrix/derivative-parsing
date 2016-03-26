@@ -190,7 +190,7 @@ varName :: Parser String
 varName = literal "x"
 
 ws :: Parser Char
-ws = oneOf $ lit <$> " \t\r\n"
+ws = oneOf (lit <$> " \t\r\n") `label` "ws"
 
 var :: Parser Lam
 var = Var <$> varName `label` "var"
