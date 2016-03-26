@@ -215,7 +215,7 @@ instance Show (ParserF (Const String) out) where
           go (Rep p) = Const "many " <> p
           go (Map _ p) = Const "f <$> " <> p
           go (Bnd p _) = p <> Const " >>= f"
-          go (Lit c) = Const ("lit '" ++ [c] ++ "'")
+          go (Lit c) = Const ("lit " ++ show c)
           go (Ret _) = Const "ret […]"
           go Nul = Const "nul"
           go Eps = Const "eps"
