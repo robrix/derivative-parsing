@@ -222,7 +222,7 @@ instance Show (ParserF (Const String) out) where
           go (Lab p s) = p <> Const (" `label` " ++ show s)
           Const a <> Const b = Const (a ++ b)
 
-instance (Eq a, Monoid a) => Eq (ParserF (Const a) out) where
+instance Eq a => Eq (ParserF (Const a) out) where
   Cat a1 b1 == Cat a2 b2 = a1 == a2 && b1 == b2
   Alt a1 b1 == Alt a2 b2 = a1 == a2 && b1 == b2
   Rep p1 == Rep p2 = p1 == p2
