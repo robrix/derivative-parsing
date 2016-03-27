@@ -2,6 +2,7 @@
 module Data.Higher.Graph where
 
 import Control.Applicative
+import Data.Function
 import Data.Higher.Functor
 
 data HRec h v a
@@ -20,3 +21,6 @@ hgfold var bind recur = trans . hup
 
 fold :: HFunctor h => (forall b. h (Const a) b -> Const a b) -> a -> HGraph h a -> a
 fold alg k = getConst . hgfold id (\ g -> head (g (repeat (Const k)))) alg
+
+cfold :: HFunctor h => (forall b. h (Const a) b -> Const a b) -> HGraph h a -> a
+cfold alg = getConst . hgfold id (\ g -> head . fix $ g) alg
