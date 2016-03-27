@@ -25,6 +25,9 @@ fold alg k = getConst . hgfold id (\ g -> head (g (repeat (Const k)))) alg
 cfold :: HFunctor h => (forall b. h (Const a) b -> Const a b) -> HGraph h a -> a
 cfold alg = getConst . hgfold id (\ g -> head . fix $ g) alg
 
+sfold :: (HFunctor h, Eq a) => (forall b. h (Const a) b -> Const a b) -> a -> HGraph h a -> a
+sfold alg k = getConst . hgfold id (\ g -> head . fixVal (repeat (Const k)) $ g) alg
+
 fixVal :: Eq a => a -> (a -> a) -> a
 fixVal v f = if v == v' then v else fixVal v' f
   where v' = f v
