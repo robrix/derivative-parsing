@@ -150,6 +150,9 @@ size = getSum . getConst . hcata (memoFrom (Const (Sum 0)) size) . unParser
   where size :: ParserF (Const (Sum Int)) a -> Const (Sum Int) a
         size = Const . mappend (Sum 1) . hfoldMap getConst
 
+size2 :: Parser2 a -> Int
+size2 = getSum . sfold (Const . mappend (Sum 1) . hfoldMap getConst) (Sum 0) . unParser2
+
 
 -- Instances
 
