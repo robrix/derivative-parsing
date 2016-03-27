@@ -185,6 +185,12 @@ instance Functor (ParserF (HFix ParserF)) where
 instance Functor (HFix ParserF) where
   fmap = (F .) . Map
 
+instance Functor (ParserF (HRec ParserF v)) where
+  fmap = (. In) . Map
+
+instance Functor (HRec ParserF v) where
+  fmap = (In .) . Map
+
 instance Applicative (HFix ParserF) where
   pure = F . Ret . pure
   (<*>) = (fmap (uncurry ($)) .) . (F .) . Cat
