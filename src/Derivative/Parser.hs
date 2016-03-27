@@ -229,7 +229,3 @@ instance (Eq a, Monoid a) => Eq (ParserF (Const a) out) where
   Eps == Eps = True
   Lab _ s1 == Lab _ s2 = s1 == s2
   _ == _ = False
-
-instance Monoid a => Monad (Const a) where
-  return = pure
-  Const a >>= _ = Const a
