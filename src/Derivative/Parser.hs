@@ -25,6 +25,7 @@ import Control.Applicative
 import Data.Higher.Fix
 import Data.Higher.Foldable
 import Data.Higher.Functor
+import Data.Higher.Graph
 import Data.Maybe
 import Data.Memo
 import qualified Data.Monoid as Monoid
@@ -96,6 +97,8 @@ data ParserF f a where
 
 newtype Parser a = Parser { unParser :: HFix ParserF a }
   deriving (Alternative, Applicative, Functor, Monad)
+
+newtype Parser2 a = Parser2 { unParser2 :: HGraph ParserF a }
 
 
 -- Algorithm
