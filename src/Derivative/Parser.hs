@@ -205,6 +205,20 @@ instance Monad (HFix ParserF) where
   return = pure
   (>>=) = (F .) . Bnd
 
+instance Applicative (HRec ParserF v) where
+  pure = In . Ret . pure
+  (<*>) = (fmap (uncurry ($)) .) . (In .) . Cat
+
+instance Alternative (HRec ParserF v) where
+  empty = In Nul
+  (<|>) = (In .) . Alt
+  some v = (:) <$> v <*> many v
+  many = In . Rep
+
+instance Monad (HRec ParserF v) where
+  return = pure
+  (>>=) = (In .) . Bnd
+
 instance Show (Parser a) where
   showsPrec n = showsPrec n . unParser
 
