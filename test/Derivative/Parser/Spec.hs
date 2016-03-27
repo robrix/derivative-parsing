@@ -197,7 +197,7 @@ abs :: Parser Lam
 abs = Abs <$> (literal "\\" *> optional ws *> varName <* optional ws) <*> (lit '.' *> optional ws *> lam) `label` "abs"
 
 app :: Parser Lam
-app = App' <$> lam <*> (ws *> lam) `label` "app"
+app = App <$> lam <*> (ws *> lam) `label` "app"
 
 lam :: Parser Lam
 lam = abs <|> var <|> app `label` "lambda"
@@ -205,7 +205,7 @@ lam = abs <|> var <|> app `label` "lambda"
 
 -- Types
 
-data Lam = Var String | Abs String Lam | App' Lam Lam
+data Lam = Var String | Abs String Lam | App Lam Lam
   deriving (Eq, Show)
 
 
