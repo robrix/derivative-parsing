@@ -1,6 +1,7 @@
 {-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
 module Data.Higher.Graph where
 
+import Control.Applicative
 import Data.Higher.Functor
 
 data HRec h v a
@@ -16,3 +17,6 @@ hgfold var bind recur = trans . hup
         trans (Var x) = var x
         trans (Mu g) = bind (map (recur . hfmap trans) . g)
         trans (In fa) = recur (hfmap trans fa)
+
+fold :: HFunctor h => (forall b. h (Const a) b -> Const a b) -> a -> HGraph h a -> a
+fold alg k = getConst . hgfold id (\ g -> head (g (repeat (Const k)))) alg
