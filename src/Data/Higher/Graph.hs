@@ -6,5 +6,5 @@ data HRec h v a
   | Mu (forall a. [v a] -> [h (HRec h v) a])
   | In (h (HRec h v) a)
 
-newtype HGraph h a = Down { up :: forall v. HRec h v a }
+newtype HGraph h a = HDown { hup :: forall v. HRec h v a }
 
