@@ -222,6 +222,7 @@ instance (Eq a, Monoid a) => Eq (ParserF (Const a) out) where
   Rep p1 == Rep p2 = p1 == p2
   Map f1 p1 == Map f2 p2 = getConst (f1 <$> p1) == getConst (f2 <$> p2)
   Bnd p1 f1 == Bnd p2 f2 = getConst (p1 >>= f1) == getConst (p2 >>= f2)
+    where Const a >>= _ = Const a
   Lit c1 == Lit c2 = c1 == c2
   Ret a == Ret b = length a == length b
   Nul == Nul = True
