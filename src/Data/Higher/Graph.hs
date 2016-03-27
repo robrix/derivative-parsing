@@ -19,13 +19,13 @@ hgfold var bind recur = trans . hup
         trans (Mu g) = bind (map (recur . hfmap trans) . g)
         trans (In fa) = recur (hfmap trans fa)
 
-fold :: HFunctor h => (forall b. h (Const a) b -> Const a b) -> a -> HGraph h a -> a
+fold :: HFunctor h => (forall b. h (Const a) b -> Const a b) -> a -> HGraph h b -> a
 fold alg k = getConst . hgfold id (\ g -> head (g (repeat (Const k)))) alg
 
-cfold :: HFunctor h => (forall b. h (Const a) b -> Const a b) -> HGraph h a -> a
+cfold :: HFunctor h => (forall b. h (Const a) b -> Const a b) -> HGraph h b -> a
 cfold alg = getConst . hgfold id (\ g -> head . fix $ g) alg
 
-sfold :: (HFunctor h, Eq a) => (forall b. h (Const a) b -> Const a b) -> a -> HGraph h a -> a
+sfold :: (HFunctor h, Eq a) => (forall b. h (Const a) b -> Const a b) -> a -> HGraph h b -> a
 sfold alg k = getConst . hgfold id (\ g -> head . fixVal (repeat (Const k)) $ g) alg
 
 fixVal :: Eq a => a -> (a -> a) -> a
