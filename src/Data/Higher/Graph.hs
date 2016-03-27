@@ -7,12 +7,12 @@ import Data.Higher.Functor
 
 data HRec h v a
   = Var v
-  | Mu (forall a. [v] -> [h (HRec h v) a])
+  | Mu ([v] -> [h (HRec h v) a])
   | In (h (HRec h v) a)
 
 newtype HGraph h a = HDown { hup :: forall v. HRec h v a }
 
-hgfold :: forall h v c. HFunctor h => (forall a. v -> c a) -> (forall a. (forall a. [v] -> [c a]) -> c a) -> (forall a. h c a -> c a) -> forall a. HGraph h a -> c a
+hgfold :: forall h v c. HFunctor h => (forall a. v -> c a) -> (forall a. ([v] -> [c a]) -> c a) -> (forall a. h c a -> c a) -> forall a. HGraph h a -> c a
 hgfold var bind recur = trans . hup
   where trans :: HRec h v a -> c a
         trans (Var x) = var x
