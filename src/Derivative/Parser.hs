@@ -120,7 +120,7 @@ parseNull = parseNull' . unParser
 parseNull' :: HFix ParserF a -> [a]
 parseNull' = memoStableFrom [] $ \ (F parser) -> case parser of
   Cat a b -> (,) <$> parseNull' a <*> parseNull' b
-  Alt a b -> (parseNull' a) <> (parseNull' b)
+  Alt a b -> parseNull' a <> parseNull' b
   Rep _ -> [[]]
   Map f p -> f <$> parseNull' p
   Bnd p f -> (f <$> parseNull' p) >>= parseNull'
