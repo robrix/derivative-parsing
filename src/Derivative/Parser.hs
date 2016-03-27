@@ -143,7 +143,7 @@ compact = Parser . go . out . unParser
           a -> F a
 
 size :: Parser a -> Int
-size (Parser parser) = getSum $ getConst $ hcata (memoFrom (Const (Sum 0)) size) parser
+size = getSum . getConst . hcata (memoFrom (Const (Sum 0)) size) . unParser
   where size :: ParserF (Const (Sum Int)) a -> Const (Sum Int) a
         size = Const . mappend (Sum 1) . hfoldMap getConst
 
