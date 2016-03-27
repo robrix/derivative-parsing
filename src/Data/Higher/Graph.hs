@@ -19,6 +19,13 @@ hgfold var bind recur = trans . hup
         trans (Mu g) = bind (map (recur . hfmap trans) . g)
         trans (In fa) = recur (hfmap trans fa)
 
+gfold :: forall h v c. HFunctor h => (v -> c) -> (([v] -> [c]) -> c) -> (forall a. h (Const c) a -> c) -> forall a. HGraph h a -> c
+gfold var bind recur = getConst . trans . hup
+  where trans :: HRec h v a -> Const c a
+        trans (Var x) = Const $ var x
+        trans (Mu g) = Const $ bind (map (recur . hfmap trans) . g)
+        trans (In fa) = Const $ recur (hfmap trans fa)
+
 fold :: HFunctor h => (forall b. h (Const a) b -> Const a b) -> a -> HGraph h b -> a
 fold alg k = getConst . hgfold Const (\ g -> head (g (repeat k))) alg
 
