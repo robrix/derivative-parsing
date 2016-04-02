@@ -79,29 +79,28 @@ sep s p = s `sep1` p <|> pure []
 oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
 oneOf = getAlt . foldMap Monoid.Alt
 
+cat2 :: Combinator a -> Combinator b -> Combinator (a, b)
+a `cat2` b = Cat (In a) (In b)
 
-cat2 :: Parser2 a -> Parser2 b -> Parser2 (a, b)
-a `cat2` b = HDown (In (Cat (hup a) (hup b)))
+lit2 :: Char -> Combinator Char
+lit2 = Lit
 
-lit2 :: Char -> Parser2 Char
-lit2 c = HDown (In (Lit c))
+ret2 :: [a] -> Combinator a
+ret2 = Ret
 
-ret2 :: [a] -> Parser2 a
-ret2 as = HDown (In (Ret as))
+nul2 :: Combinator a
+nul2 = Nul
 
-nul2 :: Parser2 a
-nul2 = HDown (In Nul)
-
-eps2 :: Parser2 a
-eps2 = HDown (In Eps)
+eps2 :: Combinator a
+eps2 = Eps
 
 infixr 2 `label2`
 
-label2 :: Parser2 a -> String -> Parser2 a
-p `label2` s = HDown (In (Lab (hup p) s))
+label2 :: Combinator a -> String -> Combinator a
+label2 p = Lab (In p)
 
-literal2 :: String -> Parser2 String
-literal2 string = sequenceA ((\ c -> HDown (In $ Lit c)) <$> string)
+literal2 :: String -> Combinator String
+literal2 string = sequenceA (Lit <$> string)
 
 
 -- Types
