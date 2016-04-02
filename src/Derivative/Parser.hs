@@ -95,6 +95,8 @@ nul2 = HDown (In Nul)
 eps2 :: Parser2 a
 eps2 = HDown (In Eps)
 
+infixr 2 `label2`
+
 label2 :: Parser2 a -> String -> Parser2 a
 p `label2` s = HDown (In (Lab (hup p) s))
 
