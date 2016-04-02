@@ -8,3 +8,6 @@ class HEq f where
 
 instance Eq a => HEq (Const a)
   where heq = (==) `on` getConst
+
+instance HEq []
+  where a `heq` b = length a == length b
