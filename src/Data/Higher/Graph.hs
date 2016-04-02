@@ -25,6 +25,9 @@ gfold var bind recur = getConst . trans . hup
 fold :: HFunctor h => (forall b. h (Const a) b -> a) -> a -> HGraph h b -> a
 fold alg k = gfold id (\ g -> head (g (repeat k))) alg
 
+hcfold :: HFunctor h => (h t ~> t) -> HGraph h ~> t
+hcfold = hgfold id (head . fix)
+
 cfold :: HFunctor h => (forall b. h (Const a) b -> a) -> HGraph h b -> a
 cfold = gfold id (head . fix)
 
