@@ -230,7 +230,7 @@ instance Functor (HGraph ParserF) where
   fmap f (HDown r) = HDown (fmap f r)
 
 instance Functor Parser2 where
-  fmap f (Parser2 g) = Parser2 (HDown (fmap f (hup g)))
+  fmap f (Parser2 g) = Parser2 (fmap f g)
 
 instance Applicative (HFix ParserF) where
   pure = F . Ret . pure
