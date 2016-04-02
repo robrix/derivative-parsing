@@ -27,7 +27,7 @@ cfold :: HFunctor h => (forall b. h (Const a) b -> a) -> HGraph h b -> a
 cfold = gfold id (head . fix)
 
 sfold :: (HFunctor h, Eq a) => (forall b. h (Const a) b -> a) -> a -> HGraph h b -> a
-sfold alg k = gfold id (\ g -> head . fixVal (repeat k) $ g) alg
+sfold alg k = gfold id (head . fixVal (repeat k)) alg
 
 fixVal :: Eq a => a -> (a -> a) -> a
 fixVal v f = if v == v' then v else fixVal v' f
