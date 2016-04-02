@@ -81,25 +81,25 @@ oneOf = getAlt . foldMap Monoid.Alt
 
 
 cat2 :: Parser2 a -> Parser2 b -> Parser2 (a, b)
-Parser2 a `cat2` Parser2 b = Parser2 (HDown (In (Cat (hup a) (hup b))))
+a `cat2` b = HDown (In (Cat (hup a) (hup b)))
 
 lit2 :: Char -> Parser2 Char
-lit2 c = Parser2 (HDown (In (Lit c)))
+lit2 c = HDown (In (Lit c))
 
 ret2 :: [a] -> Parser2 a
-ret2 as = Parser2 (HDown (In (Ret as)))
+ret2 as = HDown (In (Ret as))
 
 nul2 :: Parser2 a
-nul2 = Parser2 (HDown (In Nul))
+nul2 = HDown (In Nul)
 
 eps2 :: Parser2 a
-eps2 = Parser2 (HDown (In Eps))
+eps2 = HDown (In Eps)
 
 label2 :: Parser2 a -> String -> Parser2 a
-Parser2 p `label2` s = Parser2 (HDown (In (Lab (hup p) s)))
+p `label2` s = HDown (In (Lab (hup p) s))
 
 literal2 :: String -> Parser2 String
-literal2 string = sequenceA ((\ c -> Parser2 (HDown (In $ Lit c))) <$> string)
+literal2 string = sequenceA ((\ c -> HDown (In $ Lit c)) <$> string)
 
 
 -- Types
@@ -120,7 +120,7 @@ data ParserF f a where
 newtype Parser a = Parser { unParser :: HFix ParserF a }
   deriving (Alternative, Applicative, Functor, Monad)
 
-newtype Parser2 a = Parser2 { unParser2 :: HGraph ParserF a }
+type Parser2 a = HGraph ParserF a
 
 
 -- Algorithm
@@ -153,11 +153,8 @@ parseNull' = memoStableFrom [] $ \ (F parser) -> case parser of
   Lab p _ -> parseNull' p
   _ -> []
 
-parseNull2 :: Eq a => Parser2 a -> [a]
-parseNull2 = parseNull2' . unParser2
-
-parseNull2' :: Eq a => HGraph ParserF a -> [a]
-parseNull2' = hsfold go []
+parseNull2 :: Eq a => HGraph ParserF a -> [a]
+parseNull2 = hsfold go []
   where go :: ParserF [] a -> [a]
         go parser = case parser of
           Cat a b -> (,) <$> a <*> b
@@ -189,7 +186,7 @@ size = getSum . getConst . hcata (memoFrom (Const (Sum 0)) size) . unParser
         size = Const . mappend (Sum 1) . hfoldMap getConst
 
 size2 :: Parser2 a -> Int
-size2 = getSum . sfold (mappend (Sum 1) . hfoldMap getConst) (Sum 0) . unParser2
+size2 = getSum . sfold (mappend (Sum 1) . hfoldMap getConst) (Sum 0)
 
 
 -- Instances
@@ -232,9 +229,6 @@ instance Functor (HRec ParserF v) where
 instance Functor (HGraph ParserF) where
   fmap f (HDown r) = HDown (fmap f r)
 
-instance Functor Parser2 where
-  fmap f (Parser2 g) = Parser2 (fmap f g)
-
 instance Applicative (HFix ParserF) where
   pure = F . Ret . pure
   (<*>) = (fmap (uncurry ($)) .) . (F .) . Cat
@@ -256,10 +250,6 @@ instance Applicative (HRec ParserF v) where
 instance Applicative (HGraph ParserF) where
   pure a = HDown (pure a)
   HDown fs <*> HDown as = HDown $ fs <*> as
-
-instance Applicative Parser2 where
-  pure a = Parser2 (HDown (pure a))
-  Parser2 fs <*> Parser2 as = Parser2 (fs <*> as)
 
 instance Alternative (HRec ParserF v) where
   empty = In Nul
