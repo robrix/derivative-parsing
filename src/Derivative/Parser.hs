@@ -98,6 +98,9 @@ eps2 = Parser2 (HDown (In Eps))
 label2 :: Parser2 a -> String -> Parser2 a
 Parser2 p `label2` s = Parser2 (HDown (In (Lab (hup p) s)))
 
+literal2 :: String -> Parser2 String
+literal2 string = sequenceA ((\ c -> Parser2 (HDown (In $ Lit c))) <$> string)
+
 
 -- Types
 
