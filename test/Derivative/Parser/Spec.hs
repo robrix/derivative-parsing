@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Derivative.Parser.Spec where
 
 import Control.Applicative
