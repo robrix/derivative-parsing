@@ -39,3 +39,8 @@ transform f x = Down (hmap (up x))
 
 gmap :: (Bifunctor f, Functor (f a), Functor (f b)) => (a -> b) -> Graph (f a) -> Graph (f b)
 gmap f = transform (bimap f id)
+
+pjoin :: Functor f => Rec f (Rec f a) -> Rec f a
+pjoin (Var v) = v
+pjoin (Mu g) = Mu (map (fmap pjoin) . g . map Var)
+pjoin (In r) = In (fmap pjoin r)
