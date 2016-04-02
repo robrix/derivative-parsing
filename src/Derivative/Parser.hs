@@ -86,6 +86,9 @@ lit2 c = Parser2 (HDown (In (Lit c)))
 ret2 :: [a] -> Parser2 a
 ret2 as = Parser2 (HDown (In (Ret as)))
 
+nul2 :: Parser2 a
+nul2 = Parser2 (HDown (In Nul))
+
 
 -- Types
 
