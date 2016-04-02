@@ -131,6 +131,22 @@ parseNull' = memoStableFrom [] $ \ (F parser) -> case parser of
   Lab p _ -> parseNull' p
   _ -> []
 
+parseNull2 :: Eq a => Parser2 a -> [a]
+parseNull2 = parseNull2' . unParser2
+
+parseNull2' :: Eq a => HGraph ParserF a -> [a]
+parseNull2' = hsfold go []
+  where go :: ParserF [] a -> [a]
+        go parser = case parser of
+          Cat a b -> (,) <$> a <*> b
+          Alt a b -> a <> b
+          Rep _ -> [[]]
+          Map f p -> f <$> p
+          Bnd p f -> p >>= f
+          Ret as -> as
+          Lab p _ -> p
+          _ -> []
+
 compact :: Parser a -> Parser a
 compact = Parser . go . out . unParser
   where go parser = case parser of
