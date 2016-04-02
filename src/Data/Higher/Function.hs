@@ -1,7 +1,9 @@
-{-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
+{-# LANGUAGE RankNTypes, ScopedTypeVariables, TypeOperators #-}
 module Data.Higher.Function where
 
-hfix :: forall f g a. (forall a. (forall a. f a -> g a) -> f a -> g a) -> f a -> g a
+import Data.Higher.Transformation
+
+hfix :: forall f g. ((f ~> g) -> f ~> g) -> f ~> g
 hfix f = x
-  where x :: forall a. f a -> g a
+  where x :: f ~> g
         x = f x
