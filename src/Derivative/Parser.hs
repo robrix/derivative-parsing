@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleInstances, GADTs, GeneralizedNewtypeDeriving, RankNTypes #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -123,6 +123,7 @@ newtype Parser a = Parser { unParser :: HFix ParserF a }
   deriving (Alternative, Applicative, Functor, Monad)
 
 type Parser2 a = HGraph ParserF a
+type Combinator a = (forall v. ParserF (HRec ParserF v) a)
 
 
 -- Algorithm
