@@ -28,6 +28,9 @@ fold alg k = gfold id (\ g -> head (g (repeat k))) alg
 cfold :: HFunctor h => (forall b. h (Const a) b -> a) -> HGraph h b -> a
 cfold = gfold id (head . fix)
 
+hsfold :: (HFunctor f, HEq c) => (f c ~> c) -> (forall a. c a) -> HGraph f a -> c a
+hsfold alg k = hgfold id (head . fhfixVal (repeat k)) alg
+
 sfold :: (HFunctor h, Eq a) => (forall b. h (Const a) b -> a) -> a -> HGraph h b -> a
 sfold alg k = gfold id (head . fixVal (repeat k)) alg
 
