@@ -11,6 +11,7 @@ module Data.Graph
 , pjoin
 , unrollGraph
 , geq
+, showGraph
 ) where
 
 import Data.Bifunctor
