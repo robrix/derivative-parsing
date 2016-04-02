@@ -1,7 +1,8 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, TypeOperators #-}
 module Data.Graph where
 
 import Data.Function
+import Data.Higher.Transformation
 
 data Rec f v
   = Var v
@@ -28,3 +29,9 @@ sfold alg k = gfold id (\ g -> head . fixVal (repeat k) $ g) alg
 fixVal :: Eq a => a -> (a -> a) -> a
 fixVal v f = if v == v' then v else fixVal v' f
   where v' = f v
+
+transform :: (Functor f, Functor g) => (f ~> g) -> Graph f -> Graph g
+transform f x = Down (hmap (up x))
+  where hmap (Var x) = Var x
+        hmap (Mu g) = Mu (map (f . fmap hmap) . g)
+        hmap (In x) = In (f (fmap hmap x))
