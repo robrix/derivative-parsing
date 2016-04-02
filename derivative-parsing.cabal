@@ -20,6 +20,7 @@ library
                      , Data.Higher.Function
                      , Data.Higher.Functor
                      , Data.Higher.Graph
+                     , Data.Higher.Transformation
                      , Data.Memo
                      , Derivative.Parser
   build-depends:       base >= 4.7 && < 5
