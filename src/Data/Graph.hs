@@ -44,3 +44,11 @@ pjoin :: Functor f => Rec f (Rec f a) -> Rec f a
 pjoin (Var v) = v
 pjoin (Mu g) = Mu (map (fmap pjoin) . g . map Var)
 pjoin (In r) = In (fmap pjoin r)
+
+unrollGraph :: Functor f => Graph f -> Graph f
+unrollGraph g = Down (pjoin (unroll (up g)))
+
+unroll :: Functor f => Rec f (Rec f a) -> Rec f (Rec f a)
+unroll (Var v) = Var v
+unroll (Mu g) = In (head (g (repeat (pjoin (Mu g)))))
+unroll (In r) = In (fmap unroll r)
