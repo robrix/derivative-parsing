@@ -1,9 +1,10 @@
-{-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
+{-# LANGUAGE RankNTypes, ScopedTypeVariables, TypeOperators #-}
 module Data.Higher.Graph where
 
 import Control.Applicative
 import Data.Function
 import Data.Higher.Functor
+import Data.Higher.Transformation
 
 data HRec h v a
   = Var v
@@ -32,7 +33,7 @@ fixVal :: Eq a => a -> (a -> a) -> a
 fixVal v f = if v == v' then v else fixVal v' f
   where v' = f v
 
-hgfold :: forall h v c. HFunctor h => (forall a. v -> c a) -> (forall a. ([v] -> [c a]) -> c a) -> (forall a. h c a -> c a) -> forall a. HGraph h a -> c a
+hgfold :: forall h v c. HFunctor h => (forall a. v -> c a) -> (forall a. ([v] -> [c a]) -> c a) -> (h c ~> c) -> HGraph h ~> c
 hgfold var bind recur = trans . hup
   where trans :: HRec h v a -> c a
         trans (Var x) = var x
