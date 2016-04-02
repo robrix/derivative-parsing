@@ -1,6 +1,7 @@
-{-# LANGUAGE RankNTypes, TypeOperators #-}
+{-# LANGUAGE FlexibleContexts, RankNTypes, TypeOperators #-}
 module Data.Graph where
 
+import Data.Bifunctor
 import Data.Function
 import Data.Higher.Transformation
 
@@ -35,3 +36,6 @@ transform f x = Down (hmap (up x))
   where hmap (Var x) = Var x
         hmap (Mu g) = Mu (map (f . fmap hmap) . g)
         hmap (In x) = In (f (fmap hmap x))
+
+gmap :: (Bifunctor f, Functor (f a), Functor (f b)) => (a -> b) -> Graph (f a) -> Graph (f b)
+gmap f = transform (bimap f id)
