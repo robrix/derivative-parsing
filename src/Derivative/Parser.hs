@@ -83,6 +83,9 @@ oneOf = getAlt . foldMap Monoid.Alt
 lit2 :: Char -> Parser2 Char
 lit2 c = Parser2 (HDown (In (Lit c)))
 
+ret2 :: [a] -> Parser2 a
+ret2 as = Parser2 (HDown (In (Ret as)))
+
 
 -- Types
 
