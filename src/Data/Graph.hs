@@ -16,6 +16,7 @@ module Data.Graph
 import Data.Bifunctor
 import Data.Function
 import Data.Functor.Eq
+import Data.Functor.Show
 import Data.Higher.Transformation
 
 data Rec f v
@@ -76,3 +77,15 @@ eqRec n (Mu g) (Mu h) = let a = g (iterate succ n)
                             and $ zipWith (eqF (eqRec (n + length a))) a b
 eqRec n (In a) (In b) = eqF (eqRec n) a b
 eqRec _ _ _ = False
+
+showGraph :: ShowF f => Graph f -> String
+showGraph g = showRec (iterate succ 'a') (up g)
+
+showRec :: ShowF f => String -> Rec f Char -> String
+showRec _ (Var v) = [v]
+showRec s (Mu f) = let r = f s
+                       (fr, s') = splitAt (length r) s in
+                       "Mu (\n)" ++ concat
+                         ["  " ++ [a] ++ " => " ++ v ++ "\n"
+                         | (a, v) <- zip fr (map (showF (showRec s')) r)] ++ "\n"
+showRec s (In fa) = showF (showRec s) fa
