@@ -254,6 +254,10 @@ instance Applicative (HGraph ParserF) where
   pure a = HDown (pure a)
   HDown fs <*> HDown as = HDown $ fs <*> as
 
+instance Applicative Parser2 where
+  pure a = Parser2 (HDown (pure a))
+  Parser2 fs <*> Parser2 as = Parser2 (fs <*> as)
+
 instance Alternative (HRec ParserF v) where
   empty = In Nul
   (<|>) = (In .) . Alt
