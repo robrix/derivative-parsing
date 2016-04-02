@@ -80,6 +80,9 @@ oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
 oneOf = getAlt . foldMap Monoid.Alt
 
 
+cat2 :: Parser2 a -> Parser2 b -> Parser2 (a, b)
+Parser2 a `cat2` Parser2 b = Parser2 (HDown (In (Cat (hup a) (hup b))))
+
 lit2 :: Char -> Parser2 Char
 lit2 c = Parser2 (HDown (In (Lit c)))
 
