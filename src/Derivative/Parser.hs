@@ -89,6 +89,9 @@ ret2 as = Parser2 (HDown (In (Ret as)))
 nul2 :: Parser2 a
 nul2 = Parser2 (HDown (In Nul))
 
+eps2 :: Parser2 a
+eps2 = Parser2 (HDown (In Eps))
+
 
 -- Types
 
