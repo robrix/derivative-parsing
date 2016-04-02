@@ -7,15 +7,15 @@ import Data.Higher.Functor
 import Data.Higher.Transformation
 
 data HRec h v a
-  = Var v
-  | Mu ([v] -> [h (HRec h v) a])
+  = Var (v a)
+  | Mu ([v a] -> [h (HRec h v) a])
   | In (h (HRec h v) a)
 
 newtype HGraph h a = HDown { hup :: forall v. HRec h v a }
 
-gfold :: forall h v c. HFunctor h => (v -> c) -> (([v] -> [c]) -> c) -> (forall a. h (Const c) a -> c) -> forall a. HGraph h a -> c
+gfold :: forall h v c a. HFunctor h => (forall a. v a -> c) -> (forall a. ([v a] -> [c]) -> c) -> (forall a. h (Const c) a -> c) -> HGraph h a -> c
 gfold var bind recur = getConst . trans . hup
-  where trans :: HRec h v a -> Const c a
+  where trans :: HRec h v ~> Const c
         trans (Var x) = Const $ var x
         trans (Mu g) = Const $ bind (map (recur . hfmap trans) . g)
         trans (In fa) = Const $ recur (hfmap trans fa)
@@ -33,9 +33,9 @@ fixVal :: Eq a => a -> (a -> a) -> a
 fixVal v f = if v == v' then v else fixVal v' f
   where v' = f v
 
-hgfold :: forall h v c. HFunctor h => (forall a. v -> c a) -> (forall a. ([v] -> [c a]) -> c a) -> (h c ~> c) -> HGraph h ~> c
+hgfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> HGraph f ~> c
 hgfold var bind recur = trans . hup
-  where trans :: HRec h v a -> c a
+  where trans :: forall a. HRec f v a -> c a
         trans (Var x) = var x
         trans (Mu g) = bind (map (recur . hfmap trans) . g)
         trans (In fa) = recur (hfmap trans fa)
