@@ -26,7 +26,7 @@ hfold :: HFunctor h => (h c ~> c) -> (forall a. c a) -> HGraph h a -> c a
 hfold alg k = hgfold id (\ g -> head (g (repeat k))) alg
 
 fold :: HFunctor h => (forall b. h (Const a) b -> a) -> a -> HGraph h b -> a
-fold alg k = gfold id (\ g -> head (g (repeat k))) alg
+fold alg k = getConst . hfold (Const . alg) (Const k)
 
 hcfold :: HFunctor h => (h t ~> t) -> HGraph h ~> t
 hcfold = hgfold id (head . fix)
