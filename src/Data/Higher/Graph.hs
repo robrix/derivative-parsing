@@ -3,6 +3,8 @@ module Data.Higher.Graph where
 
 import Control.Applicative
 import Data.Function
+import Data.Functor.Eq
+import Data.Higher.Eq
 import Data.Higher.Functor
 import Data.Higher.Transformation
 
@@ -29,9 +31,10 @@ cfold = gfold id (head . fix)
 sfold :: (HFunctor h, Eq a) => (forall b. h (Const a) b -> a) -> a -> HGraph h b -> a
 sfold alg k = gfold id (head . fixVal (repeat k)) alg
 
-fixVal :: Eq a => a -> (a -> a) -> a
-fixVal v f = if v == v' then v else fixVal v' f
+fhfixVal :: (EqF f, HEq h) => f (h a) -> (f (h a) -> f (h a)) -> f (h a)
+fhfixVal v f = if v `eq` v' then v else fhfixVal v' f
   where v' = f v
+        eq = eqF heq
 
 hgfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> HGraph f ~> c
 hgfold var bind recur = trans . hup
