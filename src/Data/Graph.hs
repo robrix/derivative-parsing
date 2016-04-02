@@ -1,5 +1,17 @@
 {-# LANGUAGE FlexibleContexts, RankNTypes, TypeOperators #-}
-module Data.Graph where
+module Data.Graph
+( Graph(..)
+, Rec(..)
+, gfold
+, fold
+, cfold
+, sfold
+, transform
+, gmap
+, pjoin
+, unrollGraph
+, geq
+) where
 
 import Data.Bifunctor
 import Data.Function
