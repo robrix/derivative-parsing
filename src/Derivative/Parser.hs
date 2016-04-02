@@ -80,6 +80,10 @@ oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
 oneOf = getAlt . foldMap Monoid.Alt
 
 
+lit2 :: Char -> Parser2 Char
+lit2 c = Parser2 (HDown (In (Lit c)))
+
+
 -- Types
 
 -- | A parser type encoding concatenation, alternation, repetition, &c. as first-order constructors.
