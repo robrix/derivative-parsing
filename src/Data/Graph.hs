@@ -3,6 +3,7 @@ module Data.Graph where
 
 import Data.Bifunctor
 import Data.Function
+import Data.Functor.Eq
 import Data.Higher.Transformation
 
 data Rec f v
@@ -52,3 +53,14 @@ unroll :: Functor f => Rec f (Rec f a) -> Rec f (Rec f a)
 unroll (Var v) = Var v
 unroll (Mu g) = In (head (g (repeat (pjoin (Mu g)))))
 unroll (In r) = In (fmap unroll r)
+
+geq :: EqF f => Graph f -> Graph f -> Bool
+geq a b = eqRec 0 (up a) (up b)
+
+eqRec :: EqF f => Int -> Rec f Int -> Rec f Int -> Bool
+eqRec _ (Var a) (Var b) = a == b
+eqRec n (Mu g) (Mu h) = let a = g (iterate succ n)
+                            b = h (iterate succ n) in
+                            and $ zipWith (eqF (eqRec (n + length a))) a b
+eqRec n (In a) (In b) = eqF (eqRec n) a b
+eqRec _ _ _ = False
