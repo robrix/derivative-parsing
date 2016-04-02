@@ -226,6 +226,9 @@ instance Functor (ParserF (HRec ParserF v)) where
 instance Functor (HRec ParserF v) where
   fmap = (In .) . Map
 
+instance Functor (HGraph ParserF) where
+  fmap f (HDown r) = HDown (fmap f r)
+
 instance Functor Parser2 where
   fmap f (Parser2 g) = Parser2 (HDown (fmap f (hup g)))
 
