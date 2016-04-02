@@ -245,6 +245,10 @@ instance Monad (HFix ParserF) where
   return = pure
   (>>=) = (F .) . Bnd
 
+instance Applicative (ParserF (HRec ParserF v)) where
+  pure = Ret . pure
+  fs <*> as = uncurry ($) <$> (In fs `Cat` In as)
+
 instance Applicative (HRec ParserF v) where
   pure = In . Ret . pure
   (<*>) = (fmap (uncurry ($)) .) . (In .) . Cat
