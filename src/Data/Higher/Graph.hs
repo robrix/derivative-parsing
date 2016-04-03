@@ -10,6 +10,7 @@ module Data.Higher.Graph
 , sfold
 , transform
 , hgmap
+, geq
 ) where
 
 import Control.Applicative
