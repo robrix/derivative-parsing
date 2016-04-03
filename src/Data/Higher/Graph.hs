@@ -1,5 +1,14 @@
 {-# LANGUAGE RankNTypes, ScopedTypeVariables, TypeOperators #-}
-module Data.Higher.Graph where
+module Data.Higher.Graph
+( HRec(..)
+, HGraph(..)
+, hfold
+, fold
+, hcfold
+, cfold
+, hsfold
+, sfold
+) where
 
 import Control.Applicative
 import Data.Function
