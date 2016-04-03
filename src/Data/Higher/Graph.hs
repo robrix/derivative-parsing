@@ -61,9 +61,8 @@ sfold :: (HFunctor h, Eq a) => (forall b. h (Const a) b -> a) -> a -> HGraph h b
 sfold alg k = getConst . hsfold (Const . alg) (Const k)
 
 fhfixVal :: (EqF f, HEq h) => f (h a) -> (f (h a) -> f (h a)) -> f (h a)
-fhfixVal v f = if v `eq` v' then v else fhfixVal v' f
+fhfixVal v f = if eqF heq v v' then v else fhfixVal v' f
   where v' = f v
-        eq = eqF heq
 
 
 -- Maps
