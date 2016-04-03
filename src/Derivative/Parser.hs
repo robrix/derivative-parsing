@@ -25,6 +25,7 @@ import Control.Applicative
 import Data.Higher.Fix
 import Data.Higher.Foldable
 import Data.Higher.Functor
+import Data.Higher.Functor.Eq
 import Data.Higher.Graph
 import Data.Maybe
 import Data.Memo
@@ -296,3 +297,17 @@ instance Eq a => Eq (ParserF (Const a) out) where
   Eps == Eps = True
   Lab _ s1 == Lab _ s2 = s1 == s2
   _ == _ = False
+
+instance HEqF ParserF
+  where heqF eq a b = case (a, b) of
+          (Cat a1 b1, Cat a2 b2) -> eq a1 a2 && eq b1 b2
+          (Alt a1 b1, Alt a2 b2) -> eq a1 a2 && eq b1 b2
+          (Rep p1, Rep p2) -> eq p1 p2
+          -- (Map f1 p1, Map f2 p2) -> eq p1 p2
+          -- (Bnd p1 f1, Bnd p2 f2) -> eq p1 p2
+          (Lit c1, Lit c2) -> c1 == c2
+          (Ret r1, Ret r2) -> length r1 == length r2
+          (Nul, Nul) -> True
+          (Eps, Eps) -> True
+          (Lab p1 s1, Lab p2 s2) -> s1 == s2 && eq p1 p2
+          _ -> False
