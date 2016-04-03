@@ -252,6 +252,12 @@ instance Applicative (HRec ParserF v) where
   pure = In . Ret . pure
   (<*>) = (fmap (uncurry ($)) .) . (In .) . Cat
 
+instance Alternative (ParserF (HRec ParserF v)) where
+  empty = Nul
+  a <|> b = Alt (In a) (In b)
+  some v = (:) <$> v <*> many v
+  many p = Rep (In p)
+
 instance Alternative (HRec ParserF v) where
   empty = In Nul
   (<|>) = (In .) . Alt
