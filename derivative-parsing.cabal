@@ -23,6 +23,7 @@ library
                      , Data.Higher.Function
                      , Data.Higher.Functor
                      , Data.Higher.Functor.Eq
+                     , Data.Higher.Functor.Show
                      , Data.Higher.Graph
                      , Data.Higher.Transformation
                      , Data.Memo
