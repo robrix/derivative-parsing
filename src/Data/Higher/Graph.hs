@@ -99,13 +99,13 @@ modifyConst f = Const . f . getConst
 -- Show
 
 instance HShowF f => Show (HGraph f a)
-  where show = showRec (iterate succ 'a') . hup
+  where showsPrec n = showRec n (iterate succ 'a') . hup
 
-showRec :: HShowF f => String -> HRec f (Const Char) a -> String
-showRec _ (Var c) = [getConst c]
-showRec s (Mu f) = let r = f (Const <$> s)
-                       (fr, s') = splitAt (length r) s in
-                       "Mu (\n" ++ concat
-                         [ "  " ++ [a] ++ " => " ++ v ++ "\n"
-                         | (a, v) <- zip fr (map (hshowF (showRec s')) r) ] ++ ")\n"
-showRec s (In fa) = hshowF (showRec s) fa
+showRec :: HShowF f => Int -> String -> HRec f (Const Char) a -> String -> String
+showRec n _ (Var c) = showChar (getConst c)
+showRec n s (Mu f) = let r = f (Const <$> s)
+                         (fr, s') = splitAt (length r) s in
+                         showString "Mu (\n" . foldr (.) id
+                           [ showString "  " . showChar a . showString " => " . v . showString "\n"
+                           | (a, v) <- zip fr (map (hshowsPrecF n (showRec n s')) r) ] . showString ")\n"
+showRec n s (In fa) = hshowsPrecF n (showRec n s) fa
