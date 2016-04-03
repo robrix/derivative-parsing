@@ -19,6 +19,7 @@ import Data.Higher.Bifunctor
 import Data.Higher.Eq
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
+import Data.Higher.Functor.Show
 import Data.Higher.Transformation
 
 data HRec h v a
@@ -93,3 +94,18 @@ eqRec _ _ _ = False
 
 modifyConst :: (a -> b) -> Const a ~> Const b
 modifyConst f = Const . f . getConst
+
+
+-- Show
+
+showGraph :: HShowF f => HGraph f a -> String
+showGraph g = showRec (iterate succ 'a') (hup g)
+
+showRec :: HShowF f => String -> HRec f (Const Char) a -> String
+showRec _ (Var c) = [getConst c]
+showRec s (Mu f) = let r = f (Const <$> s)
+                       (fr, s') = splitAt (length r) s in
+                       "Mu (\n" ++ concat
+                         [ "  " ++ [a] ++ " => " ++ v ++ "\n"
+                         | (a, v) <- zip fr (map (hshowF (showRec s')) r) ] ++ ")\n"
+showRec s (In fa) = hshowF (showRec s) fa
