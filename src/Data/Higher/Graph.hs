@@ -2,6 +2,8 @@
 module Data.Higher.Graph
 ( HRec(..)
 , HGraph(..)
+, hgfold
+, gfold
 , hfold
 , fold
 , hcfold
