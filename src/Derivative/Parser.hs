@@ -321,7 +321,7 @@ instance HShowF ParserF
           Map _ p -> showString "f <$> " . showsPrec n p
           Bnd p _ -> showsPrec n p . showString " >>= f"
           Lit c -> showString "lit " . shows c
-          Ret r -> showString "ret […]"
+          Ret _ -> showString "ret […]"
           Nul -> showString "nul"
           Eps -> showString "eps"
           Lab p s -> showsPrec 2 p . showString " `label` " . shows s
