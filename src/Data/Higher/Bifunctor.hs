@@ -8,3 +8,6 @@ class HBifunctor h where
 
   hfirst :: (a ~> b) -> h a c ~> h b c
   hfirst f = hbimap f id
+
+  hsecond :: (c ~> d) -> h a c ~> h a d
+  hsecond = hbimap id
