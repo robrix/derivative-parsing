@@ -152,6 +152,10 @@ spec = do
     it "terminates on labeled cyclic grammars" $
       size cyclic `shouldBe` 1
 
+  describe "size2" $ do
+    it "terminates on unlabelled acyclic grammars" $
+      size2 (HDown (In (lit2 'c'))) `shouldBe` 1
+
 
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
