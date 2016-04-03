@@ -22,6 +22,7 @@ library
                      , Data.Higher.Foldable
                      , Data.Higher.Function
                      , Data.Higher.Functor
+                     , Data.Higher.Functor.Eq
                      , Data.Higher.Graph
                      , Data.Higher.Transformation
                      , Data.Memo
