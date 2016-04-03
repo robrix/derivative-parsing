@@ -104,6 +104,9 @@ label2 p = Lab (In p)
 literal2 :: String -> Combinator String
 literal2 string = sequenceA (Lit <$> string)
 
+mu :: (forall v. v a -> ParserF (HRec ParserF v) a) -> Parser2 a
+mu f = HDown (Mu (\ ~(v:_) -> [ f v ]))
+
 
 -- Types
 
