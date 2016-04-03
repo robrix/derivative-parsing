@@ -102,7 +102,7 @@ instance HShowF f => Show (HGraph f a)
   where showsPrec n = showRec (iterate succ 'a') n . hup
 
 showRec :: HShowF f => String -> Int -> HRec f (Const Char) a -> String -> String
-showRec _ n (Var c) = showChar (getConst c)
+showRec _ _ (Var c) = showChar (getConst c)
 showRec s n (Mu f) = let r = f (Const <$> s)
                          (fr, s') = splitAt (length r) s in
                          showString "Mu (\n" . foldr (.) id
