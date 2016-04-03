@@ -139,6 +139,9 @@ spec = do
     it "terminates for cyclic grammars" $
       show cyclic `shouldBe` "cyclic `label` \"cyclic\""
 
+    it "terminates for cyclic grammars2" $
+      show cyclic2 `shouldBe` "Mu (\n  a => a `label` \"cyclic2\"\n)\n"
+
 
   describe "size" $ do
     prop "is 1 for terminals" $
