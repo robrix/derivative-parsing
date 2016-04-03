@@ -73,3 +73,6 @@ transform f x = HDown (hmap (hup x))
 
 hgmap :: (HBifunctor f, HFunctor (f a), HFunctor (f b)) => (a ~> b) -> HGraph (f a) ~> HGraph (f b)
 hgmap f = transform (hfirst f)
+
+modifyConst :: (a -> b) -> Const a ~> Const b
+modifyConst f = Const . f . getConst
