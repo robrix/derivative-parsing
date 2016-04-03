@@ -14,11 +14,25 @@ module Derivative.Parser
 , oneOf
 , parse
 , parseNull
+, ParserF(..)
 , Parser()
 , ret
 , sep
 , sep1
 , size
+, Parser2
+, lit2
+, cat2
+, eps2
+, nul2
+, literal2
+, label2
+, ret2
+, size2
+, parseNull2
+, mu
+, Data.Higher.Graph.HRec(..)
+, Data.Higher.Graph.HGraph(..)
 ) where
 
 import Control.Applicative
