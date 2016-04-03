@@ -61,10 +61,6 @@ hsfold alg k = hgfold id (head . fhfixVal (repeat k)) alg
 sfold :: (HFunctor h, Eq a) => (forall b. h (Const a) b -> a) -> a -> HGraph h b -> a
 sfold alg k = getConst . hsfold (Const . alg) (Const k)
 
-fhfixVal :: (EqF f, HEq h) => f (h a) -> (f (h a) -> f (h a)) -> f (h a)
-fhfixVal v f = if eqF heq v v' then v else fhfixVal v' f
-  where v' = f v
-
 
 -- Maps
 
@@ -97,9 +93,6 @@ eqRec n (Mu g) (Mu h) = let a = g (iterate (modifyConst succ) (Const n))
 eqRec n (In x) (In y) = heqF (eqRec n) x y
 eqRec _ _ _ = False
 
-modifyConst :: (a -> b) -> Const a ~> Const b
-modifyConst f = Const . f . getConst
-
 
 -- Show
 
@@ -114,3 +107,13 @@ showRec s n (Mu f) = let r = f s
                            [ showString "  " . showChar (getConst a) . showString " => " . v . showString "\n"
                            | (a, v) <- zip fr (map (hshowsPrecF n (showRec s')) r) ] . showString ")\n"
 showRec s n (In fa) = hshowsPrecF n (showRec s) fa
+
+
+-- Implementation details
+
+fhfixVal :: (EqF f, HEq h) => f (h a) -> (f (h a) -> f (h a)) -> f (h a)
+fhfixVal v f = if eqF heq v v' then v else fhfixVal v' f
+  where v' = f v
+
+modifyConst :: (a -> b) -> Const a ~> Const b
+modifyConst f = Const . f . getConst
