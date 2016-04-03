@@ -18,6 +18,7 @@ import Data.Functor.Eq
 import Data.Higher.Bifunctor
 import Data.Higher.Eq
 import Data.Higher.Functor
+import Data.Higher.Functor.Eq
 import Data.Higher.Transformation
 
 data HRec h v a
@@ -75,6 +76,20 @@ transform f x = HDown (hmap (hup x))
 
 hgmap :: (HBifunctor f, HFunctor (f a), HFunctor (f b)) => (a ~> b) -> HGraph (f a) ~> HGraph (f b)
 hgmap f = transform (hfirst f)
+
+
+-- Equality
+
+geq :: HEqF f => HGraph f a -> HGraph f a -> Bool
+geq g1 g2 = eqRec 0 (hup g1) (hup g2)
+
+eqRec :: HEqF f => Int -> HRec f (Const Int) a -> HRec f (Const Int) a -> Bool
+eqRec _ (Var x) (Var y) = x == y
+eqRec n (Mu g) (Mu h) = let a = g (iterate (modifyConst succ) (Const n))
+                            b = h (iterate (modifyConst succ) (Const n)) in
+                            and $ zipWith (heqF (eqRec (n + length a))) a b
+eqRec n (In x) (In y) = heqF (eqRec n) x y
+eqRec _ _ _ = False
 
 modifyConst :: (a -> b) -> Const a ~> Const b
 modifyConst f = Const . f . getConst
