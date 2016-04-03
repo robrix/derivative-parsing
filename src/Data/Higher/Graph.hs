@@ -59,3 +59,13 @@ fhfixVal :: (EqF f, HEq h) => f (h a) -> (f (h a) -> f (h a)) -> f (h a)
 fhfixVal v f = if v `eq` v' then v else fhfixVal v' f
   where v' = f v
         eq = eqF heq
+
+
+-- Maps
+
+transform :: forall f g. (HFunctor f, HFunctor g) => (forall h. f h ~> g h) -> HGraph f ~> HGraph g
+transform f x = HDown (hmap (hup x))
+  where hmap :: HRec f v ~> HRec g v
+        hmap (Var x) = Var x
+        hmap (Mu g) = Mu (map (f . hfmap hmap) . g)
+        hmap (In x) = In (f (hfmap hmap x))
