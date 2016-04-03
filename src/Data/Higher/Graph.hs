@@ -8,6 +8,7 @@ module Data.Higher.Graph
 , cfold
 , hsfold
 , sfold
+, transform
 ) where
 
 import Control.Applicative
