@@ -16,6 +16,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Data.Functor.Eq
                      , Data.Functor.Show
+                     , Data.Higher.Bifunctor
                      , Data.Higher.Eq
                      , Data.Higher.Fix
                      , Data.Higher.Foldable
