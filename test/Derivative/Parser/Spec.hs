@@ -189,7 +189,7 @@ spec = do
 
     it "parseNull terminates on cyclic grammars" $
       pendingWith "this does not yet terminate"
-      -- parseNull (lam `deriv` 'x') `shouldBe` [ Var "x" ]
+      -- parseNull (lam `deriv` 'x') `shouldBe` [ Var' "x" ]
 
 
 -- Grammar
