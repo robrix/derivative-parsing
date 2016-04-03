@@ -159,6 +159,8 @@ spec = do
     it "terminates on labeled cyclic grammars" $
       size2 cyclic2 `shouldBe` 1
 
+    it "terminates on interesting cyclic grammars" $
+      size2 lam2 `shouldBe` 32
 
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
@@ -212,6 +214,13 @@ app = App <$> lam <*> (ws *> lam) `label` "app"
 
 lam :: Parser Lam
 lam = abs <|> var <|> app `label` "lambda"
+
+lam2 :: Parser2 Lam
+lam2 = mu (\ lam ->
+  let var = In ((Var' . pure) `Map` In (Lit 'x')) `Lab` "var"
+      app = (In (App `Map` Var lam) <*> (In (Lit ' ') *> Var lam)) `Lab` "app"
+      abs = (In (Abs `Map` (In (literal2 "\\") *> (In $ pure `Map` In (Lit 'x')))) <*> (In (Lit '.') *> Var lam)) `Lab` "abs" in
+      In (In (In abs `Alt` In var) `Alt` In app) `Lab` "lambda")
 
 
 -- Types
