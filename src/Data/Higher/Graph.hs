@@ -23,12 +23,12 @@ import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
 import Data.Higher.Transformation
 
-data HRec h v a
+data HRec f v a
   = Var (v a)
-  | Mu ([v a] -> [h (HRec h v) a])
-  | In (h (HRec h v) a)
+  | Mu ([v a] -> [f (HRec f v) a])
+  | In (f (HRec f v) a)
 
-newtype HGraph h a = HDown { hup :: forall v. HRec h v a }
+newtype HGraph f a = HDown { hup :: forall v. HRec f v a }
 
 
 -- Folds
