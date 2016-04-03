@@ -10,7 +10,6 @@ module Data.Higher.Graph
 , sfold
 , transform
 , hgmap
-, geq
 ) where
 
 import Control.Applicative
@@ -81,8 +80,8 @@ hgmap f = transform (hfirst f)
 
 -- Equality
 
-geq :: HEqF f => HGraph f a -> HGraph f a -> Bool
-geq g1 g2 = eqRec 0 (hup g1) (hup g2)
+instance HEqF f => Eq (HGraph f a)
+  where a == b = eqRec 0 (hup a) (hup b)
 
 eqRec :: HEqF f => Int -> HRec f (Const Int) a -> HRec f (Const Int) a -> Bool
 eqRec _ (Var x) (Var y) = x == y
