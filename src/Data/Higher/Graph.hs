@@ -97,17 +97,17 @@ eqRec _ _ _ = False
 -- Show
 
 instance HShowF f => Show (HGraph f a)
-  where showsPrec n = showRec (iterate (modifyConst succ) (Const 'a')) n . hup
+  where showsPrec n = showsRec (iterate (modifyConst succ) (Const 'a')) n . hup
 
-showRec :: HShowF f => (forall b. [Const Char b]) -> Int -> HRec f (Const Char) a -> ShowS
-showRec s n rec = case rec of
+showsRec :: HShowF f => (forall b. [Const Char b]) -> Int -> HRec f (Const Char) a -> ShowS
+showsRec s n rec = case rec of
   Var c -> showChar (getConst c)
   Mu f -> let r = f s
               (fr, s') = splitAt (length r) s in
               showString "Mu (\n" . foldr (.) id
                 [ showString "  " . showChar (getConst a) . showString " => " . v . showString "\n"
-                | (a, v) <- zip fr (map (hshowsPrecF n (showRec s')) r) ] . showString ")\n"
-  In fa -> hshowsPrecF n (showRec s) fa
+                | (a, v) <- zip fr (map (hshowsPrecF n (showsRec s')) r) ] . showString ")\n"
+  In fa -> hshowsPrecF n (showsRec s) fa
 
 
 -- Implementation details
