@@ -77,6 +77,11 @@ transform f x = HDown (hmap (hup x))
 hgmap :: (HBifunctor f, HFunctor (f a), HFunctor (f b)) => (a ~> b) -> HGraph (f a) ~> HGraph (f b)
 hgmap f = transform (hfirst f)
 
+hpjoin :: HFunctor f => HRec f (HRec f v) a -> HRec f v a
+hpjoin (Var x) = x
+hpjoin (Mu g) = Mu (map (hfmap hpjoin) . g . map Var)
+hpjoin (In r) = In (hfmap hpjoin r)
+
 
 -- Equality
 
