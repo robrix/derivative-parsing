@@ -318,8 +318,8 @@ instance HShowF ParserF
           Cat a b -> showsPrec n a . showString " `cat` " . showsPrec n b
           Alt a b -> showsPrec n a . showString " <|> " . showsPrec n b
           Rep p -> showString "many " . showsPrec n p
-          Map f p -> showString "f <$> " . showsPrec n p
-          Bnd p f -> showsPrec n p . showString " >>= f"
+          Map _ p -> showString "f <$> " . showsPrec n p
+          Bnd p _ -> showsPrec n p . showString " >>= f"
           Lit c -> showString "lit " . shows c
           Ret r -> showString "ret […]"
           Nul -> showString "nul"
