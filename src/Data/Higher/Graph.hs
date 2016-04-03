@@ -13,6 +13,7 @@ module Data.Higher.Graph
 import Control.Applicative
 import Data.Function
 import Data.Functor.Eq
+import Data.Higher.Bifunctor
 import Data.Higher.Eq
 import Data.Higher.Functor
 import Data.Higher.Transformation
@@ -69,3 +70,6 @@ transform f x = HDown (hmap (hup x))
         hmap (Var x) = Var x
         hmap (Mu g) = Mu (map (f . hfmap hmap) . g)
         hmap (In x) = In (f (hfmap hmap x))
+
+hgmap :: (HBifunctor f, HFunctor (f a), HFunctor (f b)) => (a ~> b) -> HGraph (f a) ~> HGraph (f b)
+hgmap f = transform (hfirst f)
