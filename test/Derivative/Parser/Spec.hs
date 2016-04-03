@@ -167,7 +167,7 @@ spec = do
       many ws `parse` "   " `shouldBe` [ "   " ]
 
     it "maps parse forests into abstract syntax trees" $
-      var `parse` "x" `shouldBe` [ Var "x" ]
+      var `parse` "x" `shouldBe` [ Var' "x" ]
 
     it "the derivative terminates on cyclic grammars" $
       (do { x <- return $! (deriv $! lam) 'x' ; x `seq` return True } ) `shouldReturn` True
@@ -192,7 +192,7 @@ ws :: Parser Char
 ws = oneOf (lit <$> " \t\r\n") `label` "ws"
 
 var :: Parser Lam
-var = Var <$> varName `label` "var"
+var = Var' <$> varName `label` "var"
 
 abs :: Parser Lam
 abs = Abs <$> (literal "\\" *> optional ws *> varName <* optional ws) <*> (lit '.' *> optional ws *> lam) `label` "abs"
@@ -206,7 +206,7 @@ lam = abs <|> var <|> app `label` "lambda"
 
 -- Types
 
-data Lam = Var String | Abs String Lam | App Lam Lam
+data Lam = Var' String | Abs String Lam | App Lam Lam
   deriving (Eq, Show)
 
 
