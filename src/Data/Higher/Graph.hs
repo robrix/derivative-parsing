@@ -15,6 +15,9 @@ data HRec h v a
 
 newtype HGraph h a = HDown { hup :: forall v. HRec h v a }
 
+
+-- Folds
+
 hgfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> HGraph f ~> c
 hgfold var bind recur = trans . hup
   where trans :: forall a. HRec f v a -> c a
