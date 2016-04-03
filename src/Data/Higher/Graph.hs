@@ -98,8 +98,8 @@ modifyConst f = Const . f . getConst
 
 -- Show
 
-showGraph :: HShowF f => HGraph f a -> String
-showGraph g = showRec (iterate succ 'a') (hup g)
+instance HShowF f => Show (HGraph f a)
+  where show = showRec (iterate succ 'a') . hup
 
 showRec :: HShowF f => String -> HRec f (Const Char) a -> String
 showRec _ (Var c) = [getConst c]
