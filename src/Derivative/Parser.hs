@@ -26,6 +26,7 @@ import Data.Higher.Fix
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
+import Data.Higher.Functor.Show
 import Data.Higher.Graph
 import Data.Maybe
 import Data.Memo
@@ -311,3 +312,16 @@ instance HEqF ParserF
           (Eps, Eps) -> True
           (Lab p1 s1, Lab p2 s2) -> s1 == s2 && eq p1 p2
           _ -> False
+
+instance HShowF ParserF
+  where hshowsPrecF n showsPrec p = case p of
+          Cat a b -> showsPrec n a . showString " `cat` " . showsPrec n b
+          Alt a b -> showsPrec n a . showString " <|> " . showsPrec n b
+          Rep p -> showString "many " . showsPrec n p
+          Map f p -> showString "f <$> " . showsPrec n p
+          Bnd p f -> showsPrec n p . showString " >>= f"
+          Lit c -> showString "lit " . shows c
+          Ret r -> showString "ret […]"
+          Nul -> showString "nul"
+          Eps -> showString "eps"
+          Lab p s -> showsPrec 2 p . showString " `label` " . shows s
