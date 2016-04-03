@@ -86,12 +86,13 @@ instance HEqF f => Eq (HGraph f a)
   where a == b = eqRec 0 (hup a) (hup b)
 
 eqRec :: HEqF f => Int -> HRec f (Const Int) a -> HRec f (Const Int) a -> Bool
-eqRec _ (Var x) (Var y) = x == y
-eqRec n (Mu g) (Mu h) = let a = g (iterate (modifyConst succ) (Const n))
-                            b = h (iterate (modifyConst succ) (Const n)) in
-                            and $ zipWith (heqF (eqRec (n + length a))) a b
-eqRec n (In x) (In y) = heqF (eqRec n) x y
-eqRec _ _ _ = False
+eqRec n a b = case (a, b) of
+  (Var x, Var y) -> x == y
+  (Mu g, Mu h) -> let a = g (iterate (modifyConst succ) (Const n))
+                      b = h (iterate (modifyConst succ) (Const n)) in
+                      and $ zipWith (heqF (eqRec (n + length a))) a b
+  (In x, In y) -> heqF (eqRec n) x y
+  _ -> False
 
 
 -- Show
