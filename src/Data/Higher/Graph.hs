@@ -101,7 +101,7 @@ modifyConst f = Const . f . getConst
 instance HShowF f => Show (HGraph f a)
   where showsPrec n = showRec (iterate succ 'a') n . hup
 
-showRec :: HShowF f => String -> Int -> HRec f (Const Char) a -> String -> String
+showRec :: HShowF f => String -> Int -> HRec f (Const Char) a -> ShowS
 showRec _ _ (Var c) = showChar (getConst c)
 showRec s n (Mu f) = let r = f (Const <$> s)
                          (fr, s') = splitAt (length r) s in
