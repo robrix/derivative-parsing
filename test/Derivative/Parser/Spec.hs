@@ -156,6 +156,9 @@ spec = do
     it "terminates on unlabelled acyclic grammars" $
       size2 (HDown (In (lit2 'c'))) `shouldBe` 1
 
+    it "terminates on labeled cyclic grammars" $
+      size2 cyclic2 `shouldBe` 1
+
 
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
@@ -188,6 +191,9 @@ spec = do
 
 cyclic :: Parser ()
 cyclic = cyclic `label` "cyclic"
+
+cyclic2 :: Parser2 ()
+cyclic2 = mu $ \ v -> Var v `Lab` "cyclic2"
 
 varName :: Parser String
 varName = literal "x"
