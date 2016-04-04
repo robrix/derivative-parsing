@@ -57,7 +57,7 @@ hcfold = hgfold id (head . fix)
 cfold :: HFunctor f => (forall b. f (Const a) b -> a) -> HGraph f b -> a
 cfold alg = getConst . hcfold (Const . alg)
 
-hsfold :: (HFunctor f, HEq c) => (f c ~> c) -> (forall a. c a) -> HGraph f a -> c a
+hsfold :: (HFunctor f, HEq c) => (f c ~> c) -> (forall a. c a) -> HGraph f ~> c
 hsfold alg k = hgfold id (head . fhfixVal (repeat k)) alg
 
 sfold :: (HFunctor f, Eq a) => (forall b. f (Const a) b -> a) -> a -> HGraph f b -> a
