@@ -69,7 +69,7 @@ sfold alg k = getConst . hsfold (Const . alg) (Const k)
 -- Maps
 
 transform :: forall f g. (HFunctor f, HFunctor g) => (forall h. f h ~> g h) -> HGraph f ~> HGraph g
-transform f x = HDown (hmap f (hup x))
+transform f = modifyGraph (hmap f)
 
 hmap :: (HFunctor f, HFunctor g) => (forall h. f h ~> g h) -> HRec f v ~> HRec g v
 hmap f rec = case rec of
