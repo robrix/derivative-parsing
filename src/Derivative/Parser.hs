@@ -201,6 +201,24 @@ compact = Parser . go . out . unParser
           Rep (F Nul) -> F (Ret [])
           a -> F a
 
+compact2 :: Parser2 a -> Parser2 a
+compact2 parser = HDown (trans (hup parser))
+  where trans (Var x) = Var x
+        trans (Mu g) = Mu (fmap ((`Lab` "") . go) . g)
+        trans (In r) = go r
+        go parser = case parser of
+          Cat (In Nul) _ -> In Nul
+          Cat _ (In Nul) -> In Nul
+          Cat (In (Ret [t])) b -> (,) t <$> b
+          Cat a (In (Ret [t])) -> flip (,) t <$> a
+          Alt (In Nul) p -> p
+          Alt p (In Nul) -> p
+          Map f (In (Ret as)) -> In (Ret (f <$> as))
+          Map g (In (Map f p)) -> g . f <$> p
+          Rep (In Nul) -> In (Ret [])
+          Lab p "" -> p
+          a -> In a
+
 size :: Parser a -> Int
 size = getSum . getConst . hcata (memoFrom (Const (Sum 0)) size) . unParser
   where size :: ParserF (Const (Sum Int)) a -> Const (Sum Int) a
