@@ -85,7 +85,7 @@ hpjoin (Var x) = x
 hpjoin (Mu g) = Mu (map (hfmap hpjoin) . g . map Var)
 hpjoin (In r) = In (hfmap hpjoin r)
 
-modifyGraph :: (forall v. HRec f v ~> HRec f v) -> HGraph f ~> HGraph f
+modifyGraph :: (forall v. HRec f v ~> HRec g v) -> HGraph f ~> HGraph g
 modifyGraph f g = HDown (f (hup g))
 
 
