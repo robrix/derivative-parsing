@@ -174,7 +174,7 @@ parseNull' = memoStableFrom [] $ \ (F parser) -> case parser of
   Lab p _ -> parseNull' p
   _ -> []
 
-parseNull2 :: HGraph ParserF a -> [a]
+parseNull2 :: Parser2 a -> [a]
 parseNull2 = hfold go []
   where go :: ParserF [] a -> [a]
         go parser = case parser of
