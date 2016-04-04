@@ -123,19 +123,6 @@ fhfixVal v f = if eqF heq v v' then v else fhfixVal v' f
 modifyConst :: (a -> b) -> Const a ~> Const b
 modifyConst f = Const . f . getConst
 
-hxmap :: forall f u v. HFunctor f => (u ~> v) -> (v ~> u) -> forall a. (HRec f u a -> HRec f v a, HRec f v a -> HRec f u a)
-hxmap f g = (s, t)
-  where s :: HRec f u ~> HRec f v
-        s x = case x of
-                Var v -> Var (f v)
-                Mu x -> Mu (map (hfmap s) . x . map g)
-                In r -> In (hfmap s r)
-        t :: HRec f v ~> HRec f u
-        t x = case x of
-                Var v -> Var (g v)
-                Mu x -> Mu (map (hfmap t) . x . map f)
-                In r -> In (hfmap t r)
-
 
 -- Instances
 
