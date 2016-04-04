@@ -45,7 +45,7 @@ hgfold var bind recur = trans . hup
 gfold :: forall f v c a. HFunctor f => (forall a. v a -> c) -> (forall a. ([v a] -> [c]) -> c) -> (forall a. f (Const c) a -> c) -> HGraph f a -> c
 gfold var bind recur = getConst . hgfold (Const . var) (Const . bind . (fmap getConst .)) (Const . recur)
 
-hfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> HGraph f a -> c a
+hfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> HGraph f ~> c
 hfold alg k = hgfold id (\ g -> head (g (repeat k))) alg
 
 fold :: HFunctor f => (forall b. f (Const a) b -> a) -> a -> HGraph f b -> a
