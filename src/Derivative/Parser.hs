@@ -175,7 +175,7 @@ parseNull' = memoStableFrom [] $ \ (F parser) -> case parser of
   _ -> []
 
 parseNull2 :: HGraph ParserF a -> [a]
-parseNull2 = hfold go [] . hup
+parseNull2 = hfold go []
   where go :: ParserF [] a -> [a]
         go parser = case parser of
           Cat a b -> (,) <$> a <*> b
@@ -225,7 +225,7 @@ size = getSum . getConst . hcata (memoFrom (Const (Sum 0)) size) . unParser
         size = Const . mappend (Sum 1) . hfoldMap getConst
 
 size2 :: Parser2 a -> Int
-size2 = getSum . fold (mappend (Sum 1) . hfoldMap getConst) (Sum 0) . hup
+size2 = getSum . fold (mappend (Sum 1) . hfoldMap getConst) (Sum 0)
 
 
 -- Instances
