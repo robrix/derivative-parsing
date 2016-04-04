@@ -88,9 +88,6 @@ modifyGraph f g = HDown (f (hup g))
 
 -- Equality
 
-instance HEqF f => Eq (HGraph f a)
-  where a == b = eqRec 0 (hup a) (hup b)
-
 eqRec :: HEqF f => Int -> HRec f (Const Int) a -> HRec f (Const Int) a -> Bool
 eqRec n a b = case (a, b) of
   (Var x, Var y) -> x == y
@@ -102,9 +99,6 @@ eqRec n a b = case (a, b) of
 
 
 -- Show
-
-instance HShowF f => Show (HGraph f a)
-  where showsPrec n = showsRec (iterate (modifyConst succ) (Const 'a')) n . hup
 
 showsRec :: HShowF f => (forall b. [Const Char b]) -> Int -> HRec f (Const Char) a -> ShowS
 showsRec s n rec = case rec of
@@ -125,3 +119,12 @@ fhfixVal v f = if eqF heq v v' then v else fhfixVal v' f
 
 modifyConst :: (a -> b) -> Const a ~> Const b
 modifyConst f = Const . f . getConst
+
+
+-- Instances
+
+instance HEqF f => Eq (HGraph f a)
+  where a == b = eqRec 0 (hup a) (hup b)
+
+instance HShowF f => Show (HGraph f a)
+  where showsPrec n = showsRec (iterate (modifyConst succ) (Const 'a')) n . hup
