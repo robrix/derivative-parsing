@@ -68,11 +68,13 @@ sfold alg k = getConst . hsfold (Const . alg) (Const k)
 -- Maps
 
 transform :: forall f g. (HFunctor f, HFunctor g) => (forall h. f h ~> g h) -> HGraph f ~> HGraph g
-transform f x = HDown (hmap (hup x))
-  where hmap :: HRec f v ~> HRec g v
-        hmap (Var x) = Var x
-        hmap (Mu g) = Mu (map (f . hfmap hmap) . g)
-        hmap (In x) = In (f (hfmap hmap x))
+transform f x = HDown (hmap f (hup x))
+
+hmap :: (HFunctor f, HFunctor g) => (forall h. f h ~> g h) -> HRec f v ~> HRec g v
+hmap f rec = case rec of
+  Var x -> Var x
+  Mu g -> Mu (map (f . hfmap (hmap f)) . g)
+  In x -> In (f (hfmap (hmap f) x))
 
 hgmap :: (HBifunctor f, HFunctor (f a), HFunctor (f b)) => (a ~> b) -> HGraph (f a) ~> HGraph (f b)
 hgmap f = transform (hfirst f)
