@@ -11,6 +11,7 @@ module Data.Higher.Graph
 , hsfold
 , sfold
 , transform
+, hmap
 , hgmap
 , hpjoin
 , modifyGraph
