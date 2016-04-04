@@ -35,32 +35,32 @@ newtype HGraph f a = HDown { hup :: forall v. HRec f v a }
 
 -- Folds
 
-hgfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> HGraph f ~> c
-hgfold var bind recur = trans . hup
+hgfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> HRec f v ~> c
+hgfold var bind recur = trans
   where trans :: forall a. HRec f v a -> c a
         trans (Var x) = var x
         trans (Mu g) = bind (map (recur . hfmap trans) . g)
         trans (In fa) = recur (hfmap trans fa)
 
-gfold :: forall f v c a. HFunctor f => (forall a. v a -> c) -> (forall a. ([v a] -> [c]) -> c) -> (forall a. f (Const c) a -> c) -> HGraph f a -> c
+gfold :: forall f v c a. HFunctor f => (forall a. v a -> c) -> (forall a. ([v a] -> [c]) -> c) -> (forall a. f (Const c) a -> c) -> HRec f v a -> c
 gfold var bind recur = getConst . hgfold (Const . var) (Const . bind . (fmap getConst .)) (Const . recur)
 
-hfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> HGraph f ~> c
+hfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> HRec f c ~> c
 hfold alg k = hgfold id (\ g -> head (g (repeat k))) alg
 
-fold :: HFunctor f => (forall b. f (Const a) b -> a) -> a -> HGraph f b -> a
+fold :: HFunctor f => (forall b. f (Const a) b -> a) -> a -> HRec f (Const a) b -> a
 fold alg k = getConst . hfold (Const . alg) (Const k)
 
-hcfold :: HFunctor f => (f t ~> t) -> HGraph f ~> t
+hcfold :: HFunctor f => (f t ~> t) -> HRec f t ~> t
 hcfold = hgfold id (head . fix)
 
-cfold :: HFunctor f => (forall b. f (Const a) b -> a) -> HGraph f b -> a
+cfold :: HFunctor f => (forall b. f (Const a) b -> a) -> HRec f (Const a) b -> a
 cfold alg = getConst . hcfold (Const . alg)
 
-hsfold :: (HFunctor f, HEq c) => (f c ~> c) -> (forall a. c a) -> HGraph f ~> c
+hsfold :: (HFunctor f, HEq c) => (f c ~> c) -> (forall a. c a) -> HRec f c ~> c
 hsfold alg k = hgfold id (head . fhfixVal (repeat k)) alg
 
-sfold :: (HFunctor f, Eq a) => (forall b. f (Const a) b -> a) -> a -> HGraph f b -> a
+sfold :: (HFunctor f, Eq a) => (forall b. f (Const a) b -> a) -> a -> HRec f (Const a) b -> a
 sfold alg k = getConst . hsfold (Const . alg) (Const k)
 
 
