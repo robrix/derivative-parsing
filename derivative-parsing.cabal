@@ -24,6 +24,7 @@ library
                      , Data.Higher.Functor.Eq
                      , Data.Higher.Functor.Show
                      , Data.Higher.Graph
+                     , Data.Higher.Isofunctor
                      , Data.Higher.Transformation
                      , Data.Memo
                      , Derivative.Parser
