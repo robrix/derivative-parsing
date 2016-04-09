@@ -29,6 +29,7 @@ module Derivative.Parser
 , label2
 , ret2
 , size2
+, compact2
 , parseNull2
 , mu
 , Data.Higher.Graph.HRec(..)
