@@ -170,6 +170,10 @@ spec = do
       let grammar = mu (\ a -> Var a `Alt` In (Ret ["x"])) in
       parseNull2 grammar `shouldBe` ["x"]
 
+  describe "deriv2" $ do
+    it "terminates on acyclic grammars" $
+      HDown (In (Lit 'x')) `deriv2` 'x' `shouldBe` HDown (In (ret2 "x"))
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
