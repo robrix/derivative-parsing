@@ -17,7 +17,6 @@ library
   exposed-modules:     Data.Functor.Eq
                      , Data.Higher.Bifunctor
                      , Data.Higher.Eq
-                     , Data.Higher.Fix
                      , Data.Higher.Foldable
                      , Data.Higher.Function
                      , Data.Higher.Functor
