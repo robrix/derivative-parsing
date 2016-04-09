@@ -86,6 +86,9 @@ hpjoin rec = case rec of
   Mu g -> Mu (map (hfmap hpjoin) . g . map Var)
   In r -> In (hfmap hpjoin r)
 
+hpreturn :: v a -> HRec f v a
+hpreturn = Var
+
 modifyGraph :: (forall v. HRec f v ~> HRec g v) -> HGraph f ~> HGraph g
 modifyGraph f g = HDown (f (hup g))
 
