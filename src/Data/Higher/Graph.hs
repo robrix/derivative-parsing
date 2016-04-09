@@ -14,7 +14,6 @@ module Data.Higher.Graph
 , sfold
 , transform
 , hmap
-, hgmap
 , hpjoin
 , modifyGraph
 ) where
@@ -23,7 +22,6 @@ import Control.Applicative
 import Data.Foldable (asum)
 import Data.Function
 import Data.Functor.Eq
-import Data.Higher.Bifunctor
 import Data.Higher.Eq
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
@@ -91,9 +89,6 @@ hmap f rec = case rec of
   Var x -> Var x
   Mu g -> Mu (map (f . hfmap (hmap f)) . g)
   In x -> In (f (hfmap (hmap f) x))
-
-hgmap :: (HBifunctor f, HFunctor (f a), HFunctor (f b)) => (a ~> b) -> HGraph (f a) ~> HGraph (f b)
-hgmap f = transform (hfirst f)
 
 hpjoin :: HFunctor f => HRec f (HRec f v) a -> HRec f v a
 hpjoin rec = case rec of
