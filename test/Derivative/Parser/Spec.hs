@@ -165,6 +165,11 @@ spec = do
     it "terminates on interesting cyclic grammars" $
       size2 lam2 `shouldBe` 32
 
+  describe "parseNull2" $ do
+    it "terminates on cyclic grammars" $
+      let grammar = mu (\ a -> Var a `Alt` In (Ret ["x"])) in
+      parseNull2 grammar `shouldBe` ["x"]
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
