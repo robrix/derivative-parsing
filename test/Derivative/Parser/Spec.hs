@@ -76,6 +76,12 @@ spec = do
       prop "produces no parse trees when unsuccessful" $
         \ c -> parseNull (many (HDown $ In $ lit c) `deriv` succ c) `shouldBe` []
 
+      it "terminates on acyclic grammars" $
+        HDown (In (Lit 'x')) `deriv` 'x' `shouldBe` HDown (In (ret "x"))
+
+      it "terminates on cyclic grammars" $
+        lam `deriv` 'x' `shouldBe` HDown (In (ret [ Var' "x" ]))
+
     describe "fmap" $ do
       prop "distributes over Map" $
         \ f c -> parseNull (fmap (getBlind f :: Char -> Char) (pure c)) `shouldBe` [getBlind f c]
@@ -165,13 +171,6 @@ spec = do
 
     it "terminates on interesting cyclic grammars" $
       size lam `shouldBe` 32
-
-  describe "deriv" $ do
-    it "terminates on acyclic grammars" $
-      HDown (In (Lit 'x')) `deriv` 'x' `shouldBe` HDown (In (ret "x"))
-
-    it "terminates on cyclic grammars" $
-      lam `deriv` 'x' `shouldBe` HDown (In (ret [ Var' "x" ]))
 
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
