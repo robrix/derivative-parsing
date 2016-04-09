@@ -25,6 +25,7 @@ import Data.Higher.Bifunctor
 import Data.Higher.Eq
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
+import Data.Higher.Isofunctor
 import Data.Higher.Functor.Show
 import Data.Higher.Transformation
 
@@ -142,3 +143,9 @@ instance HEqF f => Eq (HGraph f a)
 
 instance HShowF f => Show (HGraph f a)
   where showsPrec n = showsRec (iterate (modifyConst succ) (Const 'a')) n . hup
+
+instance HFunctor f => HIsofunctor (HRec f)
+  where hisomap f g rec = case rec of
+          Var v -> Var (f v)
+          Mu h -> Mu (map (hfmap (hisomap f g)) . h . map g)
+          In r -> In (hfmap (hisomap f g) r)
