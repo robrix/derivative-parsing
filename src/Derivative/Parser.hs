@@ -224,6 +224,10 @@ instance Monad (HRec ParserF v) where
   return = pure
   (>>=) = (In .) . Bnd
 
+instance Monad (HGraph ParserF) where
+  return = pure
+  HDown p >>= f = HDown (p >>= hup . f)
+
 instance Show (ParserF (Const String) out) where
   show = getConst . go
     where go (Cat a b) = a <> Const " `cat` " <> b
