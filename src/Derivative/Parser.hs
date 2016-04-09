@@ -164,20 +164,20 @@ deriv' (F parser) c = case parser of
   _ -> F Nul
 
 deriv2 :: Parser2 a -> Char -> Parser2 a
-deriv2 g c = modifyGraph go g
-  where go :: HRec ParserF v a -> HRec ParserF v a
-        go (Var v) = Var v
-        go (Mu g) = Mu (map derivGo . g)
-        go (In r) = In (derivGo r)
+deriv2 g c = modifyGraph deriv' g
+  where deriv' :: HRec ParserF v a -> HRec ParserF v a
+        deriv' (Var v) = Var v
+        deriv' (Mu g) = Mu (map derivGo . g)
+        deriv' (In r) = In (derivGo r)
         derivGo :: ParserF (HRec ParserF v) a -> ParserF (HRec ParserF v) a
         derivGo parser = case parser of
-          Cat a b -> Alt (In (Cat (go a) b)) (In (Cat (In (Ret (parseNull2 (HDown (hisomap (const undefined) (const undefined) a))))) (go b)))
-          Alt a b -> Alt (go a) (go b)
-          Rep p -> Map (uncurry (:)) $ In (Cat (go p) (In (Rep p)))
-          Map f p -> Map f (go p)
-          Bnd p f -> Bnd (go p) f
+          Cat a b -> Alt (In (Cat (deriv' a) b)) (In (Cat (In (Ret (parseNull2 (HDown (hisomap (const undefined) (const undefined) a))))) (deriv' b)))
+          Alt a b -> Alt (deriv' a) (deriv' b)
+          Rep p -> Map (uncurry (:)) $ In (Cat (deriv' p) (In (Rep p)))
+          Map f p -> Map f (deriv' p)
+          Bnd p f -> Bnd (deriv' p) f
           Lit c' -> if c == c' then Ret [c] else Nul
-          Lab p s -> Lab (go p) s
+          Lab p s -> Lab (deriv' p) s
           _ -> Nul
 
 parseNull :: Parser a -> [a]
