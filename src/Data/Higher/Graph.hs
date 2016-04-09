@@ -40,11 +40,7 @@ newtype HGraph f a = HDown { hup :: forall v. HRec f v a }
 -- Folds
 
 hgfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> HGraph f ~> c
-hgfold var bind recur = trans . hup
-  where trans :: forall a. HRec f v a -> c a
-        trans (Var x) = var x
-        trans (Mu g) = bind (map (recur . hfmap trans) . g)
-        trans (In fa) = recur (hfmap trans fa)
+hgfold var bind recur = hrfold var bind recur . hup
 
 hrfold :: HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> HRec f v ~> c
 hrfold var bind recur rec = case rec of
