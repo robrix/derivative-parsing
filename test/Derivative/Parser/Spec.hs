@@ -27,6 +27,13 @@ spec = do
       prop "is empty when its right operand is empty" $
         \ a -> parseNull (HDown $ In $ pure a `cat` nul) `shouldBe` ([] :: [(Char, Char)])
 
+      it "terminates on cyclic grammars" $
+        let grammar = mu (\ a -> Var a `Alt` In (Ret ["x"])) in
+        parseNull grammar `shouldBe` ["x"]
+
+      it "terminates on cyclic grammars" $
+        parseNull (lam `deriv` 'x') `shouldBe` [ Var' "x" ]
+
     describe "<|>" $ do
       prop "returns left parse trees" $
         \ a -> parseNull (pure a <|> empty) `shouldBe` [a :: Char]
@@ -158,14 +165,6 @@ spec = do
 
     it "terminates on interesting cyclic grammars" $
       size lam `shouldBe` 32
-
-  describe "parseNull" $ do
-    it "terminates on cyclic grammars" $
-      let grammar = mu (\ a -> Var a `Alt` In (Ret ["x"])) in
-      parseNull grammar `shouldBe` ["x"]
-
-    it "terminates on cyclic grammars" $
-      parseNull (lam `deriv` 'x') `shouldBe` [ Var' "x" ]
 
   describe "deriv" $ do
     it "terminates on acyclic grammars" $
