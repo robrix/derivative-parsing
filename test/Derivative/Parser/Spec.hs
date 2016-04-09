@@ -150,9 +150,6 @@ spec = do
     --                unary = [ size . fmap id, size . (>>= return), size . many, size . (`label` "") ] in
     --     (binary <*> [ lit a ] <*> [ lit b ]) ++ (unary <*> [ lit a ]) `shouldBe` (3 <$ binary) ++ (2 <$ unary)
 
-    it "terminates on labeled cyclic grammars" $
-      size cyclic `shouldBe` 1
-
   describe "size" $ do
     it "terminates on unlabelled acyclic grammars" $
       size (HDown (In (lit 'c'))) `shouldBe` 1
