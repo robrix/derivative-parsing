@@ -29,6 +29,7 @@ module Derivative.Parser
 , label2
 , ret2
 , size2
+, deriv2
 , compact2
 , parseNull2
 , mu
@@ -43,6 +44,7 @@ import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
 import Data.Higher.Graph
+import Data.Higher.Isofunctor
 import Data.Maybe
 import Data.Memo
 import qualified Data.Monoid as Monoid
@@ -160,6 +162,19 @@ deriv' (F parser) c = case parser of
   Lit c' -> F $ if c == c' then Ret [c] else Nul
   Lab p _ -> deriv' p c
   _ -> F Nul
+
+deriv2 :: Parser2 a -> Char -> Parser2 a
+deriv2 g c = modifyGraph (hmap derivGo) g
+  where derivGo :: ParserF (HRec ParserF v) a -> ParserF (HRec ParserF v) a
+        derivGo parser = case parser of
+          Cat a b -> Alt (In (Cat (hmap derivGo a) b)) (In (Cat (In (Ret (parseNull2 (HDown (hisomap (const undefined) (const undefined) a))))) (hmap derivGo b)))
+          Alt a b -> Alt (hmap derivGo a) (hmap derivGo b)
+          Rep p -> Map (uncurry (:)) $ In (Cat (hmap derivGo p) (In (Rep p)))
+          Map f p -> Map f (hmap derivGo p)
+          Bnd p f -> Bnd (hmap derivGo p) f
+          Lit c' -> if c == c' then Ret [c] else Nul
+          Lab p s -> Lab (hmap derivGo p) s
+          _ -> Nul
 
 parseNull :: Parser a -> [a]
 parseNull = parseNull' . unParser
