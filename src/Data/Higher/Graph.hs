@@ -18,6 +18,7 @@ module Data.Higher.Graph
 ) where
 
 import Control.Applicative
+import Data.Foldable (asum)
 import Data.Function
 import Data.Functor.Eq
 import Data.Higher.Bifunctor
@@ -64,6 +65,12 @@ hsfold alg k = hgfold id (head . fhfixVal (repeat k)) alg
 
 sfold :: (HFunctor f, Eq a) => (forall b. f (Const a) b -> a) -> a -> HGraph f b -> a
 sfold alg k = getConst . hsfold (Const . alg) (Const k)
+
+hgcata :: (HFunctor f, Alternative v) => (f v ~> v) -> HRec f v ~> v
+hgcata f rec = case rec of
+  Var v -> v
+  Mu g -> asum . map (f . hfmap (hgcata f)) . g $ repeat empty
+  In r -> f (hfmap (hgcata f) r)
 
 
 -- Maps
