@@ -301,6 +301,8 @@ instance Alternative (HFix ParserF) where
 instance Monad (HFix ParserF) where
   return = pure
   (>>=) = (F .) . Bnd
+instance Functor (HGraph ParserF) where
+  fmap f (HDown rec) = HDown (f <$> rec)
 
 instance Applicative (ParserF (HRec ParserF v)) where
   pure = Ret . pure
