@@ -170,6 +170,9 @@ spec = do
       let grammar = mu (\ a -> Var a `Alt` In (Ret ["x"])) in
       parseNull2 grammar `shouldBe` ["x"]
 
+    it "parseNull2 terminates on cyclic grammars" $
+      parseNull2 (lam2 `deriv2` 'x') `shouldBe` [ Var' "x" ]
+
   describe "deriv2" $ do
     it "terminates on acyclic grammars" $
       HDown (In (Lit 'x')) `deriv2` 'x' `shouldBe` HDown (In (ret2 "x"))
@@ -202,9 +205,6 @@ spec = do
     it "parseNull terminates on cyclic grammars" $
       pendingWith "this does not yet terminate"
       -- parseNull (lam `deriv` 'x') `shouldBe` [ Var' "x" ]
-
-    it "parseNull2 terminates on cyclic grammars" $
-      parseNull2 (lam2 `deriv2` 'x') `shouldBe` [ Var' "x" ]
 
 
 -- Grammar
