@@ -167,10 +167,10 @@ deriv2 :: Parser2 a -> Char -> Parser2 a
 deriv2 g c = modifyGraph deriv' g
   where deriv' :: HRec ParserF v a -> HRec ParserF v a
         deriv' (Var v) = Var v
-        deriv' (Mu g) = Mu (map derivGo . g)
-        deriv' (In r) = In (derivGo r)
-        derivGo :: ParserF (HRec ParserF v) a -> ParserF (HRec ParserF v) a
-        derivGo parser = case parser of
+        deriv' (Mu g) = Mu (map deriv'' . g)
+        deriv' (In r) = In (deriv'' r)
+        deriv'' :: ParserF (HRec ParserF v) a -> ParserF (HRec ParserF v) a
+        deriv'' parser = case parser of
           Cat a b -> Alt (In (Cat (deriv' a) b)) (In (Cat (In (Ret (parseNull2 (HDown (hisomap (const undefined) (const undefined) a))))) (deriv' b)))
           Alt a b -> Alt (deriv' a) (deriv' b)
           Rep p -> Map (uncurry (:)) $ In (Cat (deriv' p) (In (Rep p)))
