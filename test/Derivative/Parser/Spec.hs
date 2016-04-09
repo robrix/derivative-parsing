@@ -137,9 +137,6 @@ spec = do
     it "shows concatenations" $
       show (HDown $ In $ lit 'a' `cat` lit 'b') `shouldBe` "lit 'a' `cat` lit 'b'"
 
-    it "terminates for cyclic grammars" $
-      show cyclic `shouldBe` "cyclic `label` \"cyclic\""
-
     it "terminates for cyclic grammars2" $
       show cyclic `shouldBe` "Mu (\n  a => a `label` \"cyclic2\"\n)\n"
 
