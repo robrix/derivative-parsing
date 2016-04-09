@@ -3,7 +3,7 @@ module Data.Higher.Graph
 ( HRec(..)
 , HGraph(..)
 , hgfold
-, hrfold
+, hgrfold
 , gfold
 , hfold
 , fold
@@ -41,13 +41,13 @@ newtype HGraph f a = HDown { hup :: forall v. HRec f v a }
 -- Folds
 
 hgfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> HGraph f ~> c
-hgfold var bind recur = hrfold var bind recur . hup
+hgfold var bind recur = hgrfold var bind recur . hup
 
-hrfold :: HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> HRec f v ~> c
-hrfold var bind recur rec = case rec of
+hgrfold :: HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> HRec f v ~> c
+hgrfold var bind recur rec = case rec of
   Var x -> var x
-  Mu g -> bind (map (recur . hfmap (hrfold var bind recur)) . g)
-  In fa -> recur (hfmap (hrfold var bind recur) fa)
+  Mu g -> bind (map (recur . hfmap (hgrfold var bind recur)) . g)
+  In fa -> recur (hfmap (hgrfold var bind recur) fa)
 
 gfold :: forall f v c a. HFunctor f => (forall a. v a -> c) -> (forall a. ([v a] -> [c]) -> c) -> (forall a. f (Const c) a -> c) -> HGraph f a -> c
 gfold var bind recur = getConst . hgfold (Const . var) (Const . bind . (fmap getConst .)) (Const . recur)
