@@ -13,10 +13,10 @@ class HBifunctor h where
   hsecond = hbimap id
 
 class HBifunctor1 h where
-  hbimap1 :: (a ~> b) -> (c -> d) -> h a c ~> h b d
+  hbimap1 :: (a ~> b) -> (c -> d) -> h a c -> h b d
 
-  hfirst1 :: (a ~> b) -> h a c ~> h b c
+  hfirst1 :: (a ~> b) -> h a c -> h b c
   hfirst1 f = hbimap1 f id
 
-  hsecond1 :: (c -> d) -> h a c ~> h a d
+  hsecond1 :: (c -> d) -> h a c -> h a d
   hsecond1 = hbimap1 id
