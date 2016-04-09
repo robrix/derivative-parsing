@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, GeneralizedNewtypeDeriving, RankNTypes #-}
+{-# LANGUAGE FlexibleInstances, GADTs, RankNTypes #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -19,33 +19,18 @@ module Derivative.Parser
 , sep
 , sep1
 , size
-, Parser2
-, lit2
-, cat2
-, eps2
-, nul2
-, literal2
-, label2
-, ret2
-, size2
-, deriv2
-, compact2
-, parseNull2
 , mu
 , Data.Higher.Graph.HRec(..)
 , Data.Higher.Graph.HGraph(..)
 ) where
 
 import Control.Applicative
-import Data.Higher.Fix
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
 import Data.Higher.Graph
 import Data.Higher.Isofunctor
-import Data.Maybe
-import Data.Memo
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
 
@@ -55,34 +40,11 @@ parse :: Parser a -> String -> [a]
 parse p = parseNull . foldl ((compact .) . deriv) p
 
 
-cat :: Parser a -> Parser b -> Parser (a, b)
-Parser a `cat` Parser b = Parser . F $ Cat a b
-
-lit :: Char -> Parser Char
-lit = Parser . F . Lit
-
-ret :: [a] -> Parser a
-ret = Parser . F . Ret
-
-nul :: Parser a
-nul = Parser $ F Nul
-
-eps :: Parser a
-eps = Parser $ F Eps
-
-infixl 2 `label`
-
-label :: Parser a -> String -> Parser a
-label = ((Parser . F) .) . Lab . unParser
-
-literal :: String -> Parser String
-literal string = sequenceA (Parser . F . Lit <$> string)
-
 commaSep1 :: Parser a -> Parser [a]
-commaSep1 = sep1 (Parser (F (Lit ',')))
+commaSep1 = sep1 (HDown (In (Lit ',')))
 
 commaSep :: Parser a -> Parser [a]
-commaSep = sep (Parser (F (Lit ',')))
+commaSep = sep (HDown (In (Lit ',')))
 
 sep1 :: Parser sep -> Parser a -> Parser [a]
 sep1 s p = (:) <$> p <*> many (s *> p)
@@ -93,30 +55,30 @@ sep s p = s `sep1` p <|> pure []
 oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
 oneOf = getAlt . foldMap Monoid.Alt
 
-cat2 :: Combinator a -> Combinator b -> Combinator (a, b)
-a `cat2` b = Cat (In a) (In b)
+cat :: Combinator a -> Combinator b -> Combinator (a, b)
+a `cat` b = Cat (In a) (In b)
 
-lit2 :: Char -> Combinator Char
-lit2 = Lit
+lit :: Char -> Combinator Char
+lit = Lit
 
-ret2 :: [a] -> Combinator a
-ret2 = Ret
+ret :: [a] -> Combinator a
+ret = Ret
 
-nul2 :: Combinator a
-nul2 = Nul
+nul :: Combinator a
+nul = Nul
 
-eps2 :: Combinator a
-eps2 = Eps
+eps :: Combinator a
+eps = Eps
 
-infixr 2 `label2`
+infixr 2 `label`
 
-label2 :: Combinator a -> String -> Combinator a
-label2 p = Lab (In p)
+label :: Combinator a -> String -> Combinator a
+label p = Lab (In p)
 
-literal2 :: String -> Combinator String
-literal2 string = sequenceA (Lit <$> string)
+literal :: String -> Combinator String
+literal string = sequenceA (Lit <$> string)
 
-mu :: (forall v. v a -> ParserF (HRec ParserF v) a) -> Parser2 a
+mu :: (forall v. v a -> ParserF (HRec ParserF v) a) -> Parser a
 mu f = HDown (Mu (\ ~(v:_) -> [ f v ]))
 
 
@@ -135,38 +97,21 @@ data ParserF f a where
   Eps :: ParserF f a
   Lab :: f a -> String -> ParserF f a
 
-newtype Parser a = Parser { unParser :: HFix ParserF a }
-  deriving (Alternative, Applicative, Functor, Monad)
-
-type Parser2 a = HGraph ParserF a
+type Parser a = HGraph ParserF a
 type Combinator a = (forall v. ParserF (HRec ParserF v) a)
 
 
 -- Algorithm
 
 deriv :: Parser a -> Char -> Parser a
-deriv (Parser f) c = Parser (deriv' f c)
-
-deriv' :: HFix ParserF a -> Char -> HFix ParserF a
-deriv' (F parser) c = case parser of
-  Cat a b -> F (Cat (deriv' a c) b) <|> F (Cat (F (Ret (parseNull' a))) (deriv' b c))
-  Alt a b -> F (Alt (deriv' a c) (deriv' b c))
-  Rep p -> (:) <$> deriv' p c <*> F (Rep p)
-  Map f p -> F (Map f (deriv' p c))
-  Bnd p f -> F (Bnd (deriv' p c) f)
-  Lit c' -> F $ if c == c' then Ret [c] else Nul
-  Lab p _ -> deriv' p c
-  _ -> F Nul
-
-deriv2 :: Parser2 a -> Char -> Parser2 a
-deriv2 g c = modifyGraph deriv' g
+deriv g c = modifyGraph deriv' g
   where deriv' :: HRec ParserF v a -> HRec ParserF v a
         deriv' (Var v) = Var v
         deriv' (Mu g) = Mu (map deriv'' . g)
         deriv' (In r) = In (deriv'' r)
         deriv'' :: ParserF (HRec ParserF v) a -> ParserF (HRec ParserF v) a
         deriv'' parser = case parser of
-          Cat a b -> Alt (In (Cat (deriv' a) b)) (In (Cat (In (Ret (parseNull2 (HDown (hisomap (const undefined) (const undefined) a))))) (deriv' b)))
+          Cat a b -> Alt (In (Cat (deriv' a) b)) (In (Cat (In (Ret (parseNull (HDown (hisomap (const undefined) (const undefined) a))))) (deriv' b)))
           Alt a b -> Alt (deriv' a) (deriv' b)
           Rep p -> Map (uncurry (:)) $ In (Cat (deriv' p) (In (Rep p)))
           Map f p -> Map f (deriv' p)
@@ -176,24 +121,10 @@ deriv2 g c = modifyGraph deriv' g
           _ -> Nul
 
 parseNull :: Parser a -> [a]
-parseNull = parseNull' . unParser
+parseNull = parseNull' . hup
 
-parseNull' :: HFix ParserF a -> [a]
-parseNull' = memoStableFrom [] $ \ (F parser) -> case parser of
-  Cat a b -> (,) <$> parseNull' a <*> parseNull' b
-  Alt a b -> parseNull' a <> parseNull' b
-  Rep _ -> [[]]
-  Map f p -> f <$> parseNull' p
-  Bnd p f -> (f <$> parseNull' p) >>= parseNull'
-  Ret as -> as
-  Lab p _ -> parseNull' p
-  _ -> []
-
-parseNull2 :: Parser2 a -> [a]
-parseNull2 = parseNull2' . hup
-
-parseNull2' :: HRec ParserF [] a -> [a]
-parseNull2' = hrfold go []
+parseNull' :: HRec ParserF [] a -> [a]
+parseNull' = hrfold go []
   where go :: ParserF [] a -> [a]
         go parser = case parser of
           Cat a b -> (,) <$> a <*> b
@@ -206,21 +137,7 @@ parseNull2' = hrfold go []
           _ -> []
 
 compact :: Parser a -> Parser a
-compact = Parser . go . out . unParser
-  where go parser = case parser of
-          Cat (F Nul) _ -> F Nul
-          Cat _ (F Nul) -> F Nul
-          Cat (F (Ret [t])) b -> (,) t <$> b
-          Cat a (F (Ret [t])) -> flip (,) t <$> a
-          Alt (F Nul) p -> p
-          Alt p (F Nul) -> p
-          Map f (F (Ret as)) -> F (Ret (f <$> as))
-          Map g (F (Map f p)) -> g . f <$> p
-          Rep (F Nul) -> F (Ret [])
-          a -> F a
-
-compact2 :: Parser2 a -> Parser2 a
-compact2 parser = HDown (trans (hup parser))
+compact parser = HDown (trans (hup parser))
   where trans (Var x) = Var x
         trans (Mu g) = Mu (fmap ((`Lab` "") . go) . g)
         trans (In r) = go r
@@ -238,12 +155,7 @@ compact2 parser = HDown (trans (hup parser))
           a -> In a
 
 size :: Parser a -> Int
-size = getSum . getConst . hcata (memoFrom (Const (Sum 0)) size) . unParser
-  where size :: ParserF (Const (Sum Int)) a -> Const (Sum Int) a
-        size = Const . mappend (Sum 1) . hfoldMap getConst
-
-size2 :: Parser2 a -> Int
-size2 = getSum . fold (mappend (Sum 1) . hfoldMap getConst) (Sum 0)
+size = getSum . fold (mappend (Sum 1) . hfoldMap getConst) (Sum 0)
 
 
 -- Instances
@@ -271,31 +183,12 @@ instance HFoldable ParserF where
     Lab p _ -> f p
     _ -> mempty
 
-instance Functor (ParserF (HFix ParserF)) where
-  fmap = (. F) . Map
-
-instance Functor (HFix ParserF) where
-  fmap = (F .) . Map
-
 instance Functor (ParserF (HRec ParserF v)) where
   fmap = (. In) . Map
 
 instance Functor (HRec ParserF v) where
   fmap = (In .) . Map
 
-instance Applicative (HFix ParserF) where
-  pure = F . Ret . pure
-  (<*>) = (fmap (uncurry ($)) .) . (F .) . Cat
-
-instance Alternative (HFix ParserF) where
-  empty = F Nul
-  (<|>) = (F .) . Alt
-  some v = (:) <$> v <*> many v
-  many = F . Rep
-
-instance Monad (HFix ParserF) where
-  return = pure
-  (>>=) = (F .) . Bnd
 instance Functor (HGraph ParserF) where
   fmap f (HDown rec) = HDown (f <$> rec)
 
@@ -330,15 +223,6 @@ instance Alternative (HGraph ParserF) where
 instance Monad (HRec ParserF v) where
   return = pure
   (>>=) = (In .) . Bnd
-
-instance Show (Parser a) where
-  showsPrec n = showsPrec n . unParser
-
-instance Show (HFix ParserF a) where
-  showsPrec n = showsPrec n . out
-
-instance Show (ParserF (HFix ParserF) a) where
-  show p = getConst $ hcata (memoFrom (Const $ fromMaybe "" (getLabel (Parser $ F p))) (Const . show)) (F p)
 
 instance Show (ParserF (Const String) out) where
   show = getConst . go
