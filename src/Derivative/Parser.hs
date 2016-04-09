@@ -312,6 +312,10 @@ instance Applicative (HRec ParserF v) where
   pure = In . Ret . pure
   (<*>) = (fmap (uncurry ($)) .) . (In .) . Cat
 
+instance Applicative (HGraph ParserF) where
+  pure a = HDown (pure a)
+  HDown f <*> HDown a = HDown (f <*> a)
+
 instance Alternative (ParserF (HRec ParserF v)) where
   empty = Nul
   a <|> b = Alt (In a) (In b)
