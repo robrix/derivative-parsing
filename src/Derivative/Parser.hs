@@ -328,6 +328,10 @@ instance Alternative (HRec ParserF v) where
   some v = (:) <$> v <*> many v
   many = In . Rep
 
+instance Alternative (HGraph ParserF) where
+  empty = HDown empty
+  HDown a <|> HDown b = HDown (a <|> b)
+
 instance Monad (HRec ParserF v) where
   return = pure
   (>>=) = (In .) . Bnd
