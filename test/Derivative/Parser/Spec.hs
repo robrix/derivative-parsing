@@ -174,6 +174,9 @@ spec = do
     it "terminates on acyclic grammars" $
       HDown (In (Lit 'x')) `deriv2` 'x' `shouldBe` HDown (In (ret2 "x"))
 
+    it "deriv2 terminates on cyclic grammars" $
+      compact2 (lam2 `deriv2` 'x') `shouldBe` HDown (In (ret2 [ Var' "x" ]))
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
