@@ -193,10 +193,6 @@ spec = do
     it "compaction terminates on cyclic grammars" $
       (do { x <- return $! compact $! (lam `deriv` 'x') ; x `seq` return True } ) `shouldReturn` True
 
-    it "parseNull terminates on cyclic grammars" $
-      pendingWith "this does not yet terminate"
-      -- parseNull (lam `deriv` 'x') `shouldBe` [ Var' "x" ]
-
 
 -- Grammar
 
