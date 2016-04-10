@@ -79,7 +79,7 @@ spec = do
       prop "represents unmatched content with the nul parser" $
         \ a -> HDown (lit a) `deriv` succ a `shouldBe` HDown nul
 
-      prop "terminates on acyclic grammars" $
+      prop "represents matched content with ε reduction parsers" $
         \ a -> HDown (lit a) `deriv` a `shouldBe` HDown (ret [a])
 
       it "terminates on cyclic grammars" $
