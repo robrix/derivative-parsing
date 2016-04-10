@@ -76,22 +76,16 @@ spec = do
       prop "produces no parse trees when unsuccessful" $
         \ c -> parseNull (many (HDown $ lit c) `deriv` succ c) `shouldBe` []
 
-      prop "represents unmatched content with the nul parser" $
-        \ a -> HDown (lit a) `deriv` succ a `shouldBe` HDown nul
-
-      prop "represents matched content with ε reduction parsers" $
-        \ a -> HDown (lit a) `deriv` a `shouldBe` HDown (ret [a])
-
     describe "fmap" $ do
       prop "distributes over Map" $
         \ f c -> parseNull (fmap (getBlind f :: Char -> Char) (pure c)) `shouldBe` [getBlind f c]
 
     describe "lit" $ do
-      prop "produces matching characters" $
-        \ c -> parseNull ((HDown $ lit c) `deriv` c) `shouldBe` [c]
+      prop "represents unmatched content with the nul parser" $
+        \ a -> HDown (lit a) `deriv` succ a `shouldBe` HDown nul
 
-      prop "fails on unmatched characters" $
-        \ c -> parseNull ((HDown $ lit c) `deriv` succ c) `shouldBe` []
+      prop "represents matched content with ε reduction parsers" $
+        \ a -> HDown (lit a) `deriv` a `shouldBe` HDown (ret [a])
 
     describe "pure" $ do
       prop "has the null derivative" $
