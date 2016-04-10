@@ -77,7 +77,7 @@ spec = do
         \ c -> parseNull (many (HDown $ lit c) `deriv` succ c) `shouldBe` []
 
       it "terminates on acyclic grammars" $
-        HDown (In (Lit 'x')) `deriv` 'x' `shouldBe` HDown (ret "x")
+        HDown (lit 'x') `deriv` 'x' `shouldBe` HDown (ret "x")
 
       it "terminates on cyclic grammars" $
         lam `deriv` 'x' `shouldBe` HDown (ret [ Var' "x" ])
