@@ -8,6 +8,7 @@ module Data.Higher.Graph
 , hfold
 , hrfold
 , fold
+, rfold
 , hcfold
 , cfold
 , hsfold
@@ -62,6 +63,9 @@ hrfold alg k = hgrfold id (\ g -> head (g (repeat k))) alg
 
 fold :: HFunctor f => (forall b. f (Const a) b -> a) -> a -> HGraph f b -> a
 fold alg k = getConst . hfold (Const . alg) (Const k)
+
+rfold :: HFunctor f => (forall b. f (Const a) b -> a) -> a -> HRec f (Const a) b -> a
+rfold alg k = getConst . hrfold (Const . alg) (Const k)
 
 hcfold :: HFunctor f => (f t ~> t) -> HGraph f ~> t
 hcfold = hgfold id (head . fix)
