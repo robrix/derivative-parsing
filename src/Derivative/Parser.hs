@@ -142,21 +142,22 @@ parseNull' = hrfold go []
 
 compact :: Parser a -> Parser a
 compact = modifyGraph compact'
-  where compact' (Var v) = Var v
-        compact' (Mu g) = Mu (fmap ((`Lab` "") . compact'') . g)
-        compact' (In r) = compact'' r
+  where compact' :: HRec ParserF v a -> HRec ParserF v a
+        compact' (Var v) = Var v
+        compact' (Mu g) = Mu (map compact'' . g)
+        compact' (In r) = In (compact'' r)
+        compact'' :: ParserF (HRec ParserF v) a -> ParserF (HRec ParserF v) a
         compact'' parser = case parser of
-          Cat (In Nul) _ -> In Nul
-          Cat _ (In Nul) -> In Nul
-          Cat (In (Ret [t])) b -> (,) t <$> b
-          Cat a (In (Ret [t])) -> flip (,) t <$> a
-          Alt (In Nul) p -> p
-          Alt p (In Nul) -> p
-          Map f (In (Ret as)) -> In (Ret (f <$> as))
-          Map g (In (Map f p)) -> g . f <$> p
-          Rep (In Nul) -> In (Ret [])
-          Lab p "" -> p
-          a -> In a
+          Cat (In Nul) _ -> Nul
+          Cat _ (In Nul) -> Nul
+          Cat (In (Ret [t])) b -> Map ((,) t) b
+          Cat a (In (Ret [t])) -> Map (flip (,) t) a
+          Alt (In Nul) (In p) -> p
+          Alt (In p) (In Nul) -> p
+          Map f (In (Ret as)) -> Ret (f <$> as)
+          Map g (In (Map f p)) -> Map (g . f) p
+          Rep (In Nul) -> Ret []
+          a -> a
 
 size :: Parser a -> Int
 size = getSum . fold (mappend (Sum 1) . hfoldMap getConst) (Sum 0)
