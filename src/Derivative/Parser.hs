@@ -55,34 +55,34 @@ sep s p = s `sep1` p <|> pure []
 oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
 oneOf = getAlt . foldMap Monoid.Alt
 
-cat :: Combinator a -> Combinator b -> Combinator (a, b)
+cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
 a `cat` b = In $ Cat a b
 
-lit :: Char -> Combinator Char
+lit :: Char -> Combinator v Char
 lit = In . Lit
 
-ret :: [a] -> Combinator a
+ret :: [a] -> Combinator v a
 ret = In . Ret
 
-nul :: Combinator a
+nul :: Combinator v a
 nul = In Nul
 
-eps :: Combinator a
+eps :: Combinator v a
 eps = In Eps
 
 infixr 2 `label`
 
-label :: Combinator a -> String -> Combinator a
+label :: Combinator v a -> String -> Combinator v a
 label p = In . Lab p
 
-literal :: String -> Combinator String
+literal :: String -> Combinator v String
 literal string = sequenceA (In . Lit <$> string)
 
-mu :: (forall v. HRec ParserF v a -> HRec ParserF v a) -> Parser a
-mu f = HDown (Mu (\ ~(v:_) -> [ unpack (f (Var v)) ]))
-  where unpack rec = case rec of
-          In r -> r
-          p -> p `Lab` ""
+mu :: (forall v. Combinator v a -> Combinator v a) -> Parser a
+mu f = HDown $ Mu $ \ ~(v:_) -> pure $
+  case f (Var v) of
+    In r -> r
+    p -> p `Lab` ""
 
 
 -- Types
@@ -101,7 +101,7 @@ data ParserF f a where
   Lab :: f a -> String -> ParserF f a
 
 type Parser a = HGraph ParserF a
-type Combinator a = (forall v. HRec ParserF v a)
+type Combinator v a = HRec ParserF v a
 
 
 -- Algorithm
