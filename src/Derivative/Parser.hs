@@ -42,10 +42,10 @@ parse p = parseNull . foldl ((compact .) . deriv) p
 
 
 commaSep1 :: Parser a -> Parser [a]
-commaSep1 = sep1 (HDown (In (Lit ',')))
+commaSep1 = sep1 (HDown (lit ','))
 
 commaSep :: Parser a -> Parser [a]
-commaSep = sep (HDown (In (Lit ',')))
+commaSep = sep (HDown (lit ','))
 
 sep1 :: Parser sep -> Parser a -> Parser [a]
 sep1 s p = (:) <$> p <*> many (s *> p)
