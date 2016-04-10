@@ -141,7 +141,7 @@ parseNull' = hrfold go []
           _ -> []
 
 compact :: Parser a -> Parser a
-compact parser = HDown (compact' (hup parser))
+compact = modifyGraph compact'
   where compact' (Var v) = Var v
         compact' (Mu g) = Mu (fmap ((`Lab` "") . compact'') . g)
         compact' (In r) = compact'' r
