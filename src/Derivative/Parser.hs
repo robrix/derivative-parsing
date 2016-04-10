@@ -141,10 +141,10 @@ parseNull' = hrfold go []
           _ -> []
 
 compact :: Parser a -> Parser a
-compact parser = HDown (trans (hup parser))
-  where trans (Var x) = Var x
-        trans (Mu g) = Mu (fmap ((`Lab` "") . go) . g)
-        trans (In r) = go r
+compact parser = HDown (compact' (hup parser))
+  where compact' (Var x) = Var x
+        compact' (Mu g) = Mu (fmap ((`Lab` "") . go) . g)
+        compact' (In r) = go r
         go parser = case parser of
           Cat (In Nul) _ -> In Nul
           Cat _ (In Nul) -> In Nul
