@@ -76,6 +76,9 @@ spec = do
       prop "produces no parse trees when unsuccessful" $
         \ c -> parseNull (many (HDown $ lit c) `deriv` succ c) `shouldBe` []
 
+      prop "represents unmatched content with the nul parser" $
+        \ a -> HDown (lit a) `deriv` succ a `shouldBe` HDown nul
+
       prop "terminates on acyclic grammars" $
         \ a -> HDown (lit a) `deriv` a `shouldBe` HDown (ret [a])
 
