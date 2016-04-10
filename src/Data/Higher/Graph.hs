@@ -12,6 +12,7 @@ module Data.Higher.Graph
 , cfold
 , hsfold
 , sfold
+, hgcata
 , transform
 , hmap
 , hpjoin
