@@ -158,10 +158,11 @@ spec = do
     prop "is 1 for terminals" $
       \ a b -> let terminals = [ HDown $ ret a, HDown $ lit b, HDown nul, HDown eps ] in sum (size <$> terminals) `shouldBe` length terminals
 
-    -- prop "is 1 + the sum for nonterminals" $
-    --   \ a b -> let binary = [ (size .) . cat, (size .) . (<|>) ]
-    --                unary = [ size . fmap id, size . (>>= return), size . many, size . (`label` "") ] in
-    --     (binary <*> [ lit a ] <*> [ lit b ]) ++ (unary <*> [ lit a ]) `shouldBe` (3 <$ binary) ++ (2 <$ unary)
+    prop "is 1 + the sum for unary nonterminals" $
+      \ a s -> [ size (HDown (fmap id (lit a))), size (HDown (lit a >>= return)), size (HDown (lit a `label` s)) ] `shouldBe` [ 2, 2, 2 ]
+
+    prop "is 1 + the sum for binary nonterminals" $
+      \ a b -> [ size (HDown (lit a `cat` lit b)), size (HDown (lit a <|> lit b)) ] `shouldBe` [ 3, 3 ]
 
     it "terminates on unlabelled acyclic grammars" $
       size (HDown (lit 'c')) `shouldBe` 1
