@@ -77,7 +77,7 @@ spec = do
         \ c -> parseNull (HDown (many (lit c)) `deriv` succ c) `shouldBe` []
 
     describe "fmap" $ do
-      prop "distributes over Map" $
+      prop "distributivity" $
         \ f c -> parseNull (fmap (getBlind f :: Char -> Char) (pure c)) `shouldBe` [getBlind f c]
 
     describe "lit" $ do
