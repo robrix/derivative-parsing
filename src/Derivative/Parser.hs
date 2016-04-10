@@ -155,6 +155,19 @@ compact = modifyGraph (hmap compact'')
           Rep (In Nul) -> Ret []
           a -> a
 
+nullable :: Parser a -> Bool
+nullable = nullable' . hup
+
+nullable' :: HRec ParserF (Const Bool) a -> Bool
+nullable' = rfold go False
+  where go :: ParserF (Const Bool) b -> Bool
+        go rec = case rec of
+          Cat a b -> getConst a && getConst b
+          Alt a b -> getConst a || getConst b
+          Rep _ -> True
+          Eps -> True
+          _ -> False
+
 size :: Parser a -> Int
 size = getSum . fold (mappend (Sum 1) . hfoldMap getConst) (Sum 0)
 
