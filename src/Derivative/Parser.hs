@@ -14,7 +14,7 @@ module Derivative.Parser
 , parse
 , parseNull
 , ParserF(..)
-, Parser()
+, Parser
 , ret
 , sep
 , sep1
