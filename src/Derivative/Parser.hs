@@ -56,27 +56,27 @@ oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
 oneOf = getAlt . foldMap Monoid.Alt
 
 cat :: Combinator a -> Combinator b -> Combinator (a, b)
-a `cat` b = Cat (In a) (In b)
+a `cat` b = In $ Cat a b
 
 lit :: Char -> Combinator Char
-lit = Lit
+lit = In . Lit
 
 ret :: [a] -> Combinator a
-ret = Ret
+ret = In . Ret
 
 nul :: Combinator a
-nul = Nul
+nul = In Nul
 
 eps :: Combinator a
-eps = Eps
+eps = In Eps
 
 infixr 2 `label`
 
 label :: Combinator a -> String -> Combinator a
-label p = Lab (In p)
+label p = In . Lab p
 
 literal :: String -> Combinator String
-literal string = sequenceA (Lit <$> string)
+literal string = sequenceA (In . Lit <$> string)
 
 mu :: (forall v. HRec ParserF v a -> ParserF (HRec ParserF v) a) -> Parser a
 mu f = HDown (Mu (\ ~(v:_) -> [ f (Var v) ]))
@@ -98,7 +98,7 @@ data ParserF f a where
   Lab :: f a -> String -> ParserF f a
 
 type Parser a = HGraph ParserF a
-type Combinator a = (forall v. ParserF (HRec ParserF v) a)
+type Combinator a = (forall v. HRec ParserF v a)
 
 
 -- Algorithm
