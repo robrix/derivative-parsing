@@ -234,20 +234,6 @@ instance Monad (HGraph ParserF) where
   return = pure
   HDown p >>= f = HDown (p >>= hup . f)
 
-instance Show (ParserF (Const String) out) where
-  show = getConst . go
-    where go (Cat a b) = a <> Const " `cat` " <> b
-          go (Alt a b) = a <> Const " <|> " <> b
-          go (Rep p) = Const "many " <> p
-          go (Map _ p) = Const "f <$> " <> p
-          go (Bnd p _) = p <> Const " >>= f"
-          go (Lit c) = Const ("lit " ++ show c)
-          go (Ret _) = Const "ret […]"
-          go Nul = Const "nul"
-          go Eps = Const "eps"
-          go (Lab p s) = p <> Const (" `label` " ++ show s)
-          Const a <> Const b = Const (a ++ b)
-
 instance Eq a => Eq (ParserF (Const a) out) where
   Cat a1 b1 == Cat a2 b2 = a1 == a2 && b1 == b2
   Alt a1 b1 == Alt a2 b2 = a1 == a2 && b1 == b2
