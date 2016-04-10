@@ -234,20 +234,6 @@ instance Monad (HGraph ParserF) where
   return = pure
   HDown p >>= f = HDown (p >>= hup . f)
 
-instance Eq a => Eq (ParserF (Const a) out) where
-  Cat a1 b1 == Cat a2 b2 = a1 == a2 && b1 == b2
-  Alt a1 b1 == Alt a2 b2 = a1 == a2 && b1 == b2
-  Rep p1 == Rep p2 = p1 == p2
-  Map f1 p1 == Map f2 p2 = getConst (f1 <$> p1) == getConst (f2 <$> p2)
-  Bnd p1 f1 == Bnd p2 f2 = getConst (p1 >>= f1) == getConst (p2 >>= f2)
-    where Const a >>= _ = Const a
-  Lit c1 == Lit c2 = c1 == c2
-  Ret a == Ret b = length a == length b
-  Nul == Nul = True
-  Eps == Eps = True
-  Lab _ s1 == Lab _ s2 = s1 == s2
-  _ == _ = False
-
 instance HEqF ParserF
   where heqF eq a b = case (a, b) of
           (Cat a1 b1, Cat a2 b2) -> eq a1 a2 && eq b1 b2
