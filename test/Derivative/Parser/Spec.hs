@@ -76,8 +76,8 @@ spec = do
       prop "produces no parse trees when unsuccessful" $
         \ c -> parseNull (many (HDown $ lit c) `deriv` succ c) `shouldBe` []
 
-      it "terminates on acyclic grammars" $
-        HDown (lit 'x') `deriv` 'x' `shouldBe` HDown (ret "x")
+      prop "terminates on acyclic grammars" $
+        \ a -> HDown (lit a) `deriv` a `shouldBe` HDown (ret [a])
 
       it "terminates on cyclic grammars" $
         lam `deriv` 'x' `shouldBe` HDown (ret [ Var' "x" ])
