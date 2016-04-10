@@ -15,6 +15,7 @@ module Derivative.Parser
 , parseNull
 , ParserF(..)
 , Parser
+, Combinator
 , ret
 , sep
 , sep1
