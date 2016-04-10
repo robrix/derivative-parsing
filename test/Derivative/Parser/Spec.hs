@@ -87,6 +87,10 @@ spec = do
       prop "represents matched content with ε reduction parsers" $
         \ a -> HDown (lit a) `deriv` a `shouldBe` HDown (ret [a])
 
+    describe "<|>" $ do
+      prop "distributivity" $
+        \ a b c -> HDown (lit a <|> lit b) `deriv` c `shouldBe` (HDown (lit a) `deriv` c) <|> (HDown (lit b) `deriv` c)
+
     describe "pure" $ do
       prop "has the null derivative" $
         \ a c -> parseNull (pure (a :: Char) `deriv` c) `shouldBe` []
