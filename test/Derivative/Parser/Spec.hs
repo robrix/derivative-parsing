@@ -150,8 +150,8 @@ spec = do
     it "shows concatenations" $
       show (HDown $ lit 'a' `cat` lit 'b') `shouldBe` "lit 'a' `cat` lit 'b'"
 
-    it "terminates for cyclic grammars2" $
-      show cyclic `shouldBe` "Mu (\n  a => a `label` \"cyclic2\"\n)\n"
+    it "terminates for cyclic grammars" $
+      show cyclic `shouldBe` "Mu (\n  a => a `label` \"cyclic\"\n)\n"
 
 
   describe "size" $ do
@@ -196,7 +196,7 @@ spec = do
 -- Grammar
 
 cyclic :: Parser ()
-cyclic = mu $ \ v -> v `label` "cyclic2"
+cyclic = mu $ \ v -> v `label` "cyclic"
 
 varName :: Parser String
 varName = HDown $ literal "x"
