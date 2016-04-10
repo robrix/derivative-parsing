@@ -115,9 +115,9 @@ deriv g c = modifyGraph deriv' g
         deriv' (In r) = In (deriv'' r)
         deriv'' :: ParserF (HRec ParserF v) a -> ParserF (HRec ParserF v) a
         deriv'' parser = case parser of
-          Cat a b -> Alt (In (Cat (deriv' a) b)) (In (Cat (In (Ret (parseNull (HDown (hisomap (const undefined) (const undefined) a))))) (deriv' b)))
+          Cat a b -> Alt (deriv' a `cat` b) (ret (parseNull (HDown (hisomap (const undefined) (const undefined) a))) `cat` deriv' b)
           Alt a b -> Alt (deriv' a) (deriv' b)
-          Rep p -> Map (uncurry (:)) $ In (Cat (deriv' p) (In (Rep p)))
+          Rep p -> Map (uncurry (:)) $ deriv' p `cat` many p
           Map f p -> Map f (deriv' p)
           Bnd p f -> Bnd (deriv' p) f
           Lit c' -> if c == c' then Ret [c] else Nul
