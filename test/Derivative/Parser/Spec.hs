@@ -82,9 +82,6 @@ spec = do
       prop "represents matched content with ε reduction parsers" $
         \ a -> HDown (lit a) `deriv` a `shouldBe` HDown (ret [a])
 
-      it "terminates on cyclic grammars" $
-        lam `deriv` 'x' `shouldBe` HDown (ret [ Var' "x" ])
-
     describe "fmap" $ do
       prop "distributes over Map" $
         \ f c -> parseNull (fmap (getBlind f :: Char -> Char) (pure c)) `shouldBe` [getBlind f c]
@@ -99,6 +96,9 @@ spec = do
     describe "pure" $ do
       prop "has the null derivative" $
         \ a c -> parseNull (pure (a :: Char) `deriv` c) `shouldBe` []
+
+    it "terminates on cyclic grammars" $
+      lam `deriv` 'x' `shouldBe` HDown (ret [ Var' "x" ])
 
 
   describe "Functor" $ do
