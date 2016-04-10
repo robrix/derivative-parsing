@@ -71,10 +71,10 @@ spec = do
   describe "deriv" $ do
     describe "many" $ do
       prop "produces a list of successful parses" $
-        \ c -> parseNull (many (HDown $ lit c) `deriv` c) `shouldBe` [[c]]
+        \ c -> parseNull (HDown (many (lit c)) `deriv` c) `shouldBe` [[c]]
 
       prop "produces no parse trees when unsuccessful" $
-        \ c -> parseNull (many (HDown $ lit c) `deriv` succ c) `shouldBe` []
+        \ c -> parseNull (HDown (many (lit c)) `deriv` succ c) `shouldBe` []
 
     describe "fmap" $ do
       prop "distributes over Map" $
