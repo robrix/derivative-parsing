@@ -17,6 +17,7 @@ module Data.Higher.Graph
 , hmap
 , hpjoin
 , modifyGraph
+, unroll
 ) where
 
 import Control.Applicative
@@ -102,6 +103,12 @@ hpreturn = Var
 
 modifyGraph :: (forall v. HRec f v ~> HRec g v) -> HGraph f ~> HGraph g
 modifyGraph f g = HDown (f (hup g))
+
+unroll :: HFunctor f => HRec f (HRec f v) a -> HRec f (HRec f v) a
+unroll rec = case rec of
+  Var v -> Var v
+  Mu g -> In (head (g (repeat (hpjoin (unroll (Mu g))))))
+  In r -> In (hfmap unroll r)
 
 
 -- Equality
