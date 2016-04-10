@@ -27,13 +27,6 @@ spec = do
       prop "is empty when its right operand is empty" $
         \ a -> parseNull (HDown $ pure a `cat` nul) `shouldBe` ([] :: [(Char, Char)])
 
-      it "terminates on cyclic grammars" $
-        let grammar = mu (\ a -> a <|> ret ["x"]) in
-        parseNull grammar `shouldBe` ["x"]
-
-      it "terminates on cyclic grammars" $
-        parseNull (lam `deriv` 'x') `shouldBe` [ Var' "x" ]
-
     describe "<|>" $ do
       prop "returns left parse trees" $
         \ a -> parseNull (pure a <|> empty) `shouldBe` [a :: Char]
@@ -67,6 +60,13 @@ spec = do
     describe "eps" $ do
       it "is empty" $
         parseNull (HDown eps :: Parser Char) `shouldBe` []
+
+    it "terminates on cyclic grammars" $
+      let grammar = mu (\ a -> a <|> ret ["x"]) in
+      parseNull grammar `shouldBe` ["x"]
+
+    it "terminates on cyclic grammars" $
+      parseNull (lam `deriv` 'x') `shouldBe` [ Var' "x" ]
 
   describe "deriv" $ do
     describe "many" $ do
