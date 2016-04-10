@@ -18,6 +18,7 @@ module Data.Higher.Graph
 , hpjoin
 , modifyGraph
 , unroll
+, unrollGraph
 ) where
 
 import Control.Applicative
@@ -110,6 +111,8 @@ unroll rec = case rec of
   Mu g -> In (head (g (repeat (hpjoin (unroll (Mu g))))))
   In r -> In (hfmap unroll r)
 
+unrollGraph :: HFunctor f => HGraph f ~> HGraph f
+unrollGraph g = HDown (hpjoin (unroll (hup g)))
 
 -- Equality
 
