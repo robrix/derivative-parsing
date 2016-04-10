@@ -223,7 +223,7 @@ instance Alternative (HRec ParserF v) where
 instance Alternative (HGraph ParserF) where
   empty = HDown empty
   HDown a <|> HDown b = HDown (a <|> b)
-  some (HDown v) = HDown (some v)
+  some (HDown p) = HDown (some p)
   many (HDown p) = HDown (many p)
 
 instance Monad (HRec ParserF v) where
