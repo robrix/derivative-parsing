@@ -142,11 +142,9 @@ parseNull' = hrfold go []
 
 compact :: Parser a -> Parser a
 compact = modifyGraph compact'
-  where compact' :: HRec ParserF v a -> HRec ParserF v a
-        compact' (Var v) = Var v
+  where compact' (Var v) = Var v
         compact' (Mu g) = Mu (map compact'' . g)
         compact' (In r) = In (compact'' r)
-        compact'' :: ParserF (HRec ParserF v) a -> ParserF (HRec ParserF v) a
         compact'' parser = case parser of
           Cat (In Nul) _ -> Nul
           Cat _ (In Nul) -> Nul
