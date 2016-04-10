@@ -78,8 +78,11 @@ label p = In . Lab p
 literal :: String -> Combinator String
 literal string = sequenceA (In . Lit <$> string)
 
-mu :: (forall v. HRec ParserF v a -> ParserF (HRec ParserF v) a) -> Parser a
-mu f = HDown (Mu (\ ~(v:_) -> [ f (Var v) ]))
+mu :: (forall v. HRec ParserF v a -> HRec ParserF v a) -> Parser a
+mu f = HDown (Mu (\ ~(v:_) -> [ unpack (f (Var v)) ]))
+  where unpack rec = case rec of
+          In r -> r
+          p -> p `Lab` ""
 
 
 -- Types
