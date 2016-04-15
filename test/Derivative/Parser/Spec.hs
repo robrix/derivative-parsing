@@ -102,6 +102,10 @@ spec = do
       prop "annihilates" $
         \ a c -> HDown (ret (a :: String)) `deriv` c `shouldBe` HDown nul
 
+    describe "lab" $ do
+      prop "distributivity" $
+        \ c s -> HDown (lit c `label` s) `deriv` c `shouldBe` HDown (hup (HDown (lit c) `deriv` c) `label` s)
+
 
   describe "Functor" $ do
     prop "obeys the identity law" $
