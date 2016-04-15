@@ -98,6 +98,10 @@ spec = do
     it "terminates on cyclic grammars" $
       lam `deriv` 'x' `shouldBe` HDown (ret [ Var' "x" ])
 
+    describe "ret" $ do
+      prop "annihilates" $
+        \ a c -> HDown (ret (a :: String)) `deriv` c `shouldBe` HDown nul
+
 
   describe "Functor" $ do
     prop "obeys the identity law" $
