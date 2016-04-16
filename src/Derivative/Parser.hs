@@ -122,12 +122,12 @@ outof :: Derivative v a -> v a
 outof (Derivative (v, _, _)) = v
 
 deriv :: Parser a -> Char -> Parser a
-deriv g c = modifyGraph deriv' g
-  where deriv' :: HRec ParserF v a -> HRec ParserF v a
+deriv g c = modifyGraph (hisomap outof into . deriv' . hisomap into outof) g
+  where deriv' :: HRec ParserF (Derivative v) a -> HRec ParserF (Derivative v) a
         deriv' (Var v) = Var v
         deriv' (Mu g) = Mu (map deriv'' . g)
         deriv' (In r) = In (deriv'' r)
-        deriv'' :: ParserF (HRec ParserF v) a -> ParserF (HRec ParserF v) a
+        deriv'' :: ParserF (HRec ParserF (Derivative v)) a -> ParserF (HRec ParserF (Derivative v)) a
         deriv'' p = case p of
           Cat a b -> Alt (deriv' a `cat` b) (ret (parseNull (parser (hisomap (const undefined) (const undefined) a))) `cat` deriv' b)
           Alt a b -> Alt (deriv' a) (deriv' b)
