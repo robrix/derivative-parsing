@@ -113,10 +113,10 @@ type Combinator v a = HRec ParserF v a
 
 -- Algorithm
 
-newtype Derivative v a = Derivative (v a, [a], Bool)
+newtype Derivative v a = Derivative (v a, [a], Const Bool a)
 
 into :: v a -> Derivative v a
-into v = Derivative (v, [], False)
+into v = Derivative (v, [], Const False)
 
 outof :: Derivative v a -> v a
 outof (Derivative (v, _, _)) = v
