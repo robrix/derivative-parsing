@@ -120,8 +120,8 @@ deriv g c = modifyGraph deriv' g
         deriv' (Mu g) = Mu (map deriv'' . g)
         deriv' (In r) = In (deriv'' r)
         deriv'' :: ParserF (HRec ParserF v) a -> ParserF (HRec ParserF v) a
-        deriv'' parser = case parser of
-          Cat a b -> Alt (deriv' a `cat` b) (ret (parseNull (HDown (hisomap (const undefined) (const undefined) a))) `cat` deriv' b)
+        deriv'' p = case p of
+          Cat a b -> Alt (deriv' a `cat` b) (ret (parseNull (parser (hisomap (const undefined) (const undefined) a))) `cat` deriv' b)
           Alt a b -> Alt (deriv' a) (deriv' b)
           Rep p -> Map (uncurry (:)) $ deriv' p `cat` many p
           Map f p -> Map f (deriv' p)
