@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Derivative.Parser.Spec where
 
@@ -229,7 +229,7 @@ data Lam = Var' String | Abs String Lam | App Lam Lam
 
 -- Instances
 
-instance Arbitrary a => Arbitrary (HGraph ParserF a) where
+instance Arbitrary a => Arbitrary (Parser a) where
   arbitrary = oneof
     [ pure <$> arbitrary
     , pure (HDown nul)
