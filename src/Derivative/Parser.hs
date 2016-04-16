@@ -23,6 +23,7 @@ module Derivative.Parser
 , mu
 , Data.Higher.Graph.HRec(..)
 , Data.Higher.Graph.HGraph(..)
+, parser
 ) where
 
 import Control.Applicative
@@ -84,6 +85,9 @@ mu f = HDown $ Mu $ \ ~(v:_) -> pure $
   case f (Var v) of
     In r -> r
     p -> p `Lab` ""
+
+parser :: (forall v. Combinator v a) -> Parser a
+parser = HDown
 
 
 -- Types
