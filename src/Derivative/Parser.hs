@@ -118,6 +118,9 @@ newtype Derivative v a = Derivative (v a, [a], Bool)
 into :: v a -> Derivative v a
 into v = Derivative (v, [], False)
 
+outof :: Derivative v a -> v a
+outof (Derivative (v, _, _)) = v
+
 deriv :: Parser a -> Char -> Parser a
 deriv g c = modifyGraph deriv' g
   where deriv' :: HRec ParserF v a -> HRec ParserF v a
