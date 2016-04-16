@@ -19,13 +19,13 @@ spec = do
   describe "parseNull" $ do
     describe "cat" $ do
       prop "returns pairs of its parse trees" $
-        \ a b -> parseNull (HDown $ pure a `cat` pure b) `shouldBe` [(a, b) :: (Char, Char)]
+        \ a b -> parseNull (parser $ pure a `cat` pure b) `shouldBe` [(a, b) :: (Char, Char)]
 
       prop "is empty when its left operand is empty" $
-        \ b -> parseNull (HDown $ nul `cat` pure b) `shouldBe` ([] :: [(Char, Char)])
+        \ b -> parseNull (parser $ nul `cat` pure b) `shouldBe` ([] :: [(Char, Char)])
 
       prop "is empty when its right operand is empty" $
-        \ a -> parseNull (HDown $ pure a `cat` nul) `shouldBe` ([] :: [(Char, Char)])
+        \ a -> parseNull (parser $ pure a `cat` nul) `shouldBe` ([] :: [(Char, Char)])
 
     describe "<|>" $ do
       prop "returns left parse trees" $
@@ -43,11 +43,11 @@ spec = do
 
     describe "fmap" $ do
       prop "applies a function to its parse trees" $
-        \ c -> parseNull (fmap succ (HDown $ lit c) `deriv` c) `shouldBe` [succ c]
+        \ c -> parseNull (fmap succ (parser $ lit c) `deriv` c) `shouldBe` [succ c]
 
     describe "lit" $ do
       prop "is empty" $
-        \ a -> parseNull (HDown $ lit a) `shouldBe` []
+        \ a -> parseNull (parser $ lit a) `shouldBe` []
 
     describe "pure" $ do
       prop "returns parse trees" $
@@ -55,11 +55,11 @@ spec = do
 
     describe "nul" $ do
       it "is empty" $
-        parseNull (HDown nul :: Parser Char) `shouldBe` []
+        parseNull (parser nul :: Parser Char) `shouldBe` []
 
     describe "eps" $ do
       it "is empty" $
-        parseNull (HDown eps :: Parser Char) `shouldBe` []
+        parseNull (parser eps :: Parser Char) `shouldBe` []
 
     it "terminates on cyclic grammars" $
       let grammar = mu (\ a -> a <|> ret ["x"]) in
@@ -71,10 +71,10 @@ spec = do
   describe "deriv" $ do
     describe "many" $ do
       prop "produces a list of successful parses" $
-        \ c -> parseNull (HDown (many (lit c)) `deriv` c) `shouldBe` [[c]]
+        \ c -> parseNull (parser (many (lit c)) `deriv` c) `shouldBe` [[c]]
 
       prop "produces no parse trees when unsuccessful" $
-        \ c -> parseNull (HDown (many (lit c)) `deriv` succ c) `shouldBe` []
+        \ c -> parseNull (parser (many (lit c)) `deriv` succ c) `shouldBe` []
 
     describe "fmap" $ do
       prop "distributivity" $
@@ -82,45 +82,45 @@ spec = do
 
     describe "lit" $ do
       prop "represents unmatched content with the nul parser" $
-        \ a -> HDown (lit a) `deriv` succ a `shouldBe` HDown nul
+        \ a -> parser (lit a) `deriv` succ a `shouldBe` parser nul
 
       prop "represents matched content with ε reduction parsers" $
-        \ a -> HDown (lit a) `deriv` a `shouldBe` HDown (ret [a])
+        \ a -> parser (lit a) `deriv` a `shouldBe` parser (ret [a])
 
     describe "<|>" $ do
       prop "distributivity" $
-        \ a b c -> HDown (lit a <|> lit b) `deriv` c `shouldBe` (HDown (lit a) `deriv` c) <|> (HDown (lit b) `deriv` c)
+        \ a b c -> parser (lit a <|> lit b) `deriv` c `shouldBe` (parser (lit a) `deriv` c) <|> (parser (lit b) `deriv` c)
 
     describe "pure" $ do
       prop "has the null derivative" $
         \ a c -> parseNull (pure (a :: Char) `deriv` c) `shouldBe` []
 
     it "terminates on cyclic grammars" $
-      lam `deriv` 'x' `shouldBe` HDown (ret [ Var' "x" ])
+      lam `deriv` 'x' `shouldBe` parser (ret [ Var' "x" ])
 
     describe "ret" $ do
       prop "annihilates" $
-        \ a c -> HDown (ret (a :: String)) `deriv` c `shouldBe` HDown nul
+        \ a c -> parser (ret (a :: String)) `deriv` c `shouldBe` parser nul
 
     describe "label" $ do
       prop "distributivity" $
-        \ c s -> HDown (lit c `label` s) `deriv` c `shouldBe` HDown (hup (HDown (lit c) `deriv` c) `label` s)
+        \ c s -> parser (lit c `label` s) `deriv` c `shouldBe` parser (combinator (parser (lit c) `deriv` c) `label` s)
 
 
   describe "Functor" $ do
     prop "obeys the identity law" $
-      \ c -> parseNull (fmap id (HDown $ lit c) `deriv` c) `shouldBe` parseNull ((HDown $ lit c) `deriv` c)
+      \ c -> parseNull (fmap id (parser $ lit c) `deriv` c) `shouldBe` parseNull (parser (lit c) `deriv` c)
 
     prop "obeys the composition law" $
-      \ c f g -> parseNull (fmap (getBlind f :: Char -> Char) (fmap (getBlind g) (HDown $ lit c)) `deriv` c) `shouldBe` parseNull (fmap (getBlind f . getBlind g) (HDown $ lit c) `deriv` c)
+      \ c f g -> parseNull (fmap (getBlind f :: Char -> Char) (fmap (getBlind g) (parser $ lit c)) `deriv` c) `shouldBe` parseNull (fmap (getBlind f . getBlind g) (parser $ lit c) `deriv` c)
 
 
   describe "Applicative" $ do
     prop "obeys the identity law" $
-      \ v -> parseNull (pure id <*> HDown (lit v) `deriv` v) `shouldBe` parseNull ((HDown $ lit v) `deriv` v)
+      \ v -> parseNull (pure id <*> parser (lit v) `deriv` v) `shouldBe` parseNull (parser (lit v) `deriv` v)
 
     prop "obeys the composition law" $
-      \ u v w -> parseNull (pure (.) <*> (getBlind u :: Parser (Char -> Char)) <*> getBlind v <*> (HDown $ lit w) `deriv` w) `shouldBe` parseNull (getBlind u <*> (getBlind v <*> (HDown $ lit w)) `deriv` w)
+      \ u v w -> parseNull (pure (.) <*> (getBlind u :: Parser (Char -> Char)) <*> getBlind v <*> parser (lit w) `deriv` w) `shouldBe` parseNull (getBlind u <*> (getBlind v <*> parser (lit w)) `deriv` w)
 
     prop "obeys the homomorphism law" $
       \ x f -> parseNull (pure (getBlind f :: Char -> Char) <*> pure x) `shouldBe` parseNull (pure (getBlind f x))
@@ -134,17 +134,17 @@ spec = do
       \ v -> parseNull (some (getBlind v :: Parser Char)) `shouldBe` parseNull ((:) <$> getBlind v <*> many (getBlind v))
 
     prop "obeys the many law" $
-      \ v -> parseNull (many (HDown $ lit v)) `shouldBe` parseNull (some (HDown $ lit v) <|> pure "")
+      \ v -> parseNull (many (parser $ lit v)) `shouldBe` parseNull (some (parser $ lit v) <|> pure "")
 
     describe "(<|>)" $ do
       prop "is not right-biased" $
-        \ c -> parseNull ((HDown $ lit c <|> lit (succ c)) `deriv` c) `shouldBe` [c]
+        \ c -> parseNull (parser (lit c <|> lit (succ c)) `deriv` c) `shouldBe` [c]
 
       prop "is not left-biased" $
-        \ c -> parseNull ((HDown $ lit (succ c) <|> lit c) `deriv` c) `shouldBe` [c]
+        \ c -> parseNull (parser (lit (succ c) <|> lit c) `deriv` c) `shouldBe` [c]
 
       prop "returns ambiguous parses" $
-        \ c -> parseNull ((HDown $ lit c <|> lit c) `deriv` c) `shouldBe` [c, c]
+        \ c -> parseNull (parser (lit c <|> lit c) `deriv` c) `shouldBe` [c, c]
 
 
   describe "Monad" $ do
@@ -157,7 +157,7 @@ spec = do
 
   describe "Show" $ do
     it "shows concatenations" $
-      show (HDown $ lit 'a' `cat` lit 'b') `shouldBe` "lit 'a' `cat` lit 'b'"
+      show (parser $ lit 'a' `cat` lit 'b') `shouldBe` "lit 'a' `cat` lit 'b'"
 
     it "terminates for cyclic grammars" $
       show cyclic `shouldBe` "Mu (\n  a => a `label` \"cyclic\"\n)\n"
@@ -165,16 +165,16 @@ spec = do
 
   describe "size" $ do
     prop "is 1 for terminals" $
-      \ a b -> let terminals = [ HDown $ ret a, HDown $ lit b, HDown nul, HDown eps ] in sum (size <$> terminals) `shouldBe` length terminals
+      \ a b -> let terminals = [ parser $ ret a, parser $ lit b, parser nul, parser eps ] in sum (size <$> terminals) `shouldBe` length terminals
 
     prop "is 1 + the sum for unary nonterminals" $
-      \ a s -> [ size (HDown (fmap id (lit a))), size (HDown (lit a >>= return)), size (HDown (lit a `label` s)) ] `shouldBe` [ 2, 2, 2 ]
+      \ a s -> [ size (parser (fmap id (lit a))), size (parser (lit a >>= return)), size (parser (lit a `label` s)) ] `shouldBe` [ 2, 2, 2 ]
 
     prop "is 1 + the sum for binary nonterminals" $
-      \ a b -> [ size (HDown (lit a `cat` lit b)), size (HDown (lit a <|> lit b)) ] `shouldBe` [ 3, 3 ]
+      \ a b -> [ size (parser (lit a `cat` lit b)), size (parser (lit a <|> lit b)) ] `shouldBe` [ 3, 3 ]
 
     it "terminates on unlabelled acyclic grammars" $
-      size (HDown (lit 'c')) `shouldBe` 1
+      size (parser (lit 'c')) `shouldBe` 1
 
     it "terminates on labeled cyclic grammars" $
       size cyclic `shouldBe` 1
@@ -208,10 +208,10 @@ cyclic :: Parser ()
 cyclic = mu $ \ v -> v `label` "cyclic"
 
 varName :: Parser String
-varName = HDown $ literal "x"
+varName = parser $ literal "x"
 
 ws :: Parser Char
-ws = HDown $ oneOf (lit <$> " \t\r\n") `label` "ws"
+ws = parser $ oneOf (lit <$> " \t\r\n") `label` "ws"
 
 lam :: Parser Lam
 lam = mu (\ lam ->
@@ -232,6 +232,6 @@ data Lam = Var' String | Abs String Lam | App Lam Lam
 instance Arbitrary a => Arbitrary (Parser a) where
   arbitrary = oneof
     [ pure <$> arbitrary
-    , pure (HDown nul)
-    , pure (HDown eps)
+    , pure (parser nul)
+    , pure (parser eps)
     ]
