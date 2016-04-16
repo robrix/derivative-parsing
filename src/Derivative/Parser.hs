@@ -138,8 +138,8 @@ deriv g c = modifyGraph (hisomap outof into . deriv' . hisomap into outof) g
           Lab p s -> Lab (deriv' p) s
           _ -> Nul
         delta :: Combinator (Derivative v) a -> Combinator (Derivative v) a
-        delta c = if nullable' (hisomap (\ (Derivative (_, _, b)) -> b) undefined c)
-          then ret (parseNull' (hisomap (\ (Derivative (_, a, _)) -> a) undefined c))
+        delta c = if nullable' (hisomap (\ (Derivative (_, _, b)) -> b) (error "this path should not be traversed") c)
+          then ret (parseNull' (hisomap (\ (Derivative (_, a, _)) -> a) (error "this path should not be traversed") c))
           else nul
 
 parseNull :: Parser a -> [a]
