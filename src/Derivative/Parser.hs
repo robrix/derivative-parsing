@@ -123,7 +123,7 @@ outof (Derivative (v, _, _)) = v
 
 deriv :: Parser a -> Char -> Parser a
 deriv g c = modifyGraph (hisomap outof into . deriv' . hisomap into outof) g
-  where deriv' :: HRec ParserF (Derivative v) a -> HRec ParserF (Derivative v) a
+  where deriv' :: Combinator (Derivative v) a -> Combinator (Derivative v) a
         deriv' (Var v) = Var v
         deriv' (Mu g) = Mu (map deriv'' . g)
         deriv' (In r) = In (deriv'' r)
