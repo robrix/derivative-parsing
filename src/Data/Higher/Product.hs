@@ -1,5 +1,4 @@
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE RankNTypes, TypeOperators #-}
 module Data.Higher.Product where
 
-data a :*: b = a :*: b
-  deriving (Eq, Show)
+data f :*: g = (forall a. f a) :*: (forall b. g b)
