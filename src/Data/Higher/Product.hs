@@ -1,4 +1,4 @@
 {-# LANGUAGE RankNTypes, TypeOperators #-}
 module Data.Higher.Product where
 
-data f :*: g = (forall a. f a) :*: (forall b. g b)
+data (:*:) f g a = f a :*: g a
