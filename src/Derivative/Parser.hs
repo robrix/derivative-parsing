@@ -137,6 +137,10 @@ deriv g c = modifyGraph (hisomap outof into . deriv' . hisomap into outof) g
           Lit c' -> if c == c' then Ret [c] else Nul
           Lab p s -> Lab (deriv' p) s
           _ -> Nul
+        delta :: Combinator (Derivative v) a -> Combinator (Derivative v) a
+        delta c = if nullable' (hisomap (\ (Derivative (_, _, b)) -> b) undefined c)
+          then ret (parseNull' (hisomap (\ (Derivative (_, a, _)) -> a) undefined c))
+          else nul
 
 parseNull :: Parser a -> [a]
 parseNull = parseNull' . hup
