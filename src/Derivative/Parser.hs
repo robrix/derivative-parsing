@@ -21,8 +21,6 @@ module Derivative.Parser
 , sep1
 , size
 , mu
-, Data.Higher.Graph.HRec(..)
-, Data.Higher.Graph.HGraph(..)
 , parser
 , combinator
 ) where
