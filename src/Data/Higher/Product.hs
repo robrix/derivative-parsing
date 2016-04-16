@@ -1,5 +1,5 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, TypeOperators #-}
+{-# LANGUAGE TypeOperators #-}
 module Data.Higher.Product where
 
-newtype a :*: b = Product (a, b)
+data a :*: b = a :*: b
   deriving (Eq, Show)
