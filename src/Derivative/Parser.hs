@@ -113,6 +113,8 @@ type Combinator v a = HRec ParserF v a
 
 -- Algorithm
 
+newtype Derivative v a = Derivative (v a, [a], Bool)
+
 deriv :: Parser a -> Char -> Parser a
 deriv g c = modifyGraph deriv' g
   where deriv' :: HRec ParserF v a -> HRec ParserF v a
