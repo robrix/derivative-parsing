@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, RankNTypes #-}
+{-# LANGUAGE FlexibleInstances, GADTs, RankNTypes, TypeOperators #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -31,6 +31,7 @@ import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
 import Data.Higher.Graph
+import Data.Higher.Product
 import Data.Higher.Isofunctor
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
@@ -113,13 +114,13 @@ type Combinator v a = HRec ParserF v a
 
 -- Algorithm
 
-newtype Derivative v a = Derivative (v a, [a], Const Bool a)
+type Derivative v = v :*: [] :*: Const Bool
 
 into :: v a -> Derivative v a
-into v = Derivative (v, [], Const False)
+into v = v :*: [] :*: Const False
 
 outof :: Derivative v a -> v a
-outof (Derivative (v, _, _)) = v
+outof (v :*: _ :*: _) = v
 
 deriv :: Parser a -> Char -> Parser a
 deriv g c = modifyGraph (hisomap outof into . deriv' . hisomap into outof) g
@@ -138,8 +139,8 @@ deriv g c = modifyGraph (hisomap outof into . deriv' . hisomap into outof) g
           Lab p s -> Lab (deriv' p) s
           _ -> Nul
         delta :: Combinator (Derivative v) a -> Combinator (Derivative v) a
-        delta c = if nullable' (hisomap (\ (Derivative (_, _, b)) -> b) (error "this path should not be traversed") c)
-          then ret (parseNull' (hisomap (\ (Derivative (_, a, _)) -> a) (error "this path should not be traversed") c))
+        delta c = if nullable' (hisomap (\ (_ :*: _ :*: b) -> b) (error "this path should not be traversed") c)
+          then ret (parseNull' (hisomap (\ (_ :*: a :*: _) -> a) (error "this path should not be traversed") c))
           else nul
 
 parseNull :: Parser a -> [a]
