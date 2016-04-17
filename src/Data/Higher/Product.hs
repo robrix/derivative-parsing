@@ -1,6 +1,7 @@
 {-# LANGUAGE RankNTypes, TypeOperators #-}
 module Data.Higher.Product where
 
+import Data.Higher.Functor
 import Data.Higher.Transformation
 
 infixr :*:
@@ -19,3 +20,9 @@ hfst (f :*: _) = f
 
 hsnd :: (f :*: g) ~> g
 hsnd (_ :*: g) = g
+
+
+infixr `hdistribute`
+
+hdistribute :: HFunctor f => (f c ~> c') -> (f d ~> d') -> f (c :*: d) ~> (c' :*: d')
+hdistribute f g p = f (hfmap hfst p) :*: g (hfmap hsnd p)
