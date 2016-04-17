@@ -148,16 +148,17 @@ parseNull = parseNull' . hup
 
 parseNull' :: HRec ParserF [] a -> [a]
 parseNull' = hrfold parseNull'' []
-  where parseNull'' :: ParserF [] a -> [a]
-        parseNull'' parser = case parser of
-          Cat a b -> (,) <$> a <*> b
-          Alt a b -> a <> b
-          Rep _ -> [[]]
-          Map f p -> f <$> p
-          Bnd p f -> p >>= f
-          Ret as -> as
-          Lab p _ -> p
-          _ -> []
+
+parseNull'' :: ParserF [] a -> [a]
+parseNull'' parser = case parser of
+  Cat a b -> (,) <$> a <*> b
+  Alt a b -> a <> b
+  Rep _ -> [[]]
+  Map f p -> f <$> p
+  Bnd p f -> p >>= f
+  Ret as -> as
+  Lab p _ -> p
+  _ -> []
 
 compact :: Parser a -> Parser a
 compact = modifyGraph (hmap compact'')
