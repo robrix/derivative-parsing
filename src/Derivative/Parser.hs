@@ -179,15 +179,15 @@ nullable :: Parser a -> Bool
 nullable = nullable' . hup
 
 nullable' :: HRec ParserF (Const Bool) a -> Bool
-nullable' = rfold nullable'' False
+nullable' = getConst  . hrfold nullable'' (Const False)
 
-nullable'' :: ParserF (Const Bool) b -> Bool
+nullable'' :: ParserF (Const Bool) a -> Const Bool a
 nullable'' rec = case rec of
-  Cat a b -> getConst a && getConst b
-  Alt a b -> getConst a || getConst b
-  Rep _ -> True
-  Eps -> True
-  _ -> False
+  Cat a b -> Const $ getConst a && getConst b
+  Alt a b -> Const $ getConst a || getConst b
+  Rep _ -> Const True
+  Eps -> Const True
+  _ -> Const False
 
 size :: Parser a -> Int
 size = getSum . fold (mappend (Sum 1) . hfoldMap getConst) (Sum 0)
