@@ -14,7 +14,6 @@ module Data.Higher.Graph
 , hsfold
 , sfold
 , hgcata
-, hparafold
 , transform
 , hmap
 , hpjoin
@@ -32,7 +31,6 @@ import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Isofunctor
 import Data.Higher.Functor.Show
-import Data.Higher.Product
 import Data.Higher.Transformation
 
 data HRec f v a
@@ -86,9 +84,6 @@ hgcata f rec = case rec of
   Var v -> v
   Mu g -> asum . map (f . hfmap (hgcata f)) . g $ repeat empty
   In r -> f (hfmap (hgcata f) r)
-
-hparafold :: HFunctor f => (f c ~> c) -> (f d ~> d) -> (forall a. (c :*: d) a) -> HRec f (c :*: d) ~> (c :*: d)
-hparafold f g = hrfold $ \ p -> f (hfmap hfst p) :*: g (hfmap hsnd p)
 
 
 -- Maps
