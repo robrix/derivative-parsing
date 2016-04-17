@@ -147,9 +147,9 @@ parseNull :: Parser a -> [a]
 parseNull = parseNull' . hup
 
 parseNull' :: HRec ParserF [] a -> [a]
-parseNull' = hrfold go []
-  where go :: ParserF [] a -> [a]
-        go parser = case parser of
+parseNull' = hrfold parseNull'' []
+  where parseNull'' :: ParserF [] a -> [a]
+        parseNull'' parser = case parser of
           Cat a b -> (,) <$> a <*> b
           Alt a b -> a <> b
           Rep _ -> [[]]
