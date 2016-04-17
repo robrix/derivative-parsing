@@ -16,3 +16,6 @@ f *** g = \ (a :*: b) -> f a :*: g b
 
 fst :: (f :*: g) ~> f
 fst (f :*: _) = f
+
+snd :: (f :*: g) ~> g
+snd (_ :*: g) = g
