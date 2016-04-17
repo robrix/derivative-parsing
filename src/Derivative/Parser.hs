@@ -178,9 +178,9 @@ nullable :: Parser a -> Bool
 nullable = nullable' . hup
 
 nullable' :: HRec ParserF (Const Bool) a -> Bool
-nullable' = rfold go False
-  where go :: ParserF (Const Bool) b -> Bool
-        go rec = case rec of
+nullable' = rfold nullable'' False
+  where nullable'' :: ParserF (Const Bool) b -> Bool
+        nullable'' rec = case rec of
           Cat a b -> getConst a && getConst b
           Alt a b -> getConst a || getConst b
           Rep _ -> True
