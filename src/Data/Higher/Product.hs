@@ -14,8 +14,8 @@ infixr 3 ***
 f *** g = \ (a :*: b) -> f a :*: g b
 
 
-fst :: (f :*: g) ~> f
-fst (f :*: _) = f
+hfst :: (f :*: g) ~> f
+hfst (f :*: _) = f
 
-snd :: (f :*: g) ~> g
-snd (_ :*: g) = g
+hsnd :: (f :*: g) ~> g
+hsnd (_ :*: g) = g

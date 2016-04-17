@@ -34,7 +34,6 @@ import Data.Higher.Isofunctor
 import Data.Higher.Functor.Show
 import Data.Higher.Product
 import Data.Higher.Transformation
-import Prelude hiding (fst, snd)
 
 data HRec f v a
   = Var (v a)
@@ -89,7 +88,7 @@ hgcata f rec = case rec of
   In r -> f (hfmap (hgcata f) r)
 
 hparafold :: HFunctor f => (f c ~> c) -> (f d ~> d) -> (forall a. (c :*: d) a) -> HRec f (c :*: d) ~> (c :*: d)
-hparafold f g = hrfold $ \ p -> f (hfmap fst p) :*: g (hfmap snd p)
+hparafold f g = hrfold $ \ p -> f (hfmap hfst p) :*: g (hfmap hsnd p)
 
 
 -- Maps
