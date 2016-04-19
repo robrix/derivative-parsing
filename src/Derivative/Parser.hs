@@ -119,9 +119,7 @@ type Derivative v = v :*: [] :*: Const Bool
 deriv :: Parser a -> Char -> Parser a
 deriv g c = modifyGraph (backward . deriv' . forward) g
   where deriv' :: Combinator (Derivative v) a -> Combinator (Derivative v) a
-        deriv' (Var v) = Var v
-        deriv' (Mu g) = Mu (map deriv'' . g)
-        deriv' (In r) = In (deriv'' r)
+        deriv' = liftHRec deriv''
         deriv'' :: ParserF (HRec ParserF (Derivative v)) a -> ParserF (HRec ParserF (Derivative v)) a
         deriv'' p = case p of
           Cat a b -> Alt (deriv' a `cat` b) (delta a `cat` deriv' b)
