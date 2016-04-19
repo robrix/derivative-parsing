@@ -16,6 +16,7 @@ module Data.Higher.Graph
 , hgcata
 , transform
 , hmap
+, liftHRec
 , hpjoin
 , modifyGraph
 , unroll
@@ -96,6 +97,12 @@ hmap f rec = case rec of
   Var x -> Var x
   Mu g -> Mu (map (f . hfmap (hmap f)) . g)
   In x -> In (f (hfmap (hmap f) x))
+
+liftHRec :: HFunctor f => (f (HRec f v) ~> f (HRec f v)) -> HRec f v ~> HRec f v
+liftHRec f rec = case rec of
+  Var v -> Var v
+  Mu g -> Mu (map f . g)
+  In r -> In (f r)
 
 hpjoin :: HFunctor f => HRec f (HRec f v) a -> HRec f v a
 hpjoin rec = case rec of
