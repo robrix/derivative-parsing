@@ -132,7 +132,7 @@ deriv g c = modifyGraph (hisomap outof into . deriv' . hisomap into outof) g
         deriv'' p = case p of
           Cat a b -> Alt (deriv' a `cat` b) (delta a `cat` deriv' b)
           Alt a b -> Alt (deriv' a) (deriv' b)
-          Rep p -> Map (uncurry (:)) $ deriv' p `cat` many p
+          Rep p -> Map (uncurry (:)) (deriv' p `cat` many p)
           Map f p -> Map f (deriv' p)
           Bnd p f -> Bnd (deriv' p) f
           Lit c' -> if c == c' then Ret [c] else Nul
