@@ -1,4 +1,4 @@
-{-# LANGUAGE RankNTypes, ScopedTypeVariables, TypeOperators #-}
+{-# LANGUAGE InstanceSigs, RankNTypes, ScopedTypeVariables, TypeOperators #-}
 module Data.Higher.Graph
 ( HRec(..)
 , HGraph(..)
@@ -162,7 +162,15 @@ instance HShowF f => Show (HGraph f a)
   where showsPrec n = showsRec (iterate (modifyConst succ) (Const 'a')) n . hup
 
 instance HFunctor f => HIsofunctor (HRec f)
-  where hisomap f g rec = case rec of
-          Var v -> Var (f v)
-          Mu h -> Mu (map (hfmap (hisomap f g)) . h . map g)
-          In r -> In (hfmap (hisomap f g) r)
+  where hisomap :: forall c d. (c ~> d) -> (d ~> c) -> forall a. (HRec f c a -> HRec f d a, HRec f d a -> HRec f c a)
+        hisomap f g = (s, t)
+          where s :: forall a. HRec f c a -> HRec f d a
+                s rec = case rec of
+                  Var v -> Var (f v)
+                  Mu h -> Mu (map (hfmap s) . h . map g)
+                  In r -> In (hfmap s r)
+                t :: forall a. HRec f d a -> HRec f c a
+                t rec = case rec of
+                  Var v -> Var (g v)
+                  Mu h -> Mu (map (hfmap t) . h . map f)
+                  In r -> In (hfmap t r)

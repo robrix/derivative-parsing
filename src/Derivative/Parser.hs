@@ -123,7 +123,7 @@ outof :: Derivative v a -> v a
 outof (v :*: _ :*: _) = v
 
 deriv :: Parser a -> Char -> Parser a
-deriv g c = modifyGraph (hisomap outof into . deriv' . hisomap into outof) g
+deriv g c = modifyGraph (backward . deriv' . forward) g
   where deriv' :: Combinator (Derivative v) a -> Combinator (Derivative v) a
         deriv' (Var v) = Var v
         deriv' (Mu g) = Mu (map deriv'' . g)
@@ -138,9 +138,10 @@ deriv g c = modifyGraph (hisomap outof into . deriv' . hisomap into outof) g
           Lit c' -> if c == c' then Ret [c] else Nul
           Lab p s -> Lab (deriv' p) s
           _ -> Nul
+        (forward, backward) = hisomap into outof
         delta :: Combinator (Derivative v) a -> Combinator (Derivative v) a
-        delta c = if nullable' (hisomap (\ (_ :*: _ :*: b) -> b) (error "this path should not be traversed") c)
-          then ret (parseNull' (hisomap (\ (_ :*: a :*: _) -> a) (error "this path should not be traversed") c))
+        delta c = if nullable' (fst (hisomap (\ (_ :*: _ :*: b) -> b) (error "this path should not be traversed")) c)
+          then ret (parseNull' (fst (hisomap (\ (_ :*: a :*: _) -> a) (error "this path should not be traversed")) c))
           else nul
 
 parseNull :: Parser a -> [a]
