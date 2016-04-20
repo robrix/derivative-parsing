@@ -125,6 +125,7 @@ unroll rec = case rec of
 unrollGraph :: HFunctor f => HGraph f ~> HGraph f
 unrollGraph g = HDown (hpjoin (unroll (hup g)))
 
+
 -- Equality
 
 eqRec :: HEqF f => Int -> HRec f (Const Int) a -> HRec f (Const Int) a -> Bool
