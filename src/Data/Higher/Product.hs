@@ -22,6 +22,9 @@ hsnd :: (f :*: g) ~> g
 hsnd (_ :*: g) = g
 
 
+hfirst :: (f ~> f') -> (f :*: g) ~> (f' :*: g)
+hfirst f (a :*: b) = f a :*: b
+
 infixr `hdistribute`
 
 hdistribute :: HFunctor f => (f c ~> c') -> (f d ~> d') -> f (c :*: d) ~> (c' :*: d')
