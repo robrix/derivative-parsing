@@ -23,10 +23,10 @@ hsnd (_ :*: g) = g
 
 
 hfirst :: (f ~> f') -> (f :*: g) ~> (f' :*: g)
-hfirst f (a :*: b) = f a :*: b
+hfirst = (*** id)
 
 hsecond :: (g ~> g') -> (f :*: g) ~> (f :*: g')
-hsecond f (a :*: b) = a :*: f b
+hsecond = (id ***)
 
 infixr `hdistribute`
 
