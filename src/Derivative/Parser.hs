@@ -31,8 +31,8 @@ import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
 import Data.Higher.Graph
-import Data.Higher.Product
 import Data.Higher.Isofunctor
+import Data.Higher.Product
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
 
