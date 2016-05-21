@@ -131,9 +131,13 @@ deriv g c = modifyGraph (backward . deriv' . forward) g
           Lab p s -> Lab (deriv' p) s
           _ -> Nul
         (forward, backward) = hisomap (Derivative . (:*: [] :*: Const False)) (hfst . unDerivative)
+        nullable :: HRec ParserF (Derivative v) a -> Bool
+        nullable c = nullable' (fst (hisomap (hsnd . hsnd . unDerivative) (error "this path should not be traversed")) c)
+        parseNull :: HRec ParserF (Derivative v) a -> [a]
+        parseNull c = parseNull' (fst (hisomap (hfst . hsnd . unDerivative) (error "this path should not be traversed")) c)
         delta :: Combinator (Derivative v) a -> Combinator (Derivative v) a
-        delta c = if nullable' (fst (hisomap (hsnd . hsnd . unDerivative) (error "this path should not be traversed")) c)
-          then ret (parseNull' (fst (hisomap (hfst . hsnd . unDerivative) (error "this path should not be traversed")) c))
+        delta c = if nullable c
+          then ret (parseNull c)
           else nul
 
 parseNull :: Parser a -> [a]
