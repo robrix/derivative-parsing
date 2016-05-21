@@ -15,16 +15,20 @@ infixr 3 ***
 f *** g = \ (a :*: b) -> f a :*: g b
 
 
+-- | Retrieve the first field of a higher product.
 hfst :: (f :*: g) ~> f
 hfst (f :*: _) = f
 
+-- | Retrieve the second field of a higher product.
 hsnd :: (f :*: g) ~> g
 hsnd (_ :*: g) = g
 
 
+-- | Map over the first field of a higher product, leaving the second field unchanged.
 hfirst :: (f ~> f') -> (f :*: g) ~> (f' :*: g)
 hfirst = (*** id)
 
+-- | Map over the second field of a higher product, leaving the first field unchanged.
 hsecond :: (g ~> g') -> (f :*: g) ~> (f :*: g')
 hsecond = (id ***)
 
