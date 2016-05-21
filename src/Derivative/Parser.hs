@@ -130,7 +130,7 @@ deriv g c = modifyGraph (backward . deriv' . forward) g
           Lit c' -> if c == c' then Ret [c] else Nul
           Lab p s -> Lab (deriv' p) s
           _ -> Nul
-        (_, backward) = hisomap (\ v -> Derivative (v :*: [] :*: Const False)) (hfst . unDerivative)
+        (_, backward) = hisomap (Derivative . (:*: [] :*: Const False)) (hfst . unDerivative)
         forward :: HRec ParserF v a -> HRec ParserF (Derivative v) a
         forward rec = case rec of
           Var v -> Var (Derivative (v :*: [] :*: Const False))
