@@ -98,7 +98,7 @@ hmap f rec = case rec of
   Mu g -> Mu (map (f . hfmap (hmap f)) . g)
   In x -> In (f (hfmap (hmap f) x))
 
-liftHRec :: HFunctor f => (f (HRec f v) ~> f (HRec f v)) -> HRec f v ~> HRec f v
+liftHRec :: (f (HRec f v) ~> f (HRec f v)) -> HRec f v ~> HRec f v
 liftHRec f rec = case rec of
   Var v -> Var v
   Mu g -> Mu (map f . g)
