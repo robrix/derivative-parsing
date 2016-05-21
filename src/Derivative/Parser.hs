@@ -130,12 +130,7 @@ deriv g c = modifyGraph (backward . deriv' . forward) g
           Lit c' -> if c == c' then Ret [c] else Nul
           Lab p s -> Lab (deriv' p) s
           _ -> Nul
-        (_, backward) = hisomap (Derivative . (:*: [] :*: Const False)) (hfst . unDerivative)
-        forward :: HRec ParserF v a -> HRec ParserF (Derivative v) a
-        forward rec = case rec of
-          Var v -> Var (Derivative (v :*: [] :*: Const False))
-          Mu g -> Mu (map (hfmap forward) . g . map (hfst . unDerivative))
-          In r -> In (hfmap forward r)
+        (forward, backward) = hisomap (Derivative . (:*: [] :*: Const False)) (hfst . unDerivative)
         delta :: Combinator (Derivative v) a -> Combinator (Derivative v) a
         delta c = if nullable' (fst (hisomap (hsnd . hsnd . unDerivative) (error "this path should not be traversed")) c)
           then ret (parseNull' (fst (hisomap (hfst . hsnd . unDerivative) (error "this path should not be traversed")) c))
