@@ -92,7 +92,7 @@ hgcata f rec = case rec of
 transform :: forall f g. (HFunctor f, HFunctor g) => (forall v. f (HRec g v) ~> g (HRec g v)) -> HGraph f ~> HGraph g
 transform f = modifyGraph (hmap f)
 
-hmap :: (HFunctor f, HFunctor g) => (f (HRec g v) ~> g (HRec g v)) -> HRec f v ~> HRec g v
+hmap :: HFunctor f => (f (HRec g v) ~> g (HRec g v)) -> HRec f v ~> HRec g v
 hmap f rec = case rec of
   Var x -> Var x
   Mu g -> Mu (map (f . hfmap (hmap f)) . g)
