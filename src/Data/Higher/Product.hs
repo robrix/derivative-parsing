@@ -9,10 +9,10 @@ infixr :*:
 data (:*:) f g a = f a :*: g a
 
 
-infixr 3 ***
+infixr 3 `hbimap`
 
-(***) :: (f ~> f') -> (g ~> g') -> (f :*: g) ~> (f' :*: g')
-f *** g = \ (a :*: b) -> f a :*: g b
+hbimap :: (f ~> f') -> (g ~> g') -> (f :*: g) ~> (f' :*: g')
+f `hbimap` g = \ (a :*: b) -> f a :*: g b
 
 
 -- | Retrieve the first field of a higher product.
@@ -26,11 +26,11 @@ hsnd (_ :*: g) = g
 
 -- | Map over the first field of a higher product, leaving the second field unchanged.
 hfirst :: (f ~> f') -> (f :*: g) ~> (f' :*: g)
-hfirst = (*** id)
+hfirst = (`hbimap` id)
 
 -- | Map over the second field of a higher product, leaving the first field unchanged.
 hsecond :: (g ~> g') -> (f :*: g) ~> (f :*: g')
-hsecond = (id ***)
+hsecond = (id `hbimap`)
 
 infixr `hdistribute`
 
