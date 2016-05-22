@@ -104,7 +104,7 @@ liftHRec f rec = case rec of
   Mu g -> Mu (map f . g)
   In r -> In (f r)
 
-hpjoin :: HFunctor f => HRec f (HRec f v) a -> HRec f v a
+hpjoin :: HFunctor f => HRec f (HRec f v) ~> HRec f v
 hpjoin rec = case rec of
   Var x -> x
   Mu g -> Mu (map (hfmap hpjoin) . g . map Var)
