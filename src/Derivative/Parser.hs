@@ -114,7 +114,7 @@ type Combinator v a = HRec ParserF v a
 
 -- Algorithm
 
-newtype Derivative v a = Derivative { unDerivative :: (v :*: [] :*: Const Bool) a }
+type Derivative v = v :*: [] :*: Const Bool
 
 deriv :: Parser a -> Char -> Parser a
 deriv g c = modifyGraph (backward . deriv' . forward) g
@@ -130,11 +130,11 @@ deriv g c = modifyGraph (backward . deriv' . forward) g
           Lit c' -> if c == c' then Ret [c] else Nul
           Lab p s -> Lab (deriv' p) s
           _ -> Nul
-        (forward, backward) = hisomap (Derivative . (:*: [] :*: Const False)) (hfst . unDerivative)
+        (forward, backward) = hisomap (:*: [] :*: Const False) hfst
         nullable :: HRec ParserF (Derivative v) a -> Bool
-        nullable c = nullable' (fst (hisomap (hsnd . hsnd . unDerivative) (error "this path should not be traversed")) c)
+        nullable c = nullable' (fst (hisomap (hsnd . hsnd) (error "this path should not be traversed")) c)
         parseNull :: HRec ParserF (Derivative v) a -> [a]
-        parseNull c = parseNull' (fst (hisomap (hfst . hsnd . unDerivative) (error "this path should not be traversed")) c)
+        parseNull c = parseNull' (fst (hisomap (hfst . hsnd) (error "this path should not be traversed")) c)
         delta :: Combinator (Derivative v) a -> Combinator (Derivative v) a
         delta c = if nullable c
           then ret (parseNull c)
