@@ -172,12 +172,12 @@ instance HShowF f => Show (HGraph f a)
 instance HFunctor f => HIsofunctor (HRec f)
   where hisomap :: forall c d. (c ~> d) -> (d ~> c) -> forall a. (HRec f c a -> HRec f d a, HRec f d a -> HRec f c a)
         hisomap f g = (s, t)
-          where s :: forall a. HRec f c a -> HRec f d a
+          where s :: HRec f c ~> HRec f d
                 s rec = case rec of
                   Var v -> Var (f v)
                   Mu h -> Mu (map (hfmap s) . h . map g)
                   In r -> In (hfmap s r)
-                t :: forall a. HRec f d a -> HRec f c a
+                t :: HRec f d ~> HRec f c
                 t rec = case rec of
                   Var v -> Var (g v)
                   Mu h -> Mu (map (hfmap t) . h . map f)
