@@ -3,6 +3,8 @@ module Data.Higher.Bifunctor where
 
 import Data.Higher.Transformation
 
+infixr 3 `hbimap`
+
 class HBifunctor p
   where hbimap :: (f ~> f') -> (g ~> g') -> p f g ~> p f' g'
 
