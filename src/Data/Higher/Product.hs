@@ -27,4 +27,4 @@ hdistribute f g p = f (hfmap hfst p) :*: g (hfmap hsnd p)
 -- Instances
 
 instance HBifunctor (:*:)
-  where f `hbimap` g = \ (a :*: b) -> f a :*: g b
+  where hbimap f g (a :*: b) = f a :*: g b
