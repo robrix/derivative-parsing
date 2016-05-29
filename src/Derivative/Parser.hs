@@ -33,6 +33,7 @@ import Data.Higher.Functor.Show
 import Data.Higher.Graph
 import Data.Higher.Isofunctor
 import Data.Higher.Product
+import Data.Higher.Transformation
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
 
@@ -114,13 +115,16 @@ type Combinator v = HRec ParserF v
 
 -- Algorithm
 
-type Derivative v = v :*: [] :*: Const Bool
+type Derivative v = (v :*: [] :*: Const Bool)
+
+liftHGraph' :: (forall v. HRec f (v :*: w) ~> HRec f (v :*: w)) -> (f w ~> w) -> (forall a. w a) -> HGraph f ~> HGraph f
+liftHGraph' f combine initial graph = undefined
 
 deriv :: Parser a -> Char -> Parser a
-deriv g c = modifyGraph (backward . deriv' . forward) g
-  where deriv' :: Combinator (Derivative v) a -> Combinator (Derivative v) a
+deriv g c = liftHGraph' deriv' (parseNull'' `hdistribute` nullable'') ([] :*: Const False) g
+  where deriv' :: Combinator (Derivative v) ~> Combinator (Derivative v)
         deriv' = liftHRec deriv''
-        deriv'' :: ParserF (HRec ParserF (Derivative v)) a -> ParserF (HRec ParserF (Derivative v)) a
+        deriv'' :: ParserF (HRec ParserF (Derivative v)) ~> ParserF (HRec ParserF (Derivative v))
         deriv'' p = case p of
           Cat a b -> Alt (deriv' a `cat` b) (delta a `cat` deriv' b)
           Alt a b -> Alt (deriv' a) (deriv' b)
@@ -130,12 +134,11 @@ deriv g c = modifyGraph (backward . deriv' . forward) g
           Lit c' -> if c == c' then Ret [c] else Nul
           Lab p s -> Lab (deriv' p) s
           _ -> Nul
-        (forward, backward) = hisomap (:*: [] :*: Const False) hfst
         nullable :: HRec ParserF (Derivative v) a -> Bool
         nullable c = nullable' (fst (hisomap (hsnd . hsnd) (error "this path should not be traversed")) c)
         parseNull :: HRec ParserF (Derivative v) a -> [a]
         parseNull c = parseNull' (fst (hisomap (hfst . hsnd) (error "this path should not be traversed")) c)
-        delta :: Combinator (Derivative v) a -> Combinator (Derivative v) a
+        delta :: Combinator (Derivative v) ~> Combinator (Derivative v)
         delta c = if nullable c
           then ret (parseNull c)
           else nul
