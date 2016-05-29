@@ -27,6 +27,7 @@ import Control.Applicative
 import Data.Foldable (asum)
 import Data.Function
 import Data.Functor.Eq
+import Data.Higher.Bifunctor
 import Data.Higher.Eq
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
@@ -109,6 +110,9 @@ hpjoin rec = case rec of
   Var x -> x
   Mu g -> Mu (map (hfmap hpjoin) . g . map Var)
   In r -> In (hfmap hpjoin r)
+
+gmap :: (HBifunctor f, HFunctor (f a)) => (a ~> b) -> HGraph (f a) ~> HGraph (f b)
+gmap f = transform (hbimap f id)
 
 hpreturn :: v ~> HRec f v
 hpreturn = Var
