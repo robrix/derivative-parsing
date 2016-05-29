@@ -109,7 +109,7 @@ data ParserF f a where
   Lab :: f a -> String -> ParserF f a
 
 type Parser a = HGraph ParserF a
-type Combinator v a = HRec ParserF v a
+type Combinator v = HRec ParserF v
 
 
 -- Algorithm
