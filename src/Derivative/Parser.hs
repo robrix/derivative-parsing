@@ -117,8 +117,11 @@ type Combinator v = HRec ParserF v
 
 type Derivative v = (v :*: [] :*: Const Bool)
 
+liftHRec' :: HFunctor f => (forall v. HRec f (v :*: w) ~> HRec f (v :*: w)) -> (f w ~> w) -> (forall a. w a) -> forall v. HRec f v ~> HRec f v
+liftHRec' f algebra initial rec = let (into, outof) = hisomap (:*: initial) hfst in outof (f (into rec))
+
 liftHGraph' :: HFunctor f => (forall v. HRec f (v :*: w) ~> HRec f (v :*: w)) -> (f w ~> w) -> (forall a. w a) -> HGraph f ~> HGraph f
-liftHGraph' f combine initial = modifyGraph (\ rec -> let (into, outof) = hisomap (:*: initial) hfst in outof (f (into rec)))
+liftHGraph' f algebra initial = modifyGraph (liftHRec' f algebra initial)
 
 deriv :: Parser a -> Char -> Parser a
 deriv g c = liftHGraph' deriv' (parseNull'' `hdistribute` nullable'') ([] :*: Const False) g
