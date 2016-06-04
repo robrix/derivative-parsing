@@ -1,6 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
 module Data.Graph where
 
+import Data.Bifunctor
 import Data.Function
 
 data Rec f v
@@ -37,6 +38,46 @@ sfold alg k = gfold id (fixVal k) alg
 fixVal :: Eq a => a -> (a -> a) -> a
 fixVal v f = if v == v' then v else fixVal v' f
   where v' = f v
+
+
+transform :: Functor f => (forall v. f (Rec g v) -> g (Rec g v)) -> Graph f -> Graph g
+transform f = modifyGraph (rmap f)
+
+rmap :: Functor f => (forall v. f (Rec g v) -> g (Rec g v)) -> Rec f v -> Rec g v
+rmap f rec = case rec of
+  Var x -> Var x
+  Mu g -> Mu (f . fmap (rmap f) . g)
+  In x -> In (f (fmap (rmap f) x))
+
+liftHRec :: (forall v. f (Rec f v) -> f (Rec f v)) -> Rec f v -> Rec f v
+liftHRec f rec = case rec of
+  Var v -> Var v
+  Mu g -> Mu (f . g)
+  In r -> In (f r)
+
+pjoin :: Functor f => Rec f (Rec f v) -> Rec f v
+pjoin rec = case rec of
+  Var x -> x
+  Mu g -> Mu (fmap pjoin . g . Var)
+  In r -> In (fmap pjoin r)
+
+gmap :: (Bifunctor f, Functor (f a)) => (a -> b) -> Graph (f a) -> Graph (f b)
+gmap f = transform (first f)
+
+preturn :: v -> Rec f v
+preturn = Var
+
+modifyGraph :: (forall v. Rec f v -> Rec g v) -> Graph f -> Graph g
+modifyGraph f g = Graph (f (unGraph g))
+
+unroll :: Functor f => Rec f (Rec f v) -> Rec f (Rec f v)
+unroll rec = case rec of
+  Var v -> Var v
+  Mu g -> In (g (pjoin (unroll (Mu g))))
+  In r -> In (fmap unroll r)
+
+unrollGraph :: Functor f => Graph f -> Graph f
+unrollGraph g = Graph (pjoin (unroll (unGraph g)))
 
 
 class Isofunctor f
