@@ -46,8 +46,8 @@ rmap f rec = case rec of
   Mu g -> Mu (f . fmap (rmap f) . g)
   In x -> In (f (fmap (rmap f) x))
 
-liftHRec :: (forall v. f (Rec f v) -> f (Rec f v)) -> Rec f v -> Rec f v
-liftHRec f rec = case rec of
+liftRec :: (forall v. f (Rec f v) -> f (Rec f v)) -> Rec f v -> Rec f v
+liftRec f rec = case rec of
   Var v -> Var v
   Mu g -> Mu (f . g)
   In r -> In (f r)
