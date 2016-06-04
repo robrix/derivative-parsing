@@ -104,7 +104,7 @@ class Functor f => EqF f
   where eqF :: (r -> r -> Bool) -> f r -> f r -> Bool
 
 instance EqF f => Eq (Graph f)
-  where a == b = eqRec 0 (unGraph a) (unGraph b)
+  where (==) = eqRec 0 `on` unGraph
 
 class Functor f => ShowF f
   where showsPrecF :: Int -> (Int -> r -> ShowS) -> f r -> ShowS
