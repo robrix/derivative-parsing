@@ -92,11 +92,25 @@ eqRec n a b = case (a, b) of
   _ -> False
 
 
+-- Show
+
+showsRec :: ShowF f => String -> Int -> Rec f Char -> ShowS
+showsRec s n rec = case rec of
+  Var c -> showChar c
+  Mu g -> let (a, s') = (head s, tail s) in
+              showString "Mu (\n  " . showChar a . showString " => "
+              . showsPrecF n (showsRec s') (g a) . showString "\n)\n"
+  In r -> showsPrecF n (showsRec s) r
+
+
 class Functor f => EqF f
   where eqF :: (r -> r -> Bool) -> f r -> f r -> Bool
 
 instance EqF f => Eq (Graph f)
   where a == b = eqRec 0 (unGraph a) (unGraph b)
+
+class Functor f => ShowF f
+  where showsPrecF :: Int -> (Int -> r -> ShowS) -> f r -> ShowS
 
 class Isofunctor f
   where isomap :: (a -> b) -> (b -> a) -> (f a -> f b, f b -> f a)
