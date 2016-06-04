@@ -109,25 +109,25 @@ data ParserF f a where
   Eps :: ParserF f a
   Lab :: f a -> String -> ParserF f a
 
-type Parser a = HGraph ParserF a
-type Combinator v = HRec ParserF v
+type Parser a = Graph ParserF a
+type Combinator v = Rec ParserF v
 
 
 -- Algorithm
 
 type Derivative v = (v :*: [] :*: Const Bool)
 
-liftHRec' :: HFunctor f => (forall v. HRec f (v :*: w) ~> HRec f (v :*: w)) -> (f w ~> w) -> (forall a. w a) -> forall v. HRec f v ~> HRec f v
-liftHRec' f algebra initial = let (into, outof) = hisomap (:*: initial) hfst in outof . f . into
+liftRec' :: HFunctor f => (forall v. Rec f (v :*: w) ~> Rec f (v :*: w)) -> (f w ~> w) -> (forall a. w a) -> forall v. Rec f v ~> Rec f v
+liftRec' f algebra initial = let (into, outof) = hisomap (:*: initial) hfst in outof . f . into
 
-liftHGraph' :: HFunctor f => (forall v. HRec f (v :*: w) ~> HRec f (v :*: w)) -> (f w ~> w) -> (forall a. w a) -> HGraph f ~> HGraph f
-liftHGraph' f algebra initial = modifyGraph (liftHRec' f algebra initial)
+liftGraph' :: HFunctor f => (forall v. Rec f (v :*: w) ~> Rec f (v :*: w)) -> (f w ~> w) -> (forall a. w a) -> Graph f ~> Graph f
+liftGraph' f algebra initial = modifyGraph (liftRec' f algebra initial)
 
 deriv :: Parser a -> Char -> Parser a
-deriv g c = liftHGraph' deriv' (parseNull'' `hdistribute` nullable'') ([] :*: Const False) g
+deriv g c = liftGraph' deriv' (parseNull'' `hdistribute` nullable'') ([] :*: Const False) g
   where deriv' :: Combinator (Derivative v) ~> Combinator (Derivative v)
-        deriv' = liftHRec deriv''
-        deriv'' :: ParserF (HRec ParserF (Derivative v)) ~> ParserF (HRec ParserF (Derivative v))
+        deriv' = liftRec deriv''
+        deriv'' :: ParserF (Rec ParserF (Derivative v)) ~> ParserF (Rec ParserF (Derivative v))
         deriv'' p = case p of
           Cat a b -> Alt (deriv' a `cat` b) (delta a `cat` deriv' b)
           Alt a b -> Alt (deriv' a) (deriv' b)
@@ -137,9 +137,9 @@ deriv g c = liftHGraph' deriv' (parseNull'' `hdistribute` nullable'') ([] :*: Co
           Lit c' -> if c == c' then Ret [c] else Nul
           Lab p s -> Lab (deriv' p) s
           _ -> Nul
-        nullable :: HRec ParserF (Derivative v) a -> Bool
+        nullable :: Rec ParserF (Derivative v) a -> Bool
         nullable c = nullable' (fst (hisomap (hsnd . hsnd) (error "this path should not be traversed")) c)
-        parseNull :: HRec ParserF (Derivative v) a -> [a]
+        parseNull :: Rec ParserF (Derivative v) a -> [a]
         parseNull c = parseNull' (fst (hisomap (hfst . hsnd) (error "this path should not be traversed")) c)
         delta :: Combinator (Derivative v) ~> Combinator (Derivative v)
         delta c = if nullable c
@@ -149,8 +149,8 @@ deriv g c = liftHGraph' deriv' (parseNull'' `hdistribute` nullable'') ([] :*: Co
 parseNull :: Parser a -> [a]
 parseNull = parseNull' . hup
 
-parseNull' :: HRec ParserF [] a -> [a]
-parseNull' = hrfold parseNull'' []
+parseNull' :: Rec ParserF [] a -> [a]
+parseNull' = rfold parseNull'' []
 
 parseNull'' :: ParserF [] a -> [a]
 parseNull'' parser = case parser of
@@ -164,8 +164,8 @@ parseNull'' parser = case parser of
   _ -> []
 
 compact :: Parser a -> Parser a
-compact = modifyGraph (hmap compact'')
-  where compact'' :: ParserF (HRec ParserF v) a -> ParserF (HRec ParserF v) a
+compact = modifyGraph (graphMap compact'')
+  where compact'' :: ParserF (Rec ParserF v) a -> ParserF (Rec ParserF v) a
         compact'' parser = case parser of
           Cat (In Nul) _ -> Nul
           Cat _ (In Nul) -> Nul
@@ -181,8 +181,8 @@ compact = modifyGraph (hmap compact'')
 nullable :: Parser a -> Bool
 nullable = nullable' . hup
 
-nullable' :: HRec ParserF (Const Bool) a -> Bool
-nullable' = getConst  . hrfold nullable'' (Const False)
+nullable' :: Rec ParserF (Const Bool) a -> Bool
+nullable' = getConst  . rfold nullable'' (Const False)
 
 nullable'' :: ParserF (Const Bool) a -> Const Bool a
 nullable'' rec = case rec of
@@ -193,7 +193,7 @@ nullable'' rec = case rec of
   _ -> Const False
 
 size :: Parser a -> Int
-size = getSum . fold (mappend (Sum 1) . hfoldMap getConst) (Sum 0)
+size = getSum . getConst . fold (Const . mappend (Sum 1) . hfoldMap getConst) (Const (Sum 0))
 
 
 -- Instances
@@ -221,50 +221,50 @@ instance HFoldable ParserF where
     Lab p _ -> f p
     _ -> mempty
 
-instance Functor (ParserF (HRec ParserF v)) where
+instance Functor (ParserF (Rec ParserF v)) where
   fmap = (. In) . Map
 
-instance Functor (HRec ParserF v) where
+instance Functor (Rec ParserF v) where
   fmap = (In .) . Map
 
-instance Functor (HGraph ParserF) where
+instance Functor (Graph ParserF) where
   fmap f (HDown rec) = HDown (f <$> rec)
 
-instance Applicative (ParserF (HRec ParserF v)) where
+instance Applicative (ParserF (Rec ParserF v)) where
   pure = Ret . pure
   fs <*> as = uncurry ($) <$> (In fs `Cat` In as)
 
-instance Applicative (HRec ParserF v) where
+instance Applicative (Rec ParserF v) where
   pure = In . Ret . pure
   (<*>) = (fmap (uncurry ($)) .) . (In .) . Cat
 
-instance Applicative (HGraph ParserF) where
+instance Applicative (Graph ParserF) where
   pure a = HDown (pure a)
   HDown f <*> HDown a = HDown (f <*> a)
 
-instance Alternative (ParserF (HRec ParserF v)) where
+instance Alternative (ParserF (Rec ParserF v)) where
   empty = Nul
   a <|> b = Alt (In a) (In b)
   some v = (:) <$> v <*> many v
   many p = Rep (In p)
 
-instance Alternative (HRec ParserF v) where
+instance Alternative (Rec ParserF v) where
   empty = In Nul
   (<|>) = (In .) . Alt
   some v = (:) <$> v <*> many v
   many = In . Rep
 
-instance Alternative (HGraph ParserF) where
+instance Alternative (Graph ParserF) where
   empty = HDown empty
   HDown a <|> HDown b = HDown (a <|> b)
   some (HDown p) = HDown (some p)
   many (HDown p) = HDown (many p)
 
-instance Monad (HRec ParserF v) where
+instance Monad (Rec ParserF v) where
   return = pure
   (>>=) = (In .) . Bnd
 
-instance Monad (HGraph ParserF) where
+instance Monad (Graph ParserF) where
   return = pure
   HDown p >>= f = HDown (p >>= hup . f)
 
