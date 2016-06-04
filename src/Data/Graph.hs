@@ -3,6 +3,7 @@ module Data.Graph where
 
 import Data.Bifunctor
 import Data.Function
+import Data.Functor.Show
 
 data Rec f v
   = Var v
@@ -105,9 +106,6 @@ class Functor f => EqF f
 
 instance EqF f => Eq (Graph f)
   where (==) = eqRec 0 `on` unGraph
-
-class Functor f => ShowF f
-  where showsPrecF :: Int -> (Int -> r -> ShowS) -> f r -> ShowS
 
 instance ShowF f => Show (Graph f)
   where showsPrec n = showsRec (iterate succ 'a') n . unGraph
