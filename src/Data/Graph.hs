@@ -112,6 +112,9 @@ instance EqF f => Eq (Graph f)
 class Functor f => ShowF f
   where showsPrecF :: Int -> (Int -> r -> ShowS) -> f r -> ShowS
 
+instance ShowF f => Show (Graph f)
+  where showsPrec n = showsRec (iterate succ 'a') n . unGraph
+
 class Isofunctor f
   where isomap :: (a -> b) -> (b -> a) -> (f a -> f b, f b -> f a)
 
