@@ -37,3 +37,7 @@ sfold alg k = gfold id (fixVal k) alg
 fixVal :: Eq a => a -> (a -> a) -> a
 fixVal v f = if v == v' then v else fixVal v' f
   where v' = f v
+
+
+class Isofunctor f
+  where isomap :: (a -> b) -> (b -> a) -> (f a -> f b, f b -> f a)
