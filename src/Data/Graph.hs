@@ -26,9 +26,6 @@ fold alg k = rfold alg k . unGraph
 rfold :: Functor f => (f c -> c) -> c -> Rec f c -> c
 rfold alg k = grfold id ($ k) alg
 
-runfold :: Functor f => (c -> f c) -> c -> Rec f v
-runfold coalgebra seed = In (fmap (runfold coalgebra) (coalgebra seed))
-
 cfold :: Functor f => (f t -> t) -> Graph f -> t
 cfold = gfold id fix
 
