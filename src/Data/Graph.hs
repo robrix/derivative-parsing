@@ -95,6 +95,9 @@ eqRec n a b = case (a, b) of
 class Functor f => EqF f
   where eqF :: (r -> r -> Bool) -> f r -> f r -> Bool
 
+instance EqF f => Eq (Graph f)
+  where a == b = eqRec 0 (unGraph a) (unGraph b)
+
 class Isofunctor f
   where isomap :: (a -> b) -> (b -> a) -> (f a -> f b, f b -> f a)
 
