@@ -41,3 +41,14 @@ fixVal v f = if v == v' then v else fixVal v' f
 
 class Isofunctor f
   where isomap :: (a -> b) -> (b -> a) -> (f a -> f b, f b -> f a)
+
+instance Functor f => Isofunctor (Rec f)
+  where isomap f g = (into, outof)
+          where into rec = case rec of
+                  Var v -> Var (f v)
+                  Mu h -> Mu (fmap into . h . g)
+                  In r -> In (into <$> r)
+                outof rec = case rec of
+                  Var v -> Var (g v)
+                  Mu h -> Mu (fmap outof . h . f)
+                  In r -> In (outof <$> r)
