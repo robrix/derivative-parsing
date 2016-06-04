@@ -44,10 +44,10 @@ parse p = parseNull . foldl ((compact .) . deriv) p
 
 
 commaSep1 :: Parser a -> Parser [a]
-commaSep1 = sep1 (HDown (lit ','))
+commaSep1 = sep1 (Graph (lit ','))
 
 commaSep :: Parser a -> Parser [a]
-commaSep = sep (HDown (lit ','))
+commaSep = sep (Graph (lit ','))
 
 sep1 :: Parser sep -> Parser a -> Parser [a]
 sep1 s p = (:) <$> p <*> many (s *> p)
@@ -82,16 +82,16 @@ literal :: String -> Combinator v String
 literal string = sequenceA (In . Lit <$> string)
 
 mu :: (forall v. Combinator v a -> Combinator v a) -> Parser a
-mu f = HDown $ Mu $ \ ~(v:_) -> pure $
+mu f = Graph $ Mu $ \ ~(v:_) -> pure $
   case f (Var v) of
     In r -> r
     p -> p `Lab` ""
 
 parser :: (forall v. Combinator v a) -> Parser a
-parser = HDown
+parser = Graph
 
 combinator :: Parser a -> Combinator v a
-combinator = hup
+combinator = unGraph
 
 
 -- Types
@@ -147,7 +147,7 @@ deriv g c = liftGraph' deriv' (parseNull'' `hdistribute` nullable'') ([] :*: Con
           else nul
 
 parseNull :: Parser a -> [a]
-parseNull = parseNull' . hup
+parseNull = parseNull' . unGraph
 
 parseNull' :: Rec ParserF [] a -> [a]
 parseNull' = rfold parseNull'' []
@@ -179,7 +179,7 @@ compact = modifyGraph (graphMap compact'')
           a -> a
 
 nullable :: Parser a -> Bool
-nullable = nullable' . hup
+nullable = nullable' . unGraph
 
 nullable' :: Rec ParserF (Const Bool) a -> Bool
 nullable' = getConst  . rfold nullable'' (Const False)
@@ -228,7 +228,7 @@ instance Functor (Rec ParserF v) where
   fmap = (In .) . Map
 
 instance Functor (Graph ParserF) where
-  fmap f (HDown rec) = HDown (f <$> rec)
+  fmap f (Graph rec) = Graph (f <$> rec)
 
 instance Applicative (ParserF (Rec ParserF v)) where
   pure = Ret . pure
@@ -239,8 +239,8 @@ instance Applicative (Rec ParserF v) where
   (<*>) = (fmap (uncurry ($)) .) . (In .) . Cat
 
 instance Applicative (Graph ParserF) where
-  pure a = HDown (pure a)
-  HDown f <*> HDown a = HDown (f <*> a)
+  pure a = Graph (pure a)
+  Graph f <*> Graph a = Graph (f <*> a)
 
 instance Alternative (ParserF (Rec ParserF v)) where
   empty = Nul
@@ -255,10 +255,10 @@ instance Alternative (Rec ParserF v) where
   many = In . Rep
 
 instance Alternative (Graph ParserF) where
-  empty = HDown empty
-  HDown a <|> HDown b = HDown (a <|> b)
-  some (HDown p) = HDown (some p)
-  many (HDown p) = HDown (many p)
+  empty = Graph empty
+  Graph a <|> Graph b = Graph (a <|> b)
+  some (Graph p) = Graph (some p)
+  many (Graph p) = Graph (many p)
 
 instance Monad (Rec ParserF v) where
   return = pure
@@ -266,7 +266,7 @@ instance Monad (Rec ParserF v) where
 
 instance Monad (Graph ParserF) where
   return = pure
-  HDown p >>= f = HDown (p >>= hup . f)
+  Graph p >>= f = Graph (p >>= unGraph . f)
 
 instance HEqF ParserF
   where heqF eq a b = case (a, b) of

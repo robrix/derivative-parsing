@@ -35,13 +35,13 @@ data Rec f v a
   | Mu ([v a] -> [f (Rec f v) a])
   | In (f (Rec f v) a)
 
-newtype Graph f a = HDown { hup :: forall v. Rec f v a }
+newtype Graph f a = Graph { unGraph :: forall v. Rec f v a }
 
 
 -- Folds
 
 gfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> Graph f ~> c
-gfold var bind recur = grfold var bind recur . hup
+gfold var bind recur = grfold var bind recur . unGraph
 
 grfold :: HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> Rec f v ~> c
 grfold var bind recur rec = case rec of
@@ -50,7 +50,7 @@ grfold var bind recur rec = case rec of
   In fa -> recur (hfmap (grfold var bind recur) fa)
 
 fold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
-fold alg k = rfold alg k . hup
+fold alg k = rfold alg k . unGraph
 
 rfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> c
 rfold alg k = grfold id (\ g -> head (g (repeat k))) alg
@@ -98,7 +98,7 @@ preturn :: v ~> Rec f v
 preturn = Var
 
 modifyGraph :: (forall v. Rec f v ~> Rec g v) -> Graph f ~> Graph g
-modifyGraph f g = HDown (f (hup g))
+modifyGraph f g = Graph (f (unGraph g))
 
 unroll :: HFunctor f => Rec f (Rec f v) a -> Rec f (Rec f v) a
 unroll rec = case rec of
@@ -107,7 +107,7 @@ unroll rec = case rec of
   In r -> In (hfmap unroll r)
 
 unrollGraph :: HFunctor f => Graph f ~> Graph f
-unrollGraph g = HDown (pjoin (unroll (hup g)))
+unrollGraph g = Graph (pjoin (unroll (unGraph g)))
 
 
 -- Equality
@@ -148,10 +148,10 @@ modifyConst f = Const . f . getConst
 -- Instances
 
 instance HEqF f => Eq (Graph f a)
-  where a == b = eqRec 0 (hup a) (hup b)
+  where a == b = eqRec 0 (unGraph a) (unGraph b)
 
 instance HShowF f => Show (Graph f a)
-  where showsPrec n = showsRec (iterate (modifyConst succ) (Const 'a')) n . hup
+  where showsPrec n = showsRec (iterate (modifyConst succ) (Const 'a')) n . unGraph
 
 instance HFunctor f => HIsofunctor (Rec f)
   where hisomap :: forall c d. (c ~> d) -> (d ~> c) -> forall a. (Rec f c a -> Rec f d a, Rec f d a -> Rec f c a)
