@@ -80,6 +80,21 @@ unrollGraph :: Functor f => Graph f -> Graph f
 unrollGraph g = Graph (pjoin (unroll (unGraph g)))
 
 
+-- Equality
+
+eqRec :: EqF f => Int -> Rec f Int -> Rec f Int -> Bool
+eqRec n a b = case (a, b) of
+  (Var x, Var y) -> x == y
+  (Mu g, Mu h) -> let a = g (succ n)
+                      b = h (succ n) in
+                      eqF (eqRec (succ n)) a b
+  (In x, In y) -> eqF (eqRec n) x y
+  _ -> False
+
+
+class Functor f => EqF f
+  where eqF :: (r -> r -> Bool) -> f r -> f r -> Bool
+
 class Isofunctor f
   where isomap :: (a -> b) -> (b -> a) -> (f a -> f b, f b -> f a)
 
