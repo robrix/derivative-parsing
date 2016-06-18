@@ -20,9 +20,7 @@ module Data.Higher.Graph
 ) where
 
 import Control.Applicative
-import Data.Foldable (asum)
 import Data.Function
-import Data.Functor.Eq
 import Data.Higher.Bifunctor
 import Data.Higher.Eq
 import Data.Higher.Functor
@@ -34,7 +32,7 @@ import Data.Higher.Transformation
 
 data Rec f v a
   = Var (v a)
-  | Mu ([v a] -> [f (Rec f v) a])
+  | Mu (v a -> f (Rec f v) a)
   | In (f (Rec f v) a)
 
 newtype Graph f a = Graph { unGraph :: forall v. Rec f v a }
@@ -42,26 +40,26 @@ newtype Graph f a = Graph { unGraph :: forall v. Rec f v a }
 
 -- Folds
 
-gfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> Graph f ~> c
+gfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> c
 gfold var bind recur = grfold var bind recur . unGraph
 
-grfold :: HFunctor f => (v ~> c) -> (forall a. ([v a] -> [c a]) -> c a) -> (f c ~> c) -> Rec f v ~> c
+grfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> c
 grfold var bind recur rec = case rec of
   Var x -> var x
-  Mu g -> bind (map (recur . hfmap (grfold var bind recur)) . g)
+  Mu g -> bind (recur . hfmap (grfold var bind recur) . g)
   In fa -> recur (hfmap (grfold var bind recur) fa)
 
 fold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 fold alg k = rfold alg k . unGraph
 
 rfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> c
-rfold alg k = grfold id (\ g -> head (g (repeat k))) alg
+rfold alg k = grfold id ($ k) alg
 
 cfold :: HFunctor f => (f t ~> t) -> Graph f ~> t
-cfold = gfold id (head . fix)
+cfold = gfold id fix
 
 sfold :: (HFunctor f, HEq c) => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
-sfold alg k = gfold id (head . fhfixVal (repeat k)) alg
+sfold alg k = gfold id (fixVal k) alg
 
 gcata :: (HFunctor f, Alternative v) => (f v ~> v) -> Graph f ~> v
 gcata f = grcata f . unGraph
@@ -75,8 +73,9 @@ gpara f = grpara f . unGraph
 grpara :: (HFunctor f, Alternative v) => (f (Rec f v :*: v) ~> v) -> Rec f v ~> v
 grpara f rec = case rec of
   Var v -> v
-  Mu g -> asum . map (f . hfmap (\ x -> x :*: grpara f x)) . g $ repeat empty
-  In r -> f (hfmap (\ x -> x :*: grpara f x) r)
+  Mu g -> f (hfmap pair (g empty))
+  In r -> f (hfmap pair r)
+  where pair x = x :*: grpara f x
 
 
 -- Maps
@@ -87,19 +86,19 @@ transform f = modifyGraph (graphMap f)
 graphMap :: HFunctor f => (f (Rec g v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
 graphMap f rec = case rec of
   Var x -> Var x
-  Mu g -> Mu (map (f . hfmap (graphMap f)) . g)
+  Mu g -> Mu (f . hfmap (graphMap f) . g)
   In x -> In (f (hfmap (graphMap f) x))
 
 liftRec :: (f (Rec f v) ~> f (Rec f v)) -> Rec f v ~> Rec f v
 liftRec f rec = case rec of
   Var v -> Var v
-  Mu g -> Mu (map f . g)
+  Mu g -> Mu (f . g)
   In r -> In (f r)
 
 pjoin :: HFunctor f => Rec f (Rec f v) ~> Rec f v
 pjoin rec = case rec of
   Var x -> x
-  Mu g -> Mu (map (hfmap pjoin) . g . map Var)
+  Mu g -> Mu (hfmap pjoin . g . Var)
   In r -> In (hfmap pjoin r)
 
 gmap :: (HBifunctor f, HFunctor (f a)) => (a ~> b) -> Graph (f a) ~> Graph (f b)
@@ -114,7 +113,7 @@ modifyGraph f g = Graph (f (unGraph g))
 unroll :: HFunctor f => Rec f (Rec f v) a -> Rec f (Rec f v) a
 unroll rec = case rec of
   Var v -> Var v
-  Mu g -> In (head (g (repeat (pjoin (unroll (Mu g))))))
+  Mu g -> In (g (pjoin (unroll (Mu g))))
   In r -> In (hfmap unroll r)
 
 unrollGraph :: HFunctor f => Graph f ~> Graph f
@@ -126,9 +125,9 @@ unrollGraph g = Graph (pjoin (unroll (unGraph g)))
 eqRec :: HEqF f => Int -> Rec f (Const Int) a -> Rec f (Const Int) a -> Bool
 eqRec n a b = case (a, b) of
   (Var x, Var y) -> x == y
-  (Mu g, Mu h) -> let a = g (iterate (modifyConst succ) (Const n))
-                      b = h (iterate (modifyConst succ) (Const n)) in
-                      and $ zipWith (heqF (eqRec (n + length a))) a b
+  (Mu g, Mu h) -> let a = g (Const (succ n))
+                      b = h (Const (succ n)) in
+                      heqF (eqRec (succ n)) a b
   (In x, In y) -> heqF (eqRec n) x y
   _ -> False
 
@@ -138,18 +137,16 @@ eqRec n a b = case (a, b) of
 showsRec :: HShowF f => (forall b. [Const Char b]) -> Int -> Rec f (Const Char) a -> ShowS
 showsRec s n rec = case rec of
   Var c -> showChar (getConst c)
-  Mu f -> let r = f s
-              (fr, s') = splitAt (length r) s in
-              showString "Mu (\n" . foldr (.) id
-                [ showString "  " . showChar (getConst a) . showString " => " . v . showString "\n"
-                | (a, v) <- zip fr (map (hshowsPrecF n (showsRec s')) r) ] . showString ")\n"
+  Mu g -> let (a, s') = (head s, tail s) in
+              showString "Mu (\n  " . showChar (getConst a) . showString " => "
+              . hshowsPrecF n (showsRec s') (g a) . showString "\n)\n"
   In fa -> hshowsPrecF n (showsRec s) fa
 
 
 -- Implementation details
 
-fhfixVal :: (EqF f, HEq h) => f (h a) -> (f (h a) -> f (h a)) -> f (h a)
-fhfixVal v f = if eqF heq v v' then v else fhfixVal v' f
+fixVal :: HEq h => h a -> (h a -> h a) -> h a
+fixVal v f = if v `heq` v' then v else fixVal v' f
   where v' = f v
 
 modifyConst :: (a -> b) -> Const a ~> Const b
@@ -170,10 +167,10 @@ instance HFunctor f => HIsofunctor (Rec f)
           where s :: Rec f c ~> Rec f d
                 s rec = case rec of
                   Var v -> Var (f v)
-                  Mu h -> Mu (map (hfmap s) . h . map g)
+                  Mu h -> Mu (hfmap s . h . g)
                   In r -> In (hfmap s r)
                 t :: Rec f d ~> Rec f c
                 t rec = case rec of
                   Var v -> Var (g v)
-                  Mu h -> Mu (map (hfmap t) . h . map f)
+                  Mu h -> Mu (hfmap t . h . f)
                   In r -> In (hfmap t r)

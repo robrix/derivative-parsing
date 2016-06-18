@@ -82,10 +82,9 @@ literal :: String -> Combinator v String
 literal string = sequenceA (In . Lit <$> string)
 
 mu :: (forall v. Combinator v a -> Combinator v a) -> Parser a
-mu f = Graph $ Mu $ \ ~(v:_) -> pure $
-  case f (Var v) of
-    In r -> r
-    p -> p `Lab` ""
+mu f = Graph $ Mu $ \ v -> case f (Var v) of
+  In r -> r
+  p -> p `Lab` ""
 
 parser :: (forall v. Combinator v a) -> Parser a
 parser = Graph
