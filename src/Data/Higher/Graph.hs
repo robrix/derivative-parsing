@@ -67,10 +67,7 @@ gcata :: (HFunctor f, Alternative v) => (f v ~> v) -> Graph f ~> v
 gcata f = grcata f . unGraph
 
 grcata :: (HFunctor f, Alternative v) => (f v ~> v) -> Rec f v ~> v
-grcata f rec = case rec of
-  Var v -> v
-  Mu g -> asum . map (f . hfmap (grcata f)) . g $ repeat empty
-  In r -> f (hfmap (grcata f) r)
+grcata f = grpara (f . hfmap hsnd)
 
 gpara :: (HFunctor f, Alternative v) => (f (Rec f v :*: v) ~> v) -> Graph f ~> v
 gpara f = grpara f . unGraph
