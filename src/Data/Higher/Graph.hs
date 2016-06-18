@@ -9,6 +9,7 @@ module Data.Higher.Graph
 , cfold
 , sfold
 , gcata
+, gpara
 , transform
 , graphMap
 , liftRec
@@ -26,8 +27,9 @@ import Data.Higher.Bifunctor
 import Data.Higher.Eq
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
-import Data.Higher.Isofunctor
 import Data.Higher.Functor.Show
+import Data.Higher.Isofunctor
+import Data.Higher.Product
 import Data.Higher.Transformation
 
 data Rec f v a
@@ -69,6 +71,15 @@ grcata f rec = case rec of
   Var v -> v
   Mu g -> asum . map (f . hfmap (grcata f)) . g $ repeat empty
   In r -> f (hfmap (grcata f) r)
+
+gpara :: (HFunctor f, Alternative v) => (f (Rec f v :*: v) ~> v) -> Graph f ~> v
+gpara f = grpara f . unGraph
+
+grpara :: (HFunctor f, Alternative v) => (f (Rec f v :*: v) ~> v) -> Rec f v ~> v
+grpara f rec = case rec of
+  Var v -> v
+  Mu g -> asum . map (f . hfmap (\ x -> x :*: grpara f x)) . g $ repeat empty
+  In r -> f (hfmap (\ x -> x :*: grpara f x) r)
 
 
 -- Maps
