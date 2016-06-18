@@ -61,11 +61,14 @@ cfold = gfold id (head . fix)
 sfold :: (HFunctor f, HEq c) => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 sfold alg k = gfold id (head . fhfixVal (repeat k)) alg
 
-gcata :: (HFunctor f, Alternative v) => (f v ~> v) -> Rec f v ~> v
-gcata f rec = case rec of
+gcata :: (HFunctor f, Alternative v) => (f v ~> v) -> Graph f ~> v
+gcata f = grcata f . unGraph
+
+grcata :: (HFunctor f, Alternative v) => (f v ~> v) -> Rec f v ~> v
+grcata f rec = case rec of
   Var v -> v
-  Mu g -> asum . map (f . hfmap (gcata f)) . g $ repeat empty
-  In r -> f (hfmap (gcata f) r)
+  Mu g -> asum . map (f . hfmap (grcata f)) . g $ repeat empty
+  In r -> f (hfmap (grcata f) r)
 
 
 -- Maps
