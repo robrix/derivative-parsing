@@ -24,6 +24,13 @@ hdistribute :: HFunctor f => (f c ~> c') -> (f d ~> d') -> f (c :*: d) ~> (c' :*
 hdistribute f g p = f (hfmap hfst p) :*: g (hfmap hsnd p)
 
 
+hcurry :: (forall a. (f :*: g) a -> h) -> forall a. f a -> g a -> h
+hcurry f a b = f (a :*: b)
+
+huncurry :: (forall a. f a -> g a -> h) -> forall a. (f :*: g) a -> h
+huncurry f (a :*: b) = f a b
+
+
 -- Instances
 
 instance HBifunctor (:*:)
