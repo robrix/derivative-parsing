@@ -97,7 +97,7 @@ spec = do
         \ a c -> parseNull (pure (a :: Char) `deriv` c) `shouldBe` []
 
     it "terminates on cyclic grammars" $
-      compact (lam `deriv` 'x') `shouldBe` parser (ret [ Var' "x" ])
+      compact (lam `deriv` 'x') `shouldNotBe` parser nul
 
     describe "ret" $ do
       prop "annihilates" $
