@@ -192,6 +192,9 @@ spec = do
     it "parses a single character string of whitespace" $
       ws `parse` " " `shouldBe` " "
 
+    it "parses two characters of whitespace" $
+      ((,) <$> ws <*> ws) `parse` "  " `shouldBe` [(' ', ' ')]
+
     it "parses repeated whitespace strings" $
       many ws `parse` "   " `shouldBe` [ "   " ]
 
