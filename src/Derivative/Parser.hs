@@ -178,6 +178,7 @@ nullable'' rec = case rec of
   Rep _ -> Const True
   Eps -> Const True
   Ret _ -> Const True
+  Lab p _ -> p
   _ -> Const False
 
 size :: Parser a -> Int
