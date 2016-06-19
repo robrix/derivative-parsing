@@ -177,6 +177,7 @@ nullable'' rec = case rec of
   Alt a b -> Const $ getConst a || getConst b
   Rep _ -> Const True
   Eps -> Const True
+  Ret _ -> Const True
   _ -> Const False
 
 size :: Parser a -> Int
