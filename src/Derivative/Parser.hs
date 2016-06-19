@@ -176,6 +176,8 @@ nullable'' rec = case rec of
   Cat a b -> Const $ getConst a && getConst b
   Alt a b -> Const $ getConst a || getConst b
   Rep _ -> Const True
+  Map _ p -> Const (getConst p)
+  Bnd p _ -> Const (getConst p)
   Eps -> Const True
   Ret _ -> Const True
   Lab p _ -> p
