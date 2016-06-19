@@ -114,13 +114,13 @@ type Combinator v = Rec ParserF v
 
 wut :: Graph ParserF a -> ParserF (Graph ParserF) a
 wut = gfold id ($ Eps) alg
-  where alg = hfmap tuw
+  where alg = hfmap outof
 
-tuw :: ParserF (Graph ParserF) a -> Graph ParserF a
-tuw g = Graph (In (unGraph `hfmap` g))
+outof :: ParserF (Graph ParserF) a -> Graph ParserF a
+outof g = Graph (In (unGraph `hfmap` g))
 
 deriv :: Parser a -> Char -> Parser a
-deriv g c = tuw . go . wut $ g
+deriv g c = outof . go . wut $ g
   where go :: ParserF (Graph ParserF) a -> ParserF (Graph ParserF) a
         go p = case p of
           Cat a b -> parser (unGraph (deriv a c) `cat` unGraph b) `Alt` parser (delta a `cat` unGraph (deriv b c))
