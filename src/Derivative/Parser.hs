@@ -248,6 +248,10 @@ instance Alternative (Graph ParserF) where
   some (Graph p) = Graph (some p)
   many (Graph p) = Graph (many p)
 
+instance Monad (ParserF (Rec ParserF v)) where
+  return = pure
+  p >>= f = Bnd (In p) (In . f)
+
 instance Monad (Rec ParserF v) where
   return = pure
   (>>=) = (In .) . Bnd
