@@ -23,6 +23,7 @@ module Derivative.Parser
 , mu
 , parser
 , combinator
+, nullable
 ) where
 
 import Control.Applicative
