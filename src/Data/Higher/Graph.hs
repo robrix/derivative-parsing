@@ -7,6 +7,7 @@ module Data.Higher.Graph
 , gparafold
 , fold
 , rfold
+, parafold
 , cfold
 , sfold
 , gcata
@@ -65,6 +66,12 @@ fold alg k = rfold alg k . unGraph
 
 rfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> c
 rfold alg k = grfold id ($ k) alg
+
+parafold :: HFunctor f => (f (Rec f c :*: c) ~> c) -> (forall a. c a) -> Graph f ~> c
+parafold algebra initial = rparafold algebra initial . unGraph
+
+rparafold :: HFunctor f => (f (Rec f c :*: c) ~> c) -> (forall a. c a) -> Rec f c ~> c
+rparafold algebra initial = grparafold id ($ initial) algebra
 
 cfold :: HFunctor f => (f t ~> t) -> Graph f ~> t
 cfold = gfold id fix
