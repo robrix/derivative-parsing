@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, RankNTypes, TypeOperators #-}
+{-# LANGUAGE FlexibleInstances, GADTs, RankNTypes #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -32,9 +32,6 @@ import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
 import Data.Higher.Graph
-import Data.Higher.Isofunctor
-import Data.Higher.Product
-import Data.Higher.Transformation
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
 
@@ -115,36 +112,26 @@ type Combinator v = Rec ParserF v
 
 -- Algorithm
 
-type Derivative v = (v :*: [] :*: Const Bool)
+wut :: Graph ParserF a -> ParserF (Graph ParserF) a
+wut = gfold id ($ Eps) alg
+  where alg = hfmap tuw
 
-liftRec' :: HFunctor f => (forall v. Rec f (v :*: w) ~> Rec f (v :*: w)) -> (f w ~> w) -> (forall a. w a) -> forall v. Rec f v ~> Rec f v
-liftRec' f algebra initial = let (into, outof) = hisomap (:*: initial) hfst in outof . f . into
-
-liftGraph' :: HFunctor f => (forall v. Rec f (v :*: w) ~> Rec f (v :*: w)) -> (f w ~> w) -> (forall a. w a) -> Graph f ~> Graph f
-liftGraph' f algebra initial = modifyGraph (liftRec' f algebra initial)
+tuw :: ParserF (Graph ParserF) a -> Graph ParserF a
+tuw g = Graph (In (unGraph `hfmap` g))
 
 deriv :: Parser a -> Char -> Parser a
-deriv g c = liftGraph' deriv' (parseNull'' `hdistribute` nullable'') ([] :*: Const False) g
-  where deriv' :: Combinator (Derivative v) ~> Combinator (Derivative v)
-        deriv' = liftRec deriv''
-        deriv'' :: ParserF (Rec ParserF (Derivative v)) ~> ParserF (Rec ParserF (Derivative v))
-        deriv'' p = case p of
-          Cat a b -> Alt (deriv' a `cat` b) (delta a `cat` deriv' b)
-          Alt a b -> Alt (deriv' a) (deriv' b)
-          Rep p -> Map (uncurry (:)) (deriv' p `cat` many p)
-          Map f p -> Map f (deriv' p)
-          Bnd p f -> Bnd (deriv' p) f
+deriv g c = tuw . go . wut $ g
+  where go :: ParserF (Graph ParserF) a -> ParserF (Graph ParserF) a
+        go p = case p of
+          Cat a b -> parser (unGraph (deriv a c) `cat` unGraph b) `Alt` parser (delta a `cat` unGraph (deriv b c))
+          Alt a b -> Alt (deriv a c) (deriv b c)
+          Rep p -> Map (uncurry (:)) (parser (unGraph (deriv p c) `cat` unGraph (many p)))
+          Map f p -> Map f (deriv p c)
+          Bnd p f -> Bnd (deriv p c) f
           Lit c' -> if c == c' then Ret [c] else Nul
-          Lab p s -> Lab (deriv' p) s
+          Lab p s -> Lab (deriv p c) s
           _ -> Nul
-        nullable :: Rec ParserF (Derivative v) a -> Bool
-        nullable c = nullable' (fst (hisomap (hsnd . hsnd) (error "this path should not be traversed")) c)
-        parseNull :: Rec ParserF (Derivative v) a -> [a]
-        parseNull c = parseNull' (fst (hisomap (hfst . hsnd) (error "this path should not be traversed")) c)
-        delta :: Combinator (Derivative v) ~> Combinator (Derivative v)
-        delta c = if nullable c
-          then ret (parseNull c)
-          else nul
+        delta p = if nullable p then ret (parseNull p) else nul
 
 parseNull :: Parser a -> [a]
 parseNull = parseNull' . unGraph
