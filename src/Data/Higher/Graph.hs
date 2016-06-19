@@ -8,8 +8,6 @@ module Data.Higher.Graph
 , rfold
 , cfold
 , sfold
-, gcata
-, gpara
 , transform
 , graphMap
 , liftRec
@@ -27,7 +25,6 @@ import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
 import Data.Higher.Isofunctor
-import Data.Higher.Product
 import Data.Higher.Transformation
 
 data Rec f v a
@@ -61,22 +58,6 @@ cfold = gfold id fix
 
 sfold :: (HFunctor f, HEq c) => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 sfold alg k = gfold id (fixVal k) alg
-
-gcata :: (HFunctor f, Alternative v) => (f v ~> v) -> Graph f ~> v
-gcata f = grcata f . unGraph
-
-grcata :: (HFunctor f, Alternative v) => (f v ~> v) -> Rec f v ~> v
-grcata f = grpara (f . hfmap hsnd)
-
-gpara :: (HFunctor f, Alternative v) => (f (Rec f v :*: v) ~> v) -> Graph f ~> v
-gpara f = grpara f . unGraph
-
-grpara :: (HFunctor f, Alternative v) => (f (Rec f v :*: v) ~> v) -> Rec f v ~> v
-grpara f rec = case rec of
-  Var v -> v
-  Mu g -> f (hfmap pair (g empty))
-  In r -> f (hfmap pair r)
-  where pair x = x :*: grpara f x
 
 
 -- Maps
