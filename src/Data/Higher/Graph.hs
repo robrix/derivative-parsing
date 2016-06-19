@@ -4,6 +4,7 @@ module Data.Higher.Graph
 , Graph(..)
 , gfold
 , grfold
+, gparafold
 , fold
 , rfold
 , cfold
@@ -48,6 +49,16 @@ grfold var bind recur rec = case rec of
   Var x -> var x
   Mu g -> bind (recur . hfmap (grfold var bind recur) . g)
   In fa -> recur (hfmap (grfold var bind recur) fa)
+
+gparafold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f (Rec f v :*: c) ~> c) -> Graph f ~> c
+gparafold var bind recur = grparafold var bind recur . unGraph
+
+grparafold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f (Rec f v :*: c) ~> c) -> Rec f v ~> c
+grparafold var bind recur rec = case rec of
+  Var x -> var x
+  Mu g -> bind (recur . hfmap pair . g)
+  In fa -> recur (hfmap pair fa)
+  where pair a = a :*: grparafold var bind recur a
 
 fold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 fold alg k = rfold alg k . unGraph
