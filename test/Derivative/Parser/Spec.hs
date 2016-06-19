@@ -106,6 +106,10 @@ spec = do
       prop "distributivity" $
         \ c s -> parser (lit c `label` s) `deriv` c `shouldBe` parser (combinator (parser (lit c) `deriv` c) `label` s)
 
+    describe "cat" $ do
+      prop "does not pass through non-nullable parsers" $
+        \ c -> parser (lit c `cat` lit (succ c)) `deriv` c `shouldBe` parser (ret [c] `cat` lit (succ c) <|> nul `cat` nul)
+
 
   describe "Functor" $ do
     prop "obeys the identity law" $
