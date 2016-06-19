@@ -5,9 +5,11 @@ module Data.Higher.Graph
 , gfold
 , grfold
 , gparafold
+, grparafold
 , fold
 , rfold
 , parafold
+, rparafold
 , cfold
 , sfold
 , gcata
