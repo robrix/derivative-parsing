@@ -59,7 +59,7 @@ oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
 oneOf = getAlt . foldMap Monoid.Alt
 
 cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
-a `cat` b = In $ Cat a b
+cat = (In .) . Cat
 
 lit :: Char -> Combinator v Char
 lit = In . Lit
