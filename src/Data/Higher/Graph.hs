@@ -4,12 +4,8 @@ module Data.Higher.Graph
 , Graph(..)
 , gfold
 , grfold
-, gparafold
-, grparafold
 , fold
 , rfold
-, parafold
-, rparafold
 , cfold
 , sfold
 , gcata
@@ -48,29 +44,17 @@ gfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a)
 gfold var bind recur = grfold var bind recur . unGraph
 
 grfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> c
-grfold var bind recur = grparafold var bind (recur . hfmap hsnd)
-
-gparafold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f (Rec f v :*: c) ~> c) -> Graph f ~> c
-gparafold var bind recur = grparafold var bind recur . unGraph
-
-grparafold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f (Rec f v :*: c) ~> c) -> Rec f v ~> c
-grparafold var bind recur rec = case rec of
+grfold var bind algebra rec = case rec of
   Var x -> var x
-  Mu g -> bind (recur . hfmap pair . g)
-  In fa -> recur (hfmap pair fa)
-  where pair a = a :*: grparafold var bind recur a
+  Mu g -> bind (algebra . hfmap recur . g)
+  In fa -> algebra (hfmap recur fa)
+  where recur = grfold var bind algebra
 
 fold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 fold alg k = rfold alg k . unGraph
 
 rfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> c
 rfold alg k = grfold id ($ k) alg
-
-parafold :: HFunctor f => (f (Rec f c :*: c) ~> c) -> (forall a. c a) -> Graph f ~> c
-parafold algebra initial = rparafold algebra initial . unGraph
-
-rparafold :: HFunctor f => (f (Rec f c :*: c) ~> c) -> (forall a. c a) -> Rec f c ~> c
-rparafold algebra initial = grparafold id ($ initial) algebra
 
 cfold :: HFunctor f => (f t ~> t) -> Graph f ~> t
 cfold = gfold id fix
