@@ -112,13 +112,6 @@ type Combinator v = Rec ParserF v
 
 -- Algorithm
 
-into :: Graph ParserF a -> ParserF (Graph ParserF) a
-into = gfold id ($ Eps) alg
-  where alg = hfmap outof
-
-outof :: ParserF (Graph ParserF) a -> Graph ParserF a
-outof g = Graph (In (unGraph `hfmap` g))
-
 deriv :: Parser a -> Char -> Parser a
 deriv g c = outof . go . into $ g
   where go :: ParserF (Graph ParserF) a -> ParserF (Graph ParserF) a
@@ -132,6 +125,10 @@ deriv g c = outof . go . into $ g
           Lab p s -> Lab (deriv p c) s
           _ -> Nul
         delta p = if nullable p then ret (parseNull p) else nul
+        into = gfold id ($ Eps) alg
+          where alg = hfmap outof
+        outof g = Graph (In (unGraph `hfmap` g))
+
 
 parseNull :: Parser a -> [a]
 parseNull = parseNull' . unGraph
