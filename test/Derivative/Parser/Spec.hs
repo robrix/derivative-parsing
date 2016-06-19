@@ -110,6 +110,9 @@ spec = do
       prop "does not pass through non-nullable parsers" $
         \ c -> parser (lit c `cat` lit (succ c)) `deriv` c `shouldBe` parser (ret [c] `cat` lit (succ c) <|> nul `cat` nul)
 
+      prop "passes through nullable parsers" $
+        \ c d -> parser (ret [c :: Char] `cat` lit d) `deriv` d `shouldBe` parser (nul `cat` lit d <|> ret [c] `cat` ret [d])
+
 
   describe "Functor" $ do
     prop "obeys the identity law" $
