@@ -46,10 +46,7 @@ gfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a)
 gfold var bind recur = grfold var bind recur . unGraph
 
 grfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> c
-grfold var bind recur rec = case rec of
-  Var x -> var x
-  Mu g -> bind (recur . hfmap (grfold var bind recur) . g)
-  In fa -> recur (hfmap (grfold var bind recur) fa)
+grfold var bind recur = grparafold var bind (recur . hfmap hsnd)
 
 gparafold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f (Rec f v :*: c) ~> c) -> Graph f ~> c
 gparafold var bind recur = grparafold var bind recur . unGraph
