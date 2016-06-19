@@ -19,7 +19,6 @@ module Data.Higher.Graph
 
 import Control.Applicative
 import Data.Function
-import Data.Higher.Bifunctor
 import Data.Higher.Eq
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
@@ -81,9 +80,6 @@ pjoin rec = case rec of
   Var x -> x
   Mu g -> Mu (hfmap pjoin . g . Var)
   In r -> In (hfmap pjoin r)
-
-gmap :: (HBifunctor f, HFunctor (f a)) => (a ~> b) -> Graph (f a) ~> Graph (f b)
-gmap f = transform (hbimap f id)
 
 preturn :: v ~> Rec f v
 preturn = Var
