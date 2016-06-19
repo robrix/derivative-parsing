@@ -208,6 +208,7 @@ spec = do
     it "terminates on interesting cyclic grammars" $
       size lam `shouldBe` 32
 
+
   describe "grammar" $ do
     it "parses a literal ‘x’ as a variable name" $
       varName `parse` "x" `shouldBe` ["x"]
