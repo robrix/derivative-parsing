@@ -3,6 +3,7 @@
 module Derivative.Parser.Spec where
 
 import Control.Applicative
+import Data.Higher.Graph
 import Derivative.Parser
 import Prelude hiding (abs)
 import Test.Hspec
@@ -115,6 +116,10 @@ spec = do
 
 
   describe "nullable" $ do
+    describe "cat" $ do
+      prop "is the conjunction of its operands’ nullability" $
+        \ a b -> nullable (parser (unGraph a `cat` unGraph b)) `shouldBe` nullable (a :: Parser Char) && nullable (b :: Parser Char)
+
     describe "nul" $
       it "is not nullable" $
         nullable (parser nul) `shouldBe` False
