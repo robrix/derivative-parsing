@@ -119,6 +119,10 @@ spec = do
       it "is not nullable" $
         nullable (parser nul) `shouldBe` False
 
+    describe "eps" $
+      it "is nullable" $
+        nullable (parser eps) `shouldBe` True
+
 
   describe "Functor" $ do
     prop "obeys the identity law" $
