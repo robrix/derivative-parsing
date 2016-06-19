@@ -128,6 +128,10 @@ spec = do
       it "is nullable" $
         nullable (parser eps) `shouldBe` True
 
+    describe "ret" $
+      prop "is nullable" $
+        \ c -> nullable (parser (ret (c :: String))) `shouldBe` True
+
 
   describe "Functor" $ do
     prop "obeys the identity law" $
