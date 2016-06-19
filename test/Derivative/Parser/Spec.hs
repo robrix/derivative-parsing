@@ -114,6 +114,12 @@ spec = do
         \ c d -> parser (ret [c :: Char] `cat` lit d) `deriv` d `shouldBe` parser (nul `cat` lit d <|> ret [c] `cat` ret [d])
 
 
+  describe "nullable" $ do
+    describe "nul" $
+      it "is not nullable" $
+        nullable (parser nul) `shouldBe` False
+
+
   describe "Functor" $ do
     prop "obeys the identity law" $
       \ c -> parseNull (fmap id (parser $ lit c) `deriv` c) `shouldBe` parseNull (parser (lit c) `deriv` c)
