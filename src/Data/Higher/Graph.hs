@@ -24,7 +24,6 @@ import Data.Higher.Eq
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
-import Data.Higher.Isofunctor
 import Data.Higher.Transformation
 
 data Rec f v a
@@ -142,17 +141,3 @@ instance HEqF f => Eq (Graph f a)
 
 instance HShowF f => Show (Graph f a)
   where showsPrec n = showsRec (iterate (modifyConst succ) (Const 'a')) n . unGraph
-
-instance HFunctor f => HIsofunctor (Rec f)
-  where hisomap :: forall c d. (c ~> d) -> (d ~> c) -> forall a. (Rec f c a -> Rec f d a, Rec f d a -> Rec f c a)
-        hisomap f g = (s, t)
-          where s :: Rec f c ~> Rec f d
-                s rec = case rec of
-                  Var v -> Var (f v)
-                  Mu h -> Mu (hfmap s . h . g)
-                  In r -> In (hfmap s r)
-                t :: Rec f d ~> Rec f c
-                t rec = case rec of
-                  Var v -> Var (g v)
-                  Mu h -> Mu (hfmap t . h . f)
-                  In r -> In (hfmap t r)
