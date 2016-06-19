@@ -1,6 +1,9 @@
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Derivative.Parser.Spec where
 
 import Control.Applicative
+import Data.Higher.Graph
 import Derivative.Parser
 import Prelude hiding (abs)
 import Test.Hspec
@@ -17,13 +20,13 @@ spec = do
   describe "parseNull" $ do
     describe "cat" $ do
       prop "returns pairs of its parse trees" $
-        \ a b -> parseNull (pure a `cat` pure b) `shouldBe` [(a, b) :: (Char, Char)]
+        \ a b -> parseNull (parser $ pure a `cat` pure b) `shouldBe` [(a, b) :: (Char, Char)]
 
       prop "is empty when its left operand is empty" $
-        \ b -> parseNull (nul `cat` pure b) `shouldBe` ([] :: [(Char, Char)])
+        \ b -> parseNull (parser $ nul `cat` pure b) `shouldBe` ([] :: [(Char, Char)])
 
       prop "is empty when its right operand is empty" $
-        \ a -> parseNull (pure a `cat` nul) `shouldBe` ([] :: [(Char, Char)])
+        \ a -> parseNull (parser $ pure a `cat` nul) `shouldBe` ([] :: [(Char, Char)])
 
     describe "<|>" $ do
       prop "returns left parse trees" $
@@ -41,11 +44,11 @@ spec = do
 
     describe "fmap" $ do
       prop "applies a function to its parse trees" $
-        \ c -> parseNull (fmap succ (lit c) `deriv` c) `shouldBe` [succ c]
+        \ c -> parseNull (fmap succ (parser $ lit c) `deriv` c) `shouldBe` [succ c]
 
     describe "lit" $ do
       prop "is empty" $
-        \ a -> parseNull (lit a) `shouldBe` []
+        \ a -> parseNull (parser $ lit a) `shouldBe` []
 
     describe "pure" $ do
       prop "returns parse trees" $
@@ -53,50 +56,97 @@ spec = do
 
     describe "nul" $ do
       it "is empty" $
-        parseNull (nul :: Parser Char) `shouldBe` []
+        parseNull (parser nul :: Parser Char) `shouldBe` []
 
     describe "eps" $ do
       it "is empty" $
-        parseNull (eps :: Parser Char) `shouldBe` []
+        parseNull (parser eps :: Parser Char) `shouldBe` []
+
+    it "terminates on cyclic grammars" $
+      let grammar = mu (\ a -> a <|> ret ["x"]) in
+      parseNull grammar `shouldBe` ["x"]
+
+    it "terminates on cyclic grammars" $
+      parseNull (lam `deriv` 'x') `shouldBe` [ Var' "x" ]
 
   describe "deriv" $ do
     describe "many" $ do
       prop "produces a list of successful parses" $
-        \ c -> parseNull (many (lit c) `deriv` c) `shouldBe` [[c]]
+        \ c -> parseNull (parser (many (lit c)) `deriv` c) `shouldBe` [[c]]
 
       prop "produces no parse trees when unsuccessful" $
-        \ c -> parseNull (many (lit c) `deriv` succ c) `shouldBe` []
+        \ c -> parseNull (parser (many (lit c)) `deriv` succ c) `shouldBe` []
 
     describe "fmap" $ do
-      prop "distributes over Map" $
+      prop "distributivity" $
         \ f c -> parseNull (fmap (getBlind f :: Char -> Char) (pure c)) `shouldBe` [getBlind f c]
 
     describe "lit" $ do
-      prop "produces matching characters" $
-        \ c -> parseNull (lit c `deriv` c) `shouldBe` [c]
+      prop "represents unmatched content with the nul parser" $
+        \ a -> parser (lit a) `deriv` succ a `shouldBe` parser nul
 
-      prop "fails on unmatched characters" $
-        \ c -> parseNull (lit c `deriv` succ c) `shouldBe` []
+      prop "represents matched content with ε reduction parsers" $
+        \ a -> parser (lit a) `deriv` a `shouldBe` parser (ret [a])
+
+    describe "<|>" $ do
+      prop "distributivity" $
+        \ a b c -> parser (lit a <|> lit b) `deriv` c `shouldBe` (parser (lit a) `deriv` c) <|> (parser (lit b) `deriv` c)
 
     describe "pure" $ do
       prop "has the null derivative" $
         \ a c -> parseNull (pure (a :: Char) `deriv` c) `shouldBe` []
 
+    it "terminates on cyclic grammars" $
+      compact (lam `deriv` 'x') `shouldNotBe` parser nul
+
+    describe "ret" $ do
+      prop "annihilates" $
+        \ a c -> parser (ret (a :: String)) `deriv` c `shouldBe` parser nul
+
+    describe "label" $ do
+      prop "distributivity" $
+        \ c s -> parser (lit c `label` s) `deriv` c `shouldBe` parser (combinator (parser (lit c) `deriv` c) `label` s)
+
+    describe "cat" $ do
+      prop "does not pass through non-nullable parsers" $
+        \ c -> parser (lit c `cat` lit (succ c)) `deriv` c `shouldBe` parser (ret [c] `cat` lit (succ c) <|> nul `cat` nul)
+
+      prop "passes through nullable parsers" $
+        \ c d -> parser (ret [c :: Char] `cat` lit d) `deriv` d `shouldBe` parser (nul `cat` lit d <|> ret [c] `cat` ret [d])
+
+
+  describe "nullable" $ do
+    describe "cat" $ do
+      prop "is the conjunction of its operands’ nullability" $
+        \ a b -> nullable (parser (unGraph a `cat` unGraph b)) `shouldBe` nullable (a :: Parser Char) && nullable (b :: Parser Char)
+
+    describe "nul" $
+      it "is not nullable" $
+        nullable (parser nul) `shouldBe` False
+
+    describe "eps" $
+      it "is nullable" $
+        nullable (parser eps) `shouldBe` True
+
+    describe "ret" $
+      prop "is nullable" $
+        \ c -> nullable (parser (ret (c :: String))) `shouldBe` True
+
 
   describe "Functor" $ do
     prop "obeys the identity law" $
-      \ c -> parseNull (fmap id (lit c) `deriv` c) `shouldBe` parseNull (lit c `deriv` c)
+      \ c -> parseNull (fmap id (parser $ lit c) `deriv` c) `shouldBe` parseNull (parser (lit c) `deriv` c)
 
     prop "obeys the composition law" $
-      \ c f g -> parseNull (fmap (getBlind f :: Char -> Char) (fmap (getBlind g) (lit c)) `deriv` c) `shouldBe` parseNull (fmap (getBlind f . getBlind g) (lit c) `deriv` c)
+      \ c f g -> parseNull (fmap (getBlind f :: Char -> Char) (fmap (getBlind g) (parser $ lit c)) `deriv` c) `shouldBe` parseNull (fmap (getBlind f . getBlind g) (parser $ lit c) `deriv` c)
 
 
   describe "Applicative" $ do
     prop "obeys the identity law" $
-      \ v -> parseNull (pure id <*> lit v `deriv` v) `shouldBe` parseNull (lit v `deriv` v)
+      \ v -> parseNull (pure id <*> parser (lit v) `deriv` v) `shouldBe` parseNull (parser (lit v) `deriv` v)
 
     prop "obeys the composition law" $
-      \ u v w -> parseNull (pure (.) <*> (getBlind u :: Parser (Char -> Char)) <*> getBlind v <*> lit w `deriv` w) `shouldBe` parseNull (getBlind u <*> (getBlind v <*> lit w) `deriv` w)
+      \ u v w -> parseNull (pure (.) <*> (getBlind u :: Parser (Char -> Char)) <*> getBlind v <*> parser (lit w) `deriv` w) `shouldBe` parseNull (getBlind u <*> (getBlind v <*> parser (lit w)) `deriv` w)
 
     prop "obeys the homomorphism law" $
       \ x f -> parseNull (pure (getBlind f :: Char -> Char) <*> pure x) `shouldBe` parseNull (pure (getBlind f x))
@@ -110,17 +160,17 @@ spec = do
       \ v -> parseNull (some (getBlind v :: Parser Char)) `shouldBe` parseNull ((:) <$> getBlind v <*> many (getBlind v))
 
     prop "obeys the many law" $
-      \ v -> parseNull (many (lit v)) `shouldBe` parseNull (some (lit v) <|> pure "")
+      \ v -> parseNull (many (parser $ lit v)) `shouldBe` parseNull (some (parser $ lit v) <|> pure "")
 
     describe "(<|>)" $ do
       prop "is not right-biased" $
-        \ c -> parseNull ((lit c <|> lit (succ c)) `deriv` c) `shouldBe` [c]
+        \ c -> parseNull (parser (lit c <|> lit (succ c)) `deriv` c) `shouldBe` [c]
 
       prop "is not left-biased" $
-        \ c -> parseNull ((lit (succ c) <|> lit c) `deriv` c) `shouldBe` [c]
+        \ c -> parseNull (parser (lit (succ c) <|> lit c) `deriv` c) `shouldBe` [c]
 
       prop "returns ambiguous parses" $
-        \ c -> parseNull ((lit c <|> lit c) `deriv` c) `shouldBe` [c, c]
+        \ c -> parseNull (parser (lit c <|> lit c) `deriv` c) `shouldBe` [c, c]
 
 
   describe "Monad" $ do
@@ -133,23 +183,30 @@ spec = do
 
   describe "Show" $ do
     it "shows concatenations" $
-      show (lit 'a' `cat` lit 'b') `shouldBe` "lit 'a' `cat` lit 'b'"
+      show (parser $ lit 'a' `cat` lit 'b') `shouldBe` "lit 'a' `cat` lit 'b'"
 
     it "terminates for cyclic grammars" $
-      show cyclic `shouldBe` "cyclic `label` \"cyclic\""
+      show cyclic `shouldBe` "Mu (\n  a => a `label` \"cyclic\"\n)\n"
 
 
   describe "size" $ do
     prop "is 1 for terminals" $
-      \ a b -> let terminals = [ ret a, lit b, nul, eps ] in sum (size <$> terminals) `shouldBe` length terminals
+      \ a b -> let terminals = [ parser $ ret a, parser $ lit b, parser nul, parser eps ] in sum (size <$> terminals) `shouldBe` length terminals
 
-    prop "is 1 + the sum for nonterminals" $
-      \ a b -> let binary = [ (size .) . cat, (size .) . (<|>) ]
-                   unary = [ size . fmap id, size . (>>= return), size . many, size . (`label` "") ] in
-        (binary <*> [ lit a ] <*> [ lit b ]) ++ (unary <*> [ lit a ]) `shouldBe` (3 <$ binary) ++ (2 <$ unary)
+    prop "is 1 + the sum for unary nonterminals" $
+      \ a s -> [ size (parser (fmap id (lit a))), size (parser (lit a >>= return)), size (parser (lit a `label` s)) ] `shouldBe` [ 2, 2, 2 ]
+
+    prop "is 1 + the sum for binary nonterminals" $
+      \ a b -> [ size (parser (lit a `cat` lit b)), size (parser (lit a <|> lit b)) ] `shouldBe` [ 3, 3 ]
+
+    it "terminates on unlabelled acyclic grammars" $
+      size (parser (lit 'c')) `shouldBe` 1
 
     it "terminates on labeled cyclic grammars" $
       size cyclic `shouldBe` 1
+
+    it "terminates on interesting cyclic grammars" $
+      size lam `shouldBe` 32
 
 
   describe "grammar" $ do
@@ -159,53 +216,44 @@ spec = do
     it "parses whitespace one character at a time" $
       parseNull (ws `deriv` ' ') `shouldBe` " "
 
-    it "parses whitespace a single character string of whitespace" $
+    it "parses a single character string of whitespace" $
       ws `parse` " " `shouldBe` " "
+
+    it "parses two characters of whitespace" $
+      ((,) <$> ws <*> ws) `parse` "  " `shouldBe` [(' ', ' ')]
 
     it "parses repeated whitespace strings" $
       many ws `parse` "   " `shouldBe` [ "   " ]
 
-    it "maps parse forests into abstract syntax trees" $
-      var `parse` "x" `shouldBe` [ Var "x" ]
-
     it "the derivative terminates on cyclic grammars" $
-      (do { x <- return $! (deriv $! lam) $! 'x' ; x `seq` return $! True } ) `shouldReturn` True
+      (do { x <- return $! (deriv $! lam) 'x' ; x `seq` return True } ) `shouldReturn` True
 
     it "compaction terminates on cyclic grammars" $
-      (do { x <- return $! compact $! (lam `deriv` 'x') ; x `seq` return $! True } ) `shouldReturn` True
-
-    it "parseNull terminates on cyclic grammars" $
-      pendingWith "this does not yet terminate"
-      -- parseNull (lam `deriv` 'x') `shouldBe` [ Var "x" ]
+      (do { x <- return $! compact $! (lam `deriv` 'x') ; x `seq` return True } ) `shouldReturn` True
 
 
 -- Grammar
 
 cyclic :: Parser ()
-cyclic = cyclic `label` "cyclic"
+cyclic = mu $ \ v -> v `label` "cyclic"
 
 varName :: Parser String
-varName = literal "x"
+varName = parser $ literal "x"
 
 ws :: Parser Char
-ws = oneOf (lit <$> " \t\r\n") `label` "ws"
-
-var :: Parser Lam
-var = Var <$> varName `label` "var"
-
-abs :: Parser Lam
-abs = Abs <$> (literal "\\" *> optional ws *> varName <* optional ws) <*> (lit '.' *> optional ws *> lam) `label` "abs"
-
-app :: Parser Lam
-app = App' <$> lam <*> (ws *> lam) `label` "app"
+ws = parser $ oneOf (lit <$> " \t\r\n") `label` "ws"
 
 lam :: Parser Lam
-lam = abs <|> var <|> app `label` "lambda"
+lam = mu (\ lam ->
+  let var = Var' . pure <$> lit 'x' `label` "var"
+      app = (App <$> lam <*> (lit ' ' *> lam)) `label` "app"
+      abs = (Abs <$> (literal "\\" *> (pure <$> lit 'x')) <*> (lit '.' *> lam)) `label` "abs" in
+      abs <|> var <|> app `label` "lambda")
 
 
 -- Types
 
-data Lam = Var String | Abs String Lam | App' Lam Lam
+data Lam = Var' String | Abs String Lam | App Lam Lam
   deriving (Eq, Show)
 
 
@@ -214,6 +262,6 @@ data Lam = Var String | Abs String Lam | App' Lam Lam
 instance Arbitrary a => Arbitrary (Parser a) where
   arbitrary = oneof
     [ pure <$> arbitrary
-    , pure nul
-    , pure eps
+    , pure (parser nul)
+    , pure (parser eps)
     ]

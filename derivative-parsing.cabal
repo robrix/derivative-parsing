@@ -14,11 +14,13 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Data.Higher.Fix
+  exposed-modules:     Data.Higher.Eq
                      , Data.Higher.Foldable
-                     , Data.Higher.Function
                      , Data.Higher.Functor
-                     , Data.Memo
+                     , Data.Higher.Functor.Eq
+                     , Data.Higher.Functor.Show
+                     , Data.Higher.Graph
+                     , Data.Higher.Transformation
                      , Derivative.Parser
   build-depends:       base >= 4.7 && < 5
   default-language:    Haskell2010
