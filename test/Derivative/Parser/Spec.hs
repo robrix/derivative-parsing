@@ -189,7 +189,7 @@ spec = do
     it "parses whitespace one character at a time" $
       parseNull (ws `deriv` ' ') `shouldBe` " "
 
-    it "parses whitespace a single character string of whitespace" $
+    it "parses a single character string of whitespace" $
       ws `parse` " " `shouldBe` " "
 
     it "parses repeated whitespace strings" $
