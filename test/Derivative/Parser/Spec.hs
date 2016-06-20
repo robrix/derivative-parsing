@@ -206,7 +206,7 @@ spec = do
       size cyclic `shouldBe` 1
 
     it "terminates on interesting cyclic grammars" $
-      size lam `shouldBe` 28
+      size lam `shouldBe` 27
 
 
   describe "grammar" $ do
