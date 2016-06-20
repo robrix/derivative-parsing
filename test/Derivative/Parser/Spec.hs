@@ -250,7 +250,7 @@ lam :: Parser Lam
 lam = mu (\ lam ->
   let var = Var' . pure <$> lit 'x' `label` "var"
       app = (App <$> lam <*> (lit ' ' *> lam)) `label` "app"
-      abs = (Abs <$> (lit '\\' *> (pure <$> lit 'x')) <*> (lit '.' *> lam)) `label` "abs" in
+      abs = (Abs . pure <$> (lit '\\' *> lit 'x') <*> (lit '.' *> lam)) `label` "abs" in
       abs <|> var <|> app `label` "lambda")
 
 
