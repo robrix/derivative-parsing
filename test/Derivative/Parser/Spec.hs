@@ -164,6 +164,12 @@ spec = do
     prop "obeys the ap identity" $
       \ f x -> parseNull (pure (getBlind f :: Char -> Char) <*> x) `shouldBe` parseNull (pure (getBlind f :: Char -> Char) `ap` x)
 
+    prop "obeys the left-discarding identity" $
+      \ u v -> parseNull (u *> v) `shouldBe` parseNull (pure (const id) <*> (u :: Parser Char) <*> (v :: Parser Char))
+
+    prop "obeys the right-discarding identity" $
+      \ u v -> parseNull (u <* v) `shouldBe` parseNull (pure const <*> (u :: Parser Char) <*> (v :: Parser Char))
+
 
   describe "Alternative" $ do
     prop "obeys the some law" $
