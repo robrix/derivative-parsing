@@ -154,6 +154,9 @@ spec = do
     prop "obeys the interchange law" $
       \ u y -> parseNull ((getBlind u :: Parser (Char -> Char)) <*> pure y) `shouldBe` parseNull (pure ($ y) <*> getBlind u)
 
+    prop "obeys the Functor law" $
+      \ f x -> parseNull ((pure (getBlind f) :: Parser (Char -> Char)) <*> x) `shouldBe` parseNull (fmap (getBlind f) x)
+
 
   describe "Alternative" $ do
     prop "obeys the some law" $
