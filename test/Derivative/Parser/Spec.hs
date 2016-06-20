@@ -157,6 +157,9 @@ spec = do
     prop "obeys the fmap identity" $
       \ f x -> parseNull (pure (getBlind f :: Char -> Char) <*> x) `shouldBe` parseNull (fmap (getBlind f) x)
 
+    prop "obeys the return identity" $
+      \ f -> pure (getBlind f :: Char -> Char) `shouldBe` (return (getBlind f :: Char -> Char) :: Parser (Char -> Char))
+
 
   describe "Alternative" $ do
     prop "obeys the some law" $
