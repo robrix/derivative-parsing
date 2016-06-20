@@ -3,6 +3,7 @@
 module Derivative.Parser.Spec where
 
 import Control.Applicative
+import Control.Monad
 import Data.Higher.Graph
 import Derivative.Parser
 import Prelude hiding (abs)
@@ -159,6 +160,9 @@ spec = do
 
     prop "obeys the return identity" $
       \ f -> pure (getBlind f :: Char -> Char) `shouldBe` (return (getBlind f :: Char -> Char) :: Parser (Char -> Char))
+
+    prop "obeys the ap identity" $
+      \ f x -> parseNull (pure (getBlind f :: Char -> Char) <*> x) `shouldBe` parseNull (pure (getBlind f :: Char -> Char) `ap` x)
 
 
   describe "Alternative" $ do
