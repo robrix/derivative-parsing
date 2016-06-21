@@ -281,7 +281,7 @@ instance HShowF ParserF
           Alt a b -> showParen (n > 3) $ showsPrec 3 a . showString " <|> " . showsPrec 4 b
           Rep p -> showString "many " . showsPrec n p
           Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
-          Bnd p _ -> showsPrec n p . showString " >>= f"
+          Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
           Lit c -> showString "lit " . shows c
           Ret _ -> showString "ret […]"
           Nul -> showString "nul"
