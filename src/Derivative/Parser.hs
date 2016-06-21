@@ -56,6 +56,8 @@ sep s p = s `sep1` p <|> pure []
 oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
 oneOf = getAlt . foldMap Monoid.Alt
 
+infixl 4 `cat`
+
 cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
 cat = (In .) . Cat
 
