@@ -161,22 +161,17 @@ compact = modifyGraph (graphMap compact'')
           a -> a
 
 nullable :: Parser a -> Bool
-nullable = nullable' . unGraph
-
-nullable' :: Rec ParserF (Const Bool) a -> Bool
-nullable' = getConst  . rfold nullable'' (Const False)
-
-nullable'' :: ParserF (Const Bool) a -> Const Bool a
-nullable'' rec = case rec of
-  Cat a b -> Const $ getConst a && getConst b
-  Alt a b -> Const $ getConst a || getConst b
-  Rep _ -> Const True
-  Map _ p -> Const (getConst p)
-  Bnd p _ -> Const (getConst p)
-  Eps -> Const True
-  Ret _ -> Const True
-  Lab p _ -> p
-  _ -> Const False
+nullable = getConst . fold nullable' (Const False)
+  where nullable' rec = case rec of
+          Cat a b -> Const $ getConst a && getConst b
+          Alt a b -> Const $ getConst a || getConst b
+          Rep _ -> Const True
+          Map _ p -> Const (getConst p)
+          Bnd p _ -> Const (getConst p)
+          Eps -> Const True
+          Ret _ -> Const True
+          Lab p _ -> p
+          _ -> Const False
 
 size :: Parser a -> Int
 size = getSum . getConst . fold (Const . mappend (Sum 1) . hfoldMap getConst) (Const (Sum 0))
