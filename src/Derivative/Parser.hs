@@ -276,12 +276,12 @@ instance HEqF ParserF
 instance HShowF ParserF
   where hshowsPrecF n showsPrec p = case p of
           Cat a b -> showsPrec n a . showString " `cat` " . showsPrec n b
-          Alt a b -> showsPrec n a . showString " <|> " . showsPrec n b
+          Alt a b -> showParen (n > 3) $ showsPrec 3 a . showString " <|> " . showsPrec 4 b
           Rep p -> showString "many " . showsPrec n p
-          Map _ p -> showString "f <$> " . showsPrec n p
+          Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
           Bnd p _ -> showsPrec n p . showString " >>= f"
           Lit c -> showString "lit " . shows c
           Ret _ -> showString "ret […]"
           Nul -> showString "nul"
           Eps -> showString "eps"
-          Lab p s -> showsPrec 2 p . showString " `label` " . shows s
+          Lab p s -> showParen (n > 2) $ showsPrec 3 p . showString " `label` " . shows s
