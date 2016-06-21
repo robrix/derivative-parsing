@@ -204,6 +204,12 @@ spec = do
     it "terminates for cyclic grammars" $
       show cyclic `shouldBe` "Mu (\n  a => a `label` \"cyclic\"\n)\n"
 
+    it "does not parenthesize left-nested alternations" $
+      show (parser (lit 'a' <|> lit 'b' <|> lit 'c')) `shouldBe` "lit 'a' <|> lit 'b' <|> lit 'c'"
+
+    it "parenthesizes right-nested alternations" $
+      show (parser (lit 'a' <|> (lit 'b' <|> lit 'c'))) `shouldBe` "lit 'a' <|> (lit 'b' <|> lit 'c')"
+
 
   describe "size" $ do
     prop "is 1 for terminals" $
