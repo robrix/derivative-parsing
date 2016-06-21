@@ -162,6 +162,7 @@ compact = modifyGraph (graphMap compact'')
           Map g (In (Map f p)) -> Map (g . f) p
           Map _ (In Nul) -> Nul
           Rep (In Nul) -> Ret []
+          Lab (In Nul) _ -> Nul
           a -> a
 
 nullable :: Parser a -> Bool
