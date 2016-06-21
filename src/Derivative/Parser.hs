@@ -160,6 +160,7 @@ compact = modifyGraph (graphMap compact'')
           Alt (In p) (In Nul) -> p
           Map f (In (Ret as)) -> Ret (f <$> as)
           Map g (In (Map f p)) -> Map (g . f) p
+          Map _ (In Nul) -> Nul
           Rep (In Nul) -> Ret []
           a -> a
 
