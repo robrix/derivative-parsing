@@ -132,21 +132,16 @@ deriv g c = outof . go . into $ g
 
 
 parseNull :: Parser a -> [a]
-parseNull = parseNull' . unGraph
-
-parseNull' :: Rec ParserF [] a -> [a]
-parseNull' = rfold parseNull'' []
-
-parseNull'' :: ParserF [] a -> [a]
-parseNull'' parser = case parser of
-  Cat a b -> (,) <$> a <*> b
-  Alt a b -> a <> b
-  Rep _ -> [[]]
-  Map f p -> f <$> p
-  Bnd p f -> p >>= f
-  Ret as -> as
-  Lab p _ -> p
-  _ -> []
+parseNull = fold parseNull' []
+  where parseNull' parser = case parser of
+          Cat a b -> (,) <$> a <*> b
+          Alt a b -> a <> b
+          Rep _ -> [[]]
+          Map f p -> f <$> p
+          Bnd p f -> p >>= f
+          Ret as -> as
+          Lab p _ -> p
+          _ -> []
 
 compact :: Parser a -> Parser a
 compact = modifyGraph (graphMap compact'')
