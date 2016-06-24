@@ -144,21 +144,19 @@ parseNull = fold parseNull' []
           _ -> []
 
 compact :: Parser a -> Parser a
-compact = transform compact'
-  where compact' :: ParserF (Rec ParserF v) a -> ParserF (Rec ParserF v) a
-        compact' parser = case parser of
-          Cat (In Nul) _ -> Nul
-          Cat _ (In Nul) -> Nul
-          Cat (In (Ret [t])) b -> Map ((,) t) b
-          Cat a (In (Ret [t])) -> Map (flip (,) t) a
-          Alt (In Nul) (In p) -> p
-          Alt (In p) (In Nul) -> p
-          Map f (In (Ret as)) -> Ret (f <$> as)
-          Map g (In (Map f p)) -> Map (g . f) p
-          Map _ (In Nul) -> Nul
-          Rep (In Nul) -> Ret []
-          Lab (In Nul) _ -> Nul
-          a -> a
+compact = transform $ \ parser -> case parser of
+  Cat (In Nul) _ -> Nul
+  Cat _ (In Nul) -> Nul
+  Cat (In (Ret [t])) b -> Map ((,) t) b
+  Cat a (In (Ret [t])) -> Map (flip (,) t) a
+  Alt (In Nul) (In p) -> p
+  Alt (In p) (In Nul) -> p
+  Map f (In (Ret as)) -> Ret (f <$> as)
+  Map g (In (Map f p)) -> Map (g . f) p
+  Map _ (In Nul) -> Nul
+  Rep (In Nul) -> Ret []
+  Lab (In Nul) _ -> Nul
+  a -> a
 
 nullable :: Parser a -> Bool
 nullable = getConst . fold nullable' (Const False)
