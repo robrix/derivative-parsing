@@ -76,7 +76,7 @@ eps = In Eps
 infixr 2 `label`
 
 label :: Combinator v a -> String -> Combinator v a
-label p s = compactingBy (In . (`Lab` s)) p
+label p s = constructBy (In . (`Lab` s)) p
 
 literal :: String -> Combinator v String
 literal string = sequenceA (In . Lit <$> string)
@@ -158,8 +158,8 @@ compact = transform $ \ parser -> case parser of
   Lab (In Nul) _ -> Nul
   a -> a
 
-compactingBy :: (Combinator v a -> Combinator v a) -> Combinator v a -> Combinator v a
-compactingBy f p = case p of
+constructBy :: (Combinator v a -> Combinator v a) -> Combinator v a -> Combinator v a
+constructBy f p = case p of
   In Nul -> In Nul
   a -> f a
 
