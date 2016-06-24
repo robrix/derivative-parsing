@@ -134,6 +134,11 @@ spec = do
         \ c -> nullable (parser (ret (c :: String))) `shouldBe` True
 
 
+  describe "compaction" $ do
+    prop "reduces parser size" $
+      \ p -> size (compact p :: Parser Char) `shouldSatisfy` (<= size p)
+
+
   describe "Functor" $ do
     prop "obeys the identity law" $
       \ c -> parseNull (fmap id (parser $ lit c) `deriv` c) `shouldBe` parseNull (parser (lit c) `deriv` c)
