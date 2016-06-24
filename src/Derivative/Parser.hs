@@ -144,7 +144,7 @@ parseNull = fold parseNull' []
           _ -> []
 
 compact :: Parser a -> Parser a
-compact = modifyGraph (graphMap compact')
+compact = transform compact'
   where compact' :: ParserF (Rec ParserF v) a -> ParserF (Rec ParserF v) a
         compact' parser = case parser of
           Cat (In Nul) _ -> Nul
