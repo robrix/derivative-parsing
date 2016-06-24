@@ -76,7 +76,7 @@ eps = In Eps
 infixr 2 `label`
 
 label :: Combinator v a -> String -> Combinator v a
-label p = In . Lab p
+label p s = compactingBy (In . (`Lab` s)) p
 
 literal :: String -> Combinator v String
 literal string = sequenceA (In . Lit <$> string)
