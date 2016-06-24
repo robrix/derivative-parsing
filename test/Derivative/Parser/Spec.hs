@@ -294,4 +294,5 @@ instance Arbitrary a => Arbitrary (Parser a) where
     [ pure <$> arbitrary
     , pure (parser nul)
     , pure (parser eps)
+    , (<|>) <$> arbitrary <*> arbitrary
     ]
