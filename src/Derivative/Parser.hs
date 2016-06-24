@@ -59,7 +59,7 @@ oneOf = getAlt . foldMap Monoid.Alt
 infixl 4 `cat`
 
 cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
-cat = (In .) . Cat
+cat a = constructBy ((`constructBy` a) . (In .) . flip Cat)
 
 lit :: Char -> Combinator v Char
 lit = In . Lit
