@@ -80,7 +80,8 @@ eps = In Eps
 infixr 2 `label`
 
 label :: Combinator v a -> String -> Combinator v a
-label p s = constructBy (In . (`Lab` s)) p
+label p s = In $ case p of In Nul -> Nul
+                           _      -> Lab p s
 
 literal :: String -> Combinator v String
 literal string = sequenceA (In . Lit <$> string)
