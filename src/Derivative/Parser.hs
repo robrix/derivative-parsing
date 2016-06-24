@@ -163,11 +163,6 @@ compact = transform $ \ parser -> case parser of
   Lab (In Nul) _ -> Nul
   a -> a
 
-constructBy :: (Combinator v a -> Combinator v b) -> Combinator v a -> Combinator v b
-constructBy f p = case p of
-  In Nul -> In Nul
-  a -> f a
-
 nullable :: Parser a -> Bool
 nullable = getConst . fold nullable' (Const False)
   where nullable' rec = case rec of
