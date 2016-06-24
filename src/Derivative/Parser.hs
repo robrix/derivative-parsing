@@ -205,18 +205,11 @@ instance HFoldable ParserF where
     Lab p _ -> f p
     _ -> mempty
 
-instance Functor (ParserF (Rec ParserF v)) where
-  fmap = (. In) . Map
-
 instance Functor (Rec ParserF v) where
   fmap = (In .) . Map
 
 instance Functor (Graph ParserF) where
   fmap f (Graph rec) = Graph (f <$> rec)
-
-instance Applicative (ParserF (Rec ParserF v)) where
-  pure = Ret . pure
-  fs <*> as = uncurry ($) <$> (In fs `Cat` In as)
 
 instance Applicative (Rec ParserF v) where
   pure = In . Ret . pure
@@ -225,12 +218,6 @@ instance Applicative (Rec ParserF v) where
 instance Applicative (Graph ParserF) where
   pure a = Graph (pure a)
   Graph f <*> Graph a = Graph (f <*> a)
-
-instance Alternative (ParserF (Rec ParserF v)) where
-  empty = Nul
-  a <|> b = Alt (In a) (In b)
-  some v = (:) <$> v <*> many v
-  many p = Rep (In p)
 
 instance Alternative (Rec ParserF v) where
   empty = In Nul
@@ -243,10 +230,6 @@ instance Alternative (Graph ParserF) where
   Graph a <|> Graph b = Graph (a <|> b)
   some (Graph p) = Graph (some p)
   many (Graph p) = Graph (many p)
-
-instance Monad (ParserF (Rec ParserF v)) where
-  return = pure
-  p >>= f = Bnd (In p) (In . f)
 
 instance Monad (Rec ParserF v) where
   return = pure
