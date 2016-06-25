@@ -257,6 +257,7 @@ instance HShowF ParserF
           Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
           Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
           Lit c -> showString "lit " . shows c
-          Ret _ -> showString "ret […]"
+          Ret t -> showString "ret [" . showIndices (length t) . showString "]"
           Nul -> showString "empty"
           Lab p s -> showParen (n > 2) $ showsPrec 3 p . showString " `label` " . shows s
+          where showIndices n = foldr (.) id ((showChar 't' .) . shows <$> take n (iterate succ (0 :: Integer)))
