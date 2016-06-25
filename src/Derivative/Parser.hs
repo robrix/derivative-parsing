@@ -121,17 +121,17 @@ type Combinator v = Rec ParserF v
 -- Algorithm
 
 deriv :: Parser a -> Char -> Parser a
-deriv g c = outof . go . into $ g
-  where go :: ParserF (Graph ParserF) a -> ParserF (Graph ParserF) a
+deriv g c = Graph $ go . into $ g
+  where go :: ParserF (Graph ParserF) a -> Rec ParserF v a
         go p = case p of
-          Cat a b -> parser (unGraph (deriv a c) `cat` unGraph b) `Alt` parser (delta a `cat` unGraph (deriv b c))
-          Alt a b -> Alt (deriv a c) (deriv b c)
-          Rep p -> Map (uncurry (:)) (parser (unGraph (deriv p c) `cat` unGraph (many p)))
-          Map f p -> Map f (deriv p c)
-          Bnd p f -> Bnd (deriv p c) f
-          Lit c' -> if c == c' then Ret [c] else Nul
-          Lab p s -> Lab (deriv p c) s
-          _ -> Nul
+          Cat a b -> unGraph (deriv a c) `cat` unGraph b <|> delta a `cat` unGraph (deriv b c)
+          Alt a b -> unGraph (deriv a c) <|> unGraph (deriv b c)
+          Rep p -> uncurry (:) <$> (unGraph (deriv p c) `cat` unGraph (many p))
+          Map f p -> f <$> unGraph (deriv p c)
+          Bnd p f -> unGraph (deriv p c >>= f)
+          Lit c' -> if c == c' then pure c else nul
+          Lab p s -> unGraph (deriv p c) `label` s
+          _ -> empty
         delta p = if nullable p then ret (parseNull p) else nul
         into = fold (hfmap outof) Eps
         outof g = Graph (In (unGraph `hfmap` g))
