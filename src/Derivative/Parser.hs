@@ -60,9 +60,7 @@ infixl 4 `cat`
 
 cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
 cat (In Nul) _ = In Nul
-cat _ (In Nul) = In Nul
 cat (In (Ret [t])) b = (,) t <$> b
-cat a (In (Ret [t])) = flip (,) t <$> a
 cat a b = In (Cat a b)
 
 lit :: Char -> Combinator v Char
