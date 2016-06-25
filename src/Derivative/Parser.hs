@@ -227,7 +227,8 @@ instance Alternative (Rec ParserF v) where
   empty = In Nul
   (<|>) = (In .) . Alt
   some v = (:) <$> v <*> many v
-  many = In . Rep
+  many (In Nul) = pure []
+  many p = In (Rep p)
 
 instance Alternative (Graph ParserF) where
   empty = Graph empty
