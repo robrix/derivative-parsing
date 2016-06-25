@@ -67,8 +67,6 @@ spec = do
       let grammar = mu (\ a -> a <|> ret ["x"]) in
       parseNull grammar `shouldBe` ["x"]
 
-    it "terminates on cyclic grammars" $
-      parseNull (lam `deriv` 'x') `shouldBe` [ Var' "x" ]
 
   describe "deriv" $ do
     describe "many" $ do
