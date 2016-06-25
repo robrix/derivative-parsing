@@ -24,10 +24,10 @@ spec = do
         \ a b -> parseNull (parser $ pure a `cat` pure b) `shouldBe` [(a, b) :: (Char, Char)]
 
       prop "is empty when its left operand is empty" $
-        \ b -> parseNull (parser $ nul `cat` pure b) `shouldBe` ([] :: [(Char, Char)])
+        \ b -> parseNull (parser $ empty `cat` pure b) `shouldBe` ([] :: [(Char, Char)])
 
       prop "is empty when its right operand is empty" $
-        \ a -> parseNull (parser $ pure a `cat` nul) `shouldBe` ([] :: [(Char, Char)])
+        \ a -> parseNull (parser $ pure a `cat` empty) `shouldBe` ([] :: [(Char, Char)])
 
     describe "<|>" $ do
       prop "returns left parse trees" $
@@ -55,9 +55,9 @@ spec = do
       prop "returns parse trees" $
         \ a -> parseNull (pure (a :: Char)) `shouldBe` [a]
 
-    describe "nul" $ do
+    describe "empty" $ do
       it "is empty" $
-        parseNull (parser nul :: Parser Char) `shouldBe` []
+        parseNull (empty :: Parser Char) `shouldBe` []
 
     describe "eps" $ do
       it "is empty" $
@@ -83,8 +83,8 @@ spec = do
         \ f c -> parseNull (fmap (getBlind f :: Char -> Char) (pure c)) `shouldBe` [getBlind f c]
 
     describe "lit" $ do
-      prop "represents unmatched content with the nul parser" $
-        \ a -> parser (lit a) `deriv` succ a `shouldBe` parser nul
+      prop "represents unmatched content with the empty parser" $
+        \ a -> parser (lit a) `deriv` succ a `shouldBe` empty
 
       prop "represents matched content with ε reduction parsers" $
         \ a -> parser (lit a) `deriv` a `shouldBe` parser (ret [a])
@@ -98,11 +98,11 @@ spec = do
         \ a c -> parseNull (pure (a :: Char) `deriv` c) `shouldBe` []
 
     it "terminates on cyclic grammars" $
-      compact (lam `deriv` 'x') `shouldNotBe` parser nul
+      compact (lam `deriv` 'x') `shouldNotBe` empty
 
     describe "ret" $ do
       prop "annihilates" $
-        \ a c -> parser (ret (a :: String)) `deriv` c `shouldBe` parser nul
+        \ a c -> parser (ret (a :: String)) `deriv` c `shouldBe` empty
 
     describe "label" $ do
       prop "distributivity" $
@@ -110,10 +110,10 @@ spec = do
 
     describe "cat" $ do
       prop "does not pass through non-nullable parsers" $
-        \ c -> parser (lit c `cat` lit (succ c)) `deriv` c `shouldBe` parser (ret [c] `cat` lit (succ c) <|> nul `cat` nul)
+        \ c -> parser (lit c `cat` lit (succ c)) `deriv` c `shouldBe` parser (ret [c] `cat` lit (succ c) <|> empty `cat` empty)
 
       prop "passes through nullable parsers" $
-        \ c d -> parser (ret [c :: Char] `cat` lit d) `deriv` d `shouldBe` parser (nul `cat` lit d <|> ret [c] `cat` ret [d])
+        \ c d -> parser (ret [c :: Char] `cat` lit d) `deriv` d `shouldBe` parser (empty `cat` lit d <|> ret [c] `cat` ret [d])
 
 
   describe "nullable" $ do
@@ -121,9 +121,9 @@ spec = do
       prop "is the conjunction of its operands’ nullability" $
         \ a b -> nullable (parser (unGraph a `cat` unGraph b)) `shouldBe` nullable (a :: Parser Char) && nullable (b :: Parser Char)
 
-    describe "nul" $
+    describe "empty" $
       it "is not nullable" $
-        nullable (parser nul) `shouldBe` False
+        nullable empty `shouldBe` False
 
     describe "eps" $
       it "is nullable" $
@@ -218,7 +218,7 @@ spec = do
 
   describe "size" $ do
     prop "is 1 for terminals" $
-      \ a b -> let terminals = [ parser $ ret a, parser $ lit b, parser nul, parser eps ] in sum (size <$> terminals) `shouldBe` length terminals
+      \ a b -> let terminals = [ parser $ ret a, parser $ lit b, empty, parser eps ] in sum (size <$> terminals) `shouldBe` length terminals
 
     prop "is 1 + the sum for unary nonterminals" $
       \ a s -> [ size (parser (fmap id (lit a))), size (parser (lit a >>= return)), size (parser (lit a `label` s)) ] `shouldBe` [ 2, 2, 2 ]
@@ -292,7 +292,7 @@ data Lam = Var' String | Abs String Lam | App Lam Lam
 instance Arbitrary a => Arbitrary (Parser a) where
   arbitrary = oneof
     [ pure <$> arbitrary
-    , pure (parser nul)
+    , pure empty
     , pure (parser eps)
     , (<|>) <$> arbitrary <*> arbitrary
     ]

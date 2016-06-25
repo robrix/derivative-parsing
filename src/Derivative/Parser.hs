@@ -9,7 +9,6 @@ module Derivative.Parser
 , label
 , lit
 , literal
-, nul
 , oneOf
 , parse
 , parseNull
@@ -72,9 +71,6 @@ lit = In . Lit
 ret :: [a] -> Combinator v a
 ret = In . Ret
 
-nul :: Combinator v a
-nul = In Nul
-
 eps :: Combinator v a
 eps = In Eps
 
@@ -129,10 +125,10 @@ deriv g c = Graph $ go . into $ g
           Rep p -> uncurry (:) <$> (unGraph (deriv p c) `cat` unGraph (many p))
           Map f p -> f <$> unGraph (deriv p c)
           Bnd p f -> unGraph (deriv p c >>= f)
-          Lit c' -> if c == c' then pure c else nul
+          Lit c' -> if c == c' then pure c else empty
           Lab p s -> unGraph (deriv p c) `label` s
           _ -> empty
-        delta p = if nullable p then ret (parseNull p) else nul
+        delta p = if nullable p then ret (parseNull p) else empty
         into = fold (hfmap outof) Eps
         outof g = Graph (In (unGraph `hfmap` g))
 
@@ -270,6 +266,6 @@ instance HShowF ParserF
           Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
           Lit c -> showString "lit " . shows c
           Ret _ -> showString "ret […]"
-          Nul -> showString "nul"
+          Nul -> showString "empty"
           Eps -> showString "eps"
           Lab p s -> showParen (n > 2) $ showsPrec 3 p . showString " `label` " . shows s
