@@ -27,6 +27,7 @@ module Derivative.Parser
 ) where
 
 import Control.Applicative
+import Data.Bifunctor (first)
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
@@ -62,6 +63,7 @@ cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
 cat (In Nul) _ = In Nul
 cat (In (Ret [t])) b = (,) t <$> b
 cat (In (Cat a b)) c = (\ (a, (b, c)) -> ((a, b), c)) <$> cat a (cat b c)
+cat (In (Map f a)) b = first f <$> cat a b
 cat a b = In (Cat a b)
 
 lit :: Char -> Combinator v Char
