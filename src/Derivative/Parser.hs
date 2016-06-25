@@ -154,6 +154,7 @@ compact = transform $ \ parser -> case parser of
   Cat _ (In Nul) -> Nul
   Cat (In (Ret [t])) b -> Map ((,) t) b
   Cat a (In (Ret [t])) -> Map (flip (,) t) a
+  Cat (In (Cat a b)) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (cat a (cat b c))
   Alt (In Nul) (In p) -> p
   Alt (In p) (In Nul) -> p
   Map f (In (Ret as)) -> Ret (f <$> as)
