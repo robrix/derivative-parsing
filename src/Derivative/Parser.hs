@@ -206,7 +206,11 @@ instance HFoldable ParserF where
     _ -> mempty
 
 instance Functor (Rec ParserF v) where
-  fmap = (In .) . Map
+  fmap f p = In $ case p of
+    In Nul -> Nul
+    In (Map g p) -> Map (f . g) p
+    In (Ret as) -> Ret (f <$> as)
+    _ -> Map f p
 
 instance Functor (Graph ParserF) where
   fmap f (Graph rec) = Graph (f <$> rec)
