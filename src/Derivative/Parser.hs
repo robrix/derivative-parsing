@@ -5,7 +5,6 @@ module Derivative.Parser
 , commaSep1
 , compact
 , deriv
-, eps
 , label
 , lit
 , literal
@@ -70,9 +69,6 @@ lit = In . Lit
 
 ret :: [a] -> Combinator v a
 ret = In . Ret
-
-eps :: Combinator v a
-eps = In Eps
 
 infixr 2 `label`
 
@@ -267,5 +263,5 @@ instance HShowF ParserF
           Lit c -> showString "lit " . shows c
           Ret _ -> showString "ret […]"
           Nul -> showString "empty"
-          Eps -> showString "eps"
+          Eps -> showString "ret []"
           Lab p s -> showParen (n > 2) $ showsPrec 3 p . showString " `label` " . shows s

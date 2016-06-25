@@ -59,9 +59,9 @@ spec = do
       it "is empty" $
         parseNull (empty :: Parser Char) `shouldBe` []
 
-    describe "eps" $ do
-      it "is empty" $
-        parseNull (parser eps :: Parser Char) `shouldBe` []
+    describe "ret" $ do
+      prop "is identity" $
+        \ t -> parseNull (parser (ret t) :: Parser Char) `shouldBe` t
 
     it "terminates on cyclic grammars" $
       let grammar = mu (\ a -> a <|> ret ["x"]) in
@@ -125,9 +125,9 @@ spec = do
       it "is not nullable" $
         nullable empty `shouldBe` False
 
-    describe "eps" $
-      it "is nullable" $
-        nullable (parser eps) `shouldBe` True
+    describe "ret" $
+      prop "is nullable" $
+        \ t -> nullable (parser (ret t) :: Parser Char) `shouldBe` True
 
     describe "ret" $
       prop "is nullable" $
@@ -218,7 +218,7 @@ spec = do
 
   describe "size" $ do
     prop "is 1 for terminals" $
-      \ a b -> let terminals = [ parser $ ret a, parser $ lit b, empty, parser eps ] in sum (size <$> terminals) `shouldBe` length terminals
+      \ a b -> let terminals = [ parser $ ret a, parser $ lit b, empty, parser (ret []) ] in sum (size <$> terminals) `shouldBe` length terminals
 
     prop "is 1 + the sum for unary nonterminals" $
       \ a s -> [ size (parser (fmap id (lit a))), size (parser (lit a >>= return)), size (parser (lit a `label` s)) ] `shouldBe` [ 2, 2, 2 ]
@@ -293,6 +293,6 @@ instance Arbitrary a => Arbitrary (Parser a) where
   arbitrary = oneof
     [ pure <$> arbitrary
     , pure empty
-    , pure (parser eps)
+    , pure (parser (ret []))
     , (<|>) <$> arbitrary <*> arbitrary
     ]
