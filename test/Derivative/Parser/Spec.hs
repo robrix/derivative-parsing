@@ -93,7 +93,7 @@ spec = do
 
     describe "pure" $ do
       prop "has the null derivative" $
-        \ a c -> parseNull (pure (a :: Char) `deriv` c) `shouldBe` []
+        \ a c -> pure (a :: Char) `deriv` c `shouldBe` empty
 
     it "terminates on cyclic grammars" $
       compact (lam `deriv` 'x') `shouldNotBe` empty
