@@ -137,16 +137,15 @@ deriv g c = outof . go . into $ g
 
 
 parseNull :: Parser a -> [a]
-parseNull = fold parseNull' []
-  where parseNull' parser = case parser of
-          Cat a b -> (,) <$> a <*> b
-          Alt a b -> a <> b
-          Rep _ -> [[]]
-          Map f p -> f <$> p
-          Bnd p f -> p >>= f
-          Ret as -> as
-          Lab p _ -> p
-          _ -> []
+parseNull = (`fold` []) $ \ parser -> case parser of
+  Cat a b -> (,) <$> a <*> b
+  Alt a b -> a <> b
+  Rep _ -> [[]]
+  Map f p -> f <$> p
+  Bnd p f -> p >>= f
+  Ret as -> as
+  Lab p _ -> p
+  _ -> []
 
 compact :: Parser a -> Parser a
 compact = transform $ \ parser -> case parser of
