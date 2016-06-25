@@ -225,7 +225,9 @@ instance Applicative (Graph ParserF) where
 
 instance Alternative (Rec ParserF v) where
   empty = In Nul
-  (<|>) = (In .) . Alt
+  In Nul <|> b = b
+  a <|> In Nul = a
+  a <|> b = In (Alt a b)
   some v = (:) <$> v <*> many v
   many (In Nul) = pure []
   many p = In (Rep p)
