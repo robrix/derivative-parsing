@@ -18,6 +18,7 @@ module Data.Higher.Graph
 ) where
 
 import Control.Applicative
+import Data.Bifunctor (first)
 import Data.Function
 import Data.Higher.Eq
 import Data.Higher.Functor
@@ -126,9 +127,6 @@ fixVal :: HEq h => h a -> (h a -> h a) -> h a
 fixVal v f = if v `heq` v' then v else fixVal v' f
   where v' = f v
 
-modifyConst :: (a -> b) -> Const a ~> Const b
-modifyConst f = Const . f . getConst
-
 
 -- Instances
 
@@ -136,4 +134,4 @@ instance HEqF f => Eq (Graph f a)
   where a == b = eqRec 0 (unGraph a) (unGraph b)
 
 instance HShowF f => Show (Graph f a)
-  where showsPrec n = showsRec (iterate (modifyConst succ) (Const 'a')) n . unGraph
+  where showsPrec n = showsRec (iterate (first succ) (Const 'a')) n . unGraph
