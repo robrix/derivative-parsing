@@ -103,7 +103,6 @@ data ParserF f a where
   Lit :: Char -> ParserF f Char
   Ret :: [a] -> ParserF f a
   Nul :: ParserF f a
-  Eps :: ParserF f a
   Lab :: f a -> String -> ParserF f a
 
 type Parser a = Graph ParserF a
@@ -125,7 +124,7 @@ deriv g c = Graph $ go . into $ g
           Lab p s -> unGraph (deriv p c) `label` s
           _ -> empty
         delta p = if nullable p then ret (parseNull p) else empty
-        into = fold (hfmap outof) Eps
+        into = fold (hfmap outof) (Ret [])
         outof g = Graph (In (unGraph `hfmap` g))
 
 
@@ -164,7 +163,6 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   Rep _ -> Const True
   Map _ p -> Const (getConst p)
   Bnd p _ -> Const (getConst p)
-  Eps -> Const True
   Ret _ -> Const True
   Lab p _ -> p
   _ -> Const False
@@ -185,7 +183,6 @@ instance HFunctor ParserF where
     Lit c -> Lit c
     Ret as -> Ret as
     Nul -> Nul
-    Eps -> Eps
     Lab p s -> Lab (f p) s
 
 instance HFoldable ParserF where
@@ -249,7 +246,6 @@ instance HEqF ParserF
           (Lit c1, Lit c2) -> c1 == c2
           (Ret r1, Ret r2) -> length r1 == length r2
           (Nul, Nul) -> True
-          (Eps, Eps) -> True
           (Lab p1 s1, Lab p2 s2) -> s1 == s2 && eq p1 p2
           _ -> False
 
@@ -263,5 +259,4 @@ instance HShowF ParserF
           Lit c -> showString "lit " . shows c
           Ret _ -> showString "ret […]"
           Nul -> showString "empty"
-          Eps -> showString "ret []"
           Lab p s -> showParen (n > 2) $ showsPrec 3 p . showString " `label` " . shows s
