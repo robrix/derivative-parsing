@@ -92,7 +92,7 @@ mu f = Graph $ Mu $ \ v -> case f (Var v) of
   p -> p `Lab` ""
 
 parser :: (forall v. Combinator v a) -> Parser a
-parser = Graph
+parser r = compact $ Graph r
 
 combinator :: Parser a -> Combinator v a
 combinator = unGraph
