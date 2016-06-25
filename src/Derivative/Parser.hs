@@ -61,6 +61,7 @@ infixl 4 `cat`
 cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
 cat (In Nul) _ = In Nul
 cat (In (Ret [t])) b = (,) t <$> b
+cat (In (Cat a b)) c = (\ (a, (b, c)) -> ((a, b), c)) <$> cat a (cat b c)
 cat a b = In (Cat a b)
 
 lit :: Char -> Combinator v Char
