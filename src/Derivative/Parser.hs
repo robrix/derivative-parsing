@@ -218,6 +218,7 @@ instance Alternative (Rec ParserF v) where
   empty = In Nul
   In Nul <|> b = b
   a <|> In Nul = a
+  In (Ret a) <|> In (Ret b) = In (Ret (a <> b))
   a <|> b = In (Alt a b)
   some v = (:) <$> v <*> many v
   many (In Nul) = pure []
