@@ -217,7 +217,7 @@ instance Functor (Graph ParserF) where
 
 instance Applicative (Rec ParserF v) where
   pure = In . Ret . pure
-  (<*>) = (fmap (uncurry ($)) .) . (In .) . Cat
+  (<*>) = (fmap (uncurry ($)) .) . cat
 
 instance Applicative (Graph ParserF) where
   pure a = Graph (pure a)
