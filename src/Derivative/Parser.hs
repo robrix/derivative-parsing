@@ -266,12 +266,12 @@ instance HShowF ParserF
   where hshowsPrecF n showsPrec p = case p of
           Cat a b -> showParen (n > 4) $ showsPrec 4 a . showString " `cat` " . showsPrec 5 b
           Alt a b -> showParen (n > 3) $ showsPrec 3 a . showString " <|> " . showsPrec 4 b
-          Rep p -> showString "many " . showsPrec 10 p
+          Rep p -> showParen (n >= 10) $ showString "many " . showsPrec 10 p
           Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
           Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
-          Lit c -> showString "lit " . shows c
+          Lit c -> showParen (n >= 10) $ showString "lit " . shows c
           Ret t -> showString "ret [" . showIndices (length t) . showString "]"
           Nul -> showString "empty"
           Lab p s -> showParen (n > 2) $ showsPrec 3 p . showString " `label` " . shows s
-          Del a -> showString "δ " . showsPrec 10 a
+          Del a -> showParen (n >= 10) $ showString "δ " . showsPrec 10 a
           where showIndices n = foldr (.) id ((showChar 't' .) . shows <$> take n (iterate succ (0 :: Integer)))
