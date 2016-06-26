@@ -117,7 +117,7 @@ spec = do
   describe "nullable" $ do
     describe "cat" $ do
       prop "is the conjunction of its operands’ nullability" $
-        \ a b -> nullable (parser (unGraph a `cat` unGraph b)) `shouldBe` nullable (a :: Parser Char) && nullable (b :: Parser Char)
+        \ a b -> nullable (parser (combinator a `cat` combinator b)) `shouldBe` nullable (a :: Parser Char) && nullable (b :: Parser Char)
 
     describe "empty" $
       it "is not nullable" $
@@ -293,5 +293,5 @@ instance Arbitrary a => Arbitrary (Parser a) where
     , pure empty
     , pure (parser (ret []))
     , (<|>) <$> arbitrary <*> arbitrary
-    , (\ p s -> parser (unGraph p `label` s)) <$> arbitrary <*> arbitrary
+    , (\ p s -> parser (combinator p `label` s)) <$> arbitrary <*> arbitrary
     ]
