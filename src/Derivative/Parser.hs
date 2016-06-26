@@ -169,7 +169,7 @@ compact'' parser = case parser of
   Map f (In (Ret as)) -> Ret (f <$> as)
   Map g (In (Map f p)) -> Map (g . f) p
   Map _ (In Nul) -> Nul
-  Rep (In Nul) -> Ret []
+  Rep (In Nul) -> Ret [[]]
   Lab (In Nul) _ -> Nul
   Lab (In (Ret t)) _ -> Ret t
   Lab (In (Del p)) _ -> Del p
