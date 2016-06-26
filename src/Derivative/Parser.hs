@@ -260,7 +260,7 @@ instance HShowF ParserF
   where hshowsPrecF n showsPrec p = case p of
           Cat a b -> showParen (n > 4) $ showsPrec 4 a . showString " `cat` " . showsPrec 5 b
           Alt a b -> showParen (n > 3) $ showsPrec 3 a . showString " <|> " . showsPrec 4 b
-          Rep p -> showString "many " . showsPrec n p
+          Rep p -> showString "many " . showsPrec 10 p
           Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
           Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
           Lit c -> showString "lit " . shows c
