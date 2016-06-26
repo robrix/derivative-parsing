@@ -204,7 +204,7 @@ spec = do
       show (parser $ lit 'a' `cat` lit 'b') `shouldBe` "lit 'a' `cat` lit 'b'"
 
     it "terminates for cyclic grammars" $
-      show cyclic `shouldBe` "Mu (\n  a => a `label` \"cyclic\"\n)\n"
+      show cyclic `shouldBe` "Mu (\\ a ->\n  a `label` \"cyclic\"\n)\n"
 
     it "does not parenthesize left-nested alternations" $
       show (parser (lit 'a' <|> lit 'b' <|> lit 'c')) `shouldBe` "lit 'a' <|> lit 'b' <|> lit 'c'"
