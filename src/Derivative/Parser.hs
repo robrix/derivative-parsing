@@ -105,7 +105,7 @@ data ParserF f a where
   Nul :: ParserF f a
   Lab :: f a -> String -> ParserF f a
 
-type Parser a = Graph ParserF a
+type Parser = Graph ParserF
 type Combinator v = Rec ParserF v
 
 
