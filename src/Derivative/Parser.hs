@@ -67,6 +67,9 @@ cat a b = In (Cat a b)
 lit :: Char -> Combinator v Char
 lit = In . Lit
 
+delta :: Combinator v a -> Combinator v a
+delta = In . Del
+
 ret :: [a] -> Combinator v a
 ret = In . Ret
 
