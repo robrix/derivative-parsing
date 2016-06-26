@@ -4,7 +4,6 @@ module Derivative.Parser.Spec where
 
 import Control.Applicative
 import Control.Monad
-import Data.Higher.Graph
 import Derivative.Parser
 import Prelude hiding (abs)
 import Test.Hspec
