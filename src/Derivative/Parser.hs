@@ -68,7 +68,9 @@ lit :: Char -> Combinator v Char
 lit = In . Lit
 
 delta :: Combinator v a -> Combinator v a
-delta = In . Del
+delta (In Nul) = In Nul
+delta (In (Ret a)) = In (Ret a)
+delta a = In (Del a)
 
 ret :: [a] -> Combinator v a
 ret = In . Ret
