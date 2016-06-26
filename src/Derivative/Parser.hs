@@ -240,7 +240,7 @@ instance Alternative (Graph ParserF) where
 
 instance Monad (Rec ParserF v) where
   return = pure
-  (>>=) = (In .) . Bnd
+  (>>=) = (compact' .) . (In .) . Bnd
 
 instance Monad (Graph ParserF) where
   return = pure
