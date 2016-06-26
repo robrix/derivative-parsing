@@ -121,7 +121,7 @@ deriv :: Parser a -> Char -> Parser a
 deriv g c = Graph $ go . into $ g
   where go :: ParserF (Graph ParserF) a -> Rec ParserF v a
         go p = case p of
-          Cat a b -> unGraph (deriv a c) `cat` unGraph b <|> delta a `cat` unGraph (deriv b c)
+          Cat a b -> unGraph (deriv a c) `cat` unGraph b <|> delta (unGraph a) `cat` unGraph (deriv b c)
           Alt a b -> unGraph (deriv a c) <|> unGraph (deriv b c)
           Rep p -> uncurry (:) <$> (unGraph (deriv p c) `cat` unGraph (many p))
           Map f p -> f <$> unGraph (deriv p c)
@@ -129,7 +129,6 @@ deriv g c = Graph $ go . into $ g
           Lit c' -> if c == c' then pure c else empty
           Lab p s -> unGraph (deriv p c) `label` s
           _ -> empty
-        delta p = if nullable p then ret (parseNull p) else empty
         into = fold (hfmap outof) (Ret [])
         outof g = Graph (In (unGraph `hfmap` g))
 
