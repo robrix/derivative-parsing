@@ -118,9 +118,9 @@ type Combinator v = Rec ParserF v
 -- Algorithm
 
 deriv :: Parser a -> Char -> Parser a
-deriv g c = Graph $ go . into $ g
-  where go :: ParserF (Graph ParserF) a -> Rec ParserF v a
-        go p = case p of
+deriv g c = Graph $ deriv' . into $ g
+  where deriv' :: ParserF (Graph ParserF) a -> Rec ParserF v a
+        deriv' p = case p of
           Cat a b -> unGraph (deriv a c) `cat` unGraph b <|> delta (unGraph a) `cat` unGraph (deriv b c)
           Alt a b -> unGraph (deriv a c) <|> unGraph (deriv b c)
           Rep p -> uncurry (:) <$> (unGraph (deriv p c) `cat` unGraph (many p))
