@@ -143,6 +143,7 @@ parseNull = (`fold` []) $ \ parser -> case parser of
   Bnd p f -> p >>= f
   Ret as -> as
   Lab p _ -> p
+  Del a -> a
   _ -> []
 
 compact :: Parser a -> Parser a
