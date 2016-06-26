@@ -70,6 +70,7 @@ lit = In . Lit
 delta :: Combinator v a -> Combinator v a
 delta (In Nul) = In Nul
 delta (In (Ret a)) = In (Ret a)
+delta (In (Del p)) = In (Del p)
 delta a = In (Del a)
 
 ret :: [a] -> Combinator v a
@@ -79,6 +80,8 @@ infixr 2 `label`
 
 label :: Combinator v a -> String -> Combinator v a
 label p s = In $ case p of In Nul -> Nul
+                           In (Ret t) -> Ret t
+                           In (Del p) -> Del p
                            _      -> Lab p s
 
 literal :: String -> Combinator v String
@@ -162,7 +165,10 @@ compact = transform $ \ parser -> case parser of
   Map _ (In Nul) -> Nul
   Rep (In Nul) -> Ret []
   Lab (In Nul) _ -> Nul
+  Lab (In (Ret t)) _ -> Ret t
+  Lab (In (Del p)) _ -> Del p
   Del (In Nul) -> Nul
+  Del (In (Del p)) -> Del p
   Del (In (Ret a)) -> Ret a
   a -> a
 
