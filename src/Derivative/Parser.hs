@@ -167,6 +167,7 @@ compact'' parser = case parser of
   Lab (In (Ret t)) _ -> Ret t
   Lab (In (Del p)) _ -> Del p
   Del (In Nul) -> Nul
+  Del (In (Lit _)) -> Nul
   Del (In (Del p)) -> Del p
   Del (In (Ret a)) -> Ret a
   a -> a
