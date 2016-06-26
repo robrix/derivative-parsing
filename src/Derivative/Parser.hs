@@ -58,20 +58,13 @@ oneOf = getAlt . foldMap Monoid.Alt
 infixl 4 `cat`
 
 cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
-cat (In Nul) _ = In Nul
-cat (In (Ret [t])) b = (,) t <$> b
-cat (In (Cat a b)) c = (\ (a, (b, c)) -> ((a, b), c)) <$> cat a (cat b c)
-cat (In (Map f a)) b = first f <$> cat a b
-cat a b = In (Cat a b)
+cat a = compact' . In . Cat a
 
 lit :: Char -> Combinator v Char
 lit = In . Lit
 
 delta :: Combinator v a -> Combinator v a
-delta (In Nul) = In Nul
-delta (In (Ret a)) = In (Ret a)
-delta (In (Del p)) = In (Del p)
-delta a = In (Del a)
+delta a = compact' (In (Del a))
 
 ret :: [a] -> Combinator v a
 ret = In . Ret
@@ -220,11 +213,7 @@ instance HFoldable ParserF where
     _ -> mempty
 
 instance Functor (Rec ParserF v) where
-  fmap f p = In $ case p of
-    In Nul -> Nul
-    In (Map g p) -> Map (f . g) p
-    In (Ret as) -> Ret (f <$> as)
-    _ -> Map f p
+  fmap f = compact' . In . Map f
 
 instance Functor (Graph ParserF) where
   fmap f (Graph rec) = Graph (f <$> rec)
@@ -239,13 +228,9 @@ instance Applicative (Graph ParserF) where
 
 instance Alternative (Rec ParserF v) where
   empty = In Nul
-  In Nul <|> b = b
-  a <|> In Nul = a
-  In (Ret a) <|> In (Ret b) = In (Ret (a <> b))
-  a <|> b = In (Alt a b)
+  a <|> b = compact' (In (Alt a b))
   some v = (:) <$> v <*> many v
-  many (In Nul) = pure []
-  many p = In (Rep p)
+  many = compact' . In . Rep
 
 instance Alternative (Graph ParserF) where
   empty = Graph empty
