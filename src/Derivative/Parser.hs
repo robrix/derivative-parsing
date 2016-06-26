@@ -37,7 +37,7 @@ import Data.Monoid hiding (Alt)
 -- API
 
 parse :: Parser a -> String -> [a]
-parse p = parseNull . foldl ((compact .) . deriv) p
+parse p = parseNull . foldl deriv (compact p)
 
 
 commaSep1 :: Parser a -> Parser [a]
