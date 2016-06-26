@@ -159,6 +159,8 @@ compact = transform $ \ parser -> case parser of
   Map _ (In Nul) -> Nul
   Rep (In Nul) -> Ret []
   Lab (In Nul) _ -> Nul
+  Del (In Nul) -> Nul
+  Del (In (Ret a)) -> Ret a
   a -> a
 
 nullable :: Parser a -> Bool
