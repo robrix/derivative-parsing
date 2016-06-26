@@ -118,20 +118,21 @@ type Combinator v = Rec ParserF v
 -- Algorithm
 
 deriv :: Parser a -> Char -> Parser a
-deriv g c = Graph $ deriv' . into $ g
-  where deriv' :: ParserF (Graph ParserF) a -> Rec ParserF v a
-        deriv' p = case p of
-          Cat a b -> unGraph (deriv a c) `cat` unGraph b <|> delta (unGraph a) `cat` unGraph (deriv b c)
-          Alt a b -> unGraph (deriv a c) <|> unGraph (deriv b c)
-          Rep p -> uncurry (:) <$> (unGraph (deriv p c) `cat` unGraph (many p))
-          Map f p -> f <$> unGraph (deriv p c)
-          Bnd p f -> unGraph (deriv p c >>= f)
+deriv g c = modifyGraph deriv' g
+  where deriv' :: Combinator v a -> Combinator v a
+        deriv' = liftRec deriv''
+        deriv'' :: ParserF (Combinator v) a -> ParserF (Combinator v) a
+        deriv'' p = repack $ case p of
+          Cat a b -> deriv' a `cat` b <|> delta a `cat` deriv' b
+          Alt a b -> deriv' a <|> deriv' b
+          Rep p -> uncurry (:) <$> (deriv' p `cat` many p)
+          Map f p -> f <$> deriv' p
+          Bnd p f -> deriv' p >>= f
           Lit c' -> if c == c' then pure c else empty
-          Lab p s -> unGraph (deriv p c) `label` s
+          Lab p s -> deriv' p `label` s
           _ -> empty
-        into = fold (hfmap outof) (Ret [])
-        outof g = Graph (In (unGraph `hfmap` g))
-
+        repack (In r) = r
+        repack a = Lab a ""
 
 parseNull :: Parser a -> [a]
 parseNull = (`fold` []) $ \ parser -> case parser of
