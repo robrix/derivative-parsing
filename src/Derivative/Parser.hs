@@ -170,6 +170,7 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   Bnd p _ -> Const (getConst p)
   Ret _ -> Const True
   Lab p _ -> p
+  Del a -> a
   _ -> Const False
 
 size :: Parser a -> Int
