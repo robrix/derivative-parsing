@@ -104,6 +104,7 @@ data ParserF f a where
   Ret :: [a] -> ParserF f a
   Nul :: ParserF f a
   Lab :: f a -> String -> ParserF f a
+  Del :: f a -> ParserF f a
 
 type Parser = Graph ParserF
 type Combinator v = Rec ParserF v
@@ -185,6 +186,7 @@ instance HFunctor ParserF where
     Ret as -> Ret as
     Nul -> Nul
     Lab p s -> Lab (f p) s
+    Del a -> Del (f a)
 
 instance HFoldable ParserF where
   hfoldMap f p = case p of
@@ -262,4 +264,5 @@ instance HShowF ParserF
           Ret t -> showString "ret [" . showIndices (length t) . showString "]"
           Nul -> showString "empty"
           Lab p s -> showParen (n > 2) $ showsPrec 3 p . showString " `label` " . shows s
+          Del a -> showString "δ " . showsPrec n a
           where showIndices n = foldr (.) id ((showChar 't' .) . shows <$> take n (iterate succ (0 :: Integer)))
