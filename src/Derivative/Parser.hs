@@ -152,6 +152,9 @@ parseNull = (`fold` []) $ \ parser -> case parser of
 compact :: Parser a -> Parser a
 compact = transform compact''
 
+compact' :: Combinator v a -> Combinator v a
+compact' = liftRec compact''
+
 compact'' :: ParserF (Combinator v) a -> ParserF (Combinator v) a
 compact'' parser = case parser of
   Cat (In Nul) _ -> Nul
