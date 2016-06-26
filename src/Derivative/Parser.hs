@@ -265,6 +265,7 @@ instance HShowF ParserF
           Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
           Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
           Lit c -> showParen (n >= 10) $ showString "lit " . shows c
+          Ret [_] -> showParen (n >= 10) $ showString "pure t"
           Ret t -> showString "ret [" . showIndices (length t) . showString "]"
           Nul -> showString "empty"
           Lab p s -> showParen (n > 2) $ showsPrec 3 p . showString " `label` " . shows s
