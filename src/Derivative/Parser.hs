@@ -72,10 +72,7 @@ ret = In . Ret
 infixr 2 `label`
 
 label :: Combinator v a -> String -> Combinator v a
-label p s = In $ case p of In Nul -> Nul
-                           In (Ret t) -> Ret t
-                           In (Del p) -> Del p
-                           _      -> Lab p s
+label p = compact' . In . Lab p
 
 literal :: String -> Combinator v String
 literal string = sequenceA (In . Lit <$> string)
