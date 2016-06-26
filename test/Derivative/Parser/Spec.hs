@@ -293,4 +293,5 @@ instance Arbitrary a => Arbitrary (Parser a) where
     , pure empty
     , pure (parser (ret []))
     , (<|>) <$> arbitrary <*> arbitrary
+    , (\ p s -> parser (unGraph p `label` s)) <$> arbitrary <*> arbitrary
     ]
