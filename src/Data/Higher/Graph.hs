@@ -116,7 +116,7 @@ showsRec :: HShowF f => (forall b. [Const Char b]) -> Int -> Rec f (Const Char) 
 showsRec s n rec = case rec of
   Var c -> showChar (getConst c)
   Mu g -> let (a, s') = (head s, tail s) in
-              showString "Mu (\n  " . showChar (getConst a) . showString " => "
+              showString "Mu (\\ " . showChar (getConst a) . showString " ->\n  "
               . hshowsPrecF n (showsRec s') (g a) . showString "\n)\n"
   In fa -> hshowsPrecF n (showsRec s) fa
 
