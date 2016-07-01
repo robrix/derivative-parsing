@@ -64,7 +64,7 @@ lit :: Char -> Combinator v Char
 lit = In . Lit
 
 delta :: Combinator v a -> Combinator v a
-delta a = compact' (In (Del a))
+delta = compact' . In . Del
 
 ret :: [a] -> Combinator v a
 ret = In . Ret
