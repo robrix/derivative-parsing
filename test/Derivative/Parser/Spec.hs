@@ -107,7 +107,7 @@ spec = do
 
     describe "cat" $ do
       prop "does not pass through non-nullable parsers" $
-        \ c -> parser (lit c `cat` lit (succ c)) `deriv` c `shouldBe` parser (ret [c] `cat` lit (succ c) <|> empty `cat` empty)
+        \ c -> parser (lit c `cat` pure (succ c)) `deriv` succ c `shouldBe` parser (empty `cat` lit (succ c) <|> empty `cat` pure (succ c))
 
       prop "passes through nullable parsers" $
         \ c d -> parser (ret [c :: Char] `cat` lit d) `deriv` d `shouldBe` parser (empty `cat` lit d <|> ret [c] `cat` ret [d])
