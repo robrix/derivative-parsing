@@ -36,7 +36,7 @@ newtype Graph f a = Graph { unGraph :: forall v. Rec f v a }
 
 -- Folds
 
-gfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> c
+gfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> c
 gfold var bind recur = grfold var bind recur . unGraph
 
 grfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> c
