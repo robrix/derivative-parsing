@@ -118,7 +118,7 @@ deriv g c = modifyGraph deriv' g
         deriv'' p = repack $ case p of
           Cat a b -> deriv' a `cat` b <|> delta a `cat` deriv' b
           Alt a b -> deriv' a <|> deriv' b
-          Rep p -> uncurry (:) <$> (deriv' p `cat` many p)
+          Rep p -> (:) <$> deriv' p <*> many p
           Map f p -> f <$> deriv' p
           Bnd p f -> deriv' p >>= f
           Lit c' -> if c == c' then pure c else empty
