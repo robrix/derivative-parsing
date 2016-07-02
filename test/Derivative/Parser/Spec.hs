@@ -63,7 +63,7 @@ spec = do
         \ t -> parseNull (parser (ret t) :: Parser Char) `shouldBe` t
 
     it "terminates on cyclic grammars" $
-      let grammar = mu (\ a -> a <|> ret ["x"]) in
+      let grammar = parser $ mu (\ a -> a <|> ret ["x"]) in
       parseNull grammar `shouldBe` ["x"]
 
 
@@ -262,7 +262,7 @@ spec = do
 -- Grammar
 
 cyclic :: Parser ()
-cyclic = mu $ \ v -> v `label` "cyclic"
+cyclic = parser $ mu $ \ v -> v `label` "cyclic"
 
 varName :: Parser String
 varName = parser $ literal "x"
@@ -271,7 +271,7 @@ ws :: Parser Char
 ws = parser $ oneOf (lit <$> " \t\r\n") `label` "ws"
 
 lam :: Parser Lam
-lam = mu (\ lam ->
+lam = parser $ mu (\ lam ->
   let var = Var' . pure <$> lit 'x' `label` "var"
       app = (App <$> lam <*> (lit ' ' *> lam)) `label` "app"
       abs = (Abs . pure <$> (lit '\\' *> lit 'x') <*> (lit '.' *> lam)) `label` "abs" in

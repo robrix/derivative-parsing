@@ -77,8 +77,8 @@ label p = compact' . In . Lab p
 literal :: String -> Combinator v String
 literal string = sequenceA (In . Lit <$> string)
 
-mu :: (forall v. Combinator v a -> Combinator v a) -> Parser a
-mu f = Graph $ Mu $ \ v -> case f (Var v) of
+mu :: (Combinator v a -> Combinator v a) -> Combinator v a
+mu f = Mu $ \ v -> case f (Var v) of
   In r -> r
   p -> p `Lab` ""
 
