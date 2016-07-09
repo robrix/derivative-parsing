@@ -1,4 +1,4 @@
-{-# LANGUAGE InstanceSigs, RankNTypes, ScopedTypeVariables, TypeOperators #-}
+{-# LANGUAGE FlexibleInstances, InstanceSigs, RankNTypes, ScopedTypeVariables, TypeOperators #-}
 module Data.Higher.Graph
 ( Rec(..)
 , Graph(..)
@@ -135,3 +135,6 @@ instance HEqF f => Eq (Graph f a)
 
 instance HShowF f => Show (Graph f a)
   where showsPrec n = showsRec (iterate (first succ) (Const 'a')) n . unGraph
+
+instance HShowF f => Show (Rec f (Const Char) a)
+  where showsPrec = showsRec (iterate (first succ) (Const 'a'))
