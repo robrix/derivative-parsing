@@ -1,5 +1,8 @@
+{-# LANGUAGE PolyKinds #-}
 module Control.Higher.Monad.Free where
 
-data Free p v a
-  = Impure (p v (Free p v) a)
+data FreeF f v b a
+  = Impure (f v b a)
   | Pure (v a)
+
+newtype Free f v a = Free { runFree :: FreeF f v (Free f v) a }
