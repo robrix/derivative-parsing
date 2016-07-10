@@ -171,3 +171,17 @@ instance HFunctor f => Recursive (Rec f v) where project = unRec
 
 class HIsofunctor f
   where hisomap :: (a ~> b) -> (b ~> a) -> (f a z -> f b z, f b z -> f a z)
+
+instance HFunctor f => HIsofunctor (Rec f)
+  where hisomap :: forall a b z. (a ~> b) -> (b ~> a) -> (Rec f a z -> Rec f b z, Rec f b z -> Rec f a z)
+        hisomap f g = (to, from)
+          where to :: Rec f a ~> Rec f b
+                to rec = Rec $ case unRec rec of
+                  Var v -> Var (f v)
+                  Mu h -> Mu (hfmap to . h . g)
+                  In r -> In (hfmap to r)
+                from :: Rec f b ~> Rec f a
+                from rec = Rec $ case unRec rec of
+                  Var v -> Var (g v)
+                  Mu h -> Mu (hfmap from . h . f)
+                  In r -> In (hfmap from r)
