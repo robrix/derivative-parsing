@@ -18,7 +18,7 @@ module Derivative.Parser
 , sep
 , sep1
 , size
-, mu
+, Derivative.Parser.mu
 , parser
 , combinator
 , nullable
@@ -58,29 +58,29 @@ oneOf = getAlt . foldMap Monoid.Alt
 infixl 4 `cat`
 
 cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
-cat a = compact' . In . Cat a
+cat a = compact' . rec . Cat a
 
 lit :: Char -> Combinator v Char
-lit = In . Lit
+lit = rec . Lit
 
 delta :: Combinator v a -> Combinator v a
-delta = compact' . In . Del
+delta = compact' . rec . Del
 
 ret :: [a] -> Combinator v a
-ret = In . Ret
+ret = rec . Ret
 
 infixr 2 `label`
 
 label :: Combinator v a -> String -> Combinator v a
-label p = compact' . In . Lab p
+label p = compact' . rec . Lab p
 
 literal :: String -> Combinator v String
-literal string = sequenceA (In . Lit <$> string)
+literal string = sequenceA (rec . Lit <$> string)
 
 mu :: (Combinator v a -> Combinator v a) -> Combinator v a
-mu f = Mu $ \ v -> case f (Var v) of
+mu f = Rec . Mu $ \ v -> case unRec (f (var v)) of
   In r -> r
-  p -> p `Lab` ""
+  p -> Rec p `Lab` ""
 
 parser :: (forall v. Combinator v a) -> Parser a
 parser r = compact $ Graph r
@@ -124,7 +124,7 @@ deriv g c = modifyGraph deriv' g
           Lit c' -> if c == c' then pure c else empty
           Lab p s -> deriv' p `label` s
           _ -> empty
-        repack (In r) = r
+        repack (Rec (In r)) = r
         repack a = Lab a ""
 
 parseNull :: Parser a -> [a]
@@ -147,26 +147,26 @@ compact' = liftRec compact''
 
 compact'' :: ParserF (Combinator v) a -> ParserF (Combinator v) a
 compact'' parser = case parser of
-  Cat (In Nul) _ -> Nul
-  Cat _ (In Nul) -> Nul
-  Cat (In (Ret [t])) b -> Map ((,) t) b
-  Cat a (In (Ret [t])) -> Map (flip (,) t) a
-  Cat (In (Cat a b)) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (cat a (cat b c))
-  Cat (In (Map f a)) b -> Map (first f) (cat a b)
-  Alt (In Nul) (In p) -> p
-  Alt (In p) (In Nul) -> p
-  Alt (In (Ret a)) (In (Ret b)) -> Ret (a <> b)
-  Map f (In (Ret as)) -> Ret (f <$> as)
-  Map g (In (Map f p)) -> Map (g . f) p
-  Map _ (In Nul) -> Nul
-  Rep (In Nul) -> Ret [[]]
-  Lab (In Nul) _ -> Nul
-  Lab (In (Ret t)) _ -> Ret t
-  Lab (In (Del p)) _ -> Del p
-  Del (In Nul) -> Nul
-  Del (In (Lit _)) -> Nul
-  Del (In (Del p)) -> Del p
-  Del (In (Ret a)) -> Ret a
+  Cat (Rec (In Nul)) _ -> Nul
+  Cat _ (Rec (In Nul)) -> Nul
+  Cat (Rec (In (Ret [t]))) b -> Map ((,) t) b
+  Cat a (Rec (In (Ret [t]))) -> Map (flip (,) t) a
+  Cat (Rec (In (Cat a b))) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (cat a (cat b c))
+  Cat (Rec (In (Map f a))) b -> Map (first f) (cat a b)
+  Alt (Rec (In Nul)) (Rec (In p)) -> p
+  Alt (Rec (In p)) (Rec (In Nul)) -> p
+  Alt (Rec (In (Ret a))) (Rec (In (Ret b))) -> Ret (a <> b)
+  Map f (Rec (In (Ret as))) -> Ret (f <$> as)
+  Map g (Rec (In (Map f p))) -> Map (g . f) p
+  Map _ (Rec (In Nul)) -> Nul
+  Rep (Rec (In Nul)) -> Ret [[]]
+  Lab (Rec (In Nul)) _ -> Nul
+  Lab (Rec (In (Ret t))) _ -> Ret t
+  Lab (Rec (In (Del p))) _ -> Del p
+  Del (Rec (In Nul)) -> Nul
+  Del (Rec (In (Lit _))) -> Nul
+  Del (Rec (In (Del p))) -> Del p
+  Del (Rec (In (Ret a))) -> Ret a
   a -> a
 
 nullable :: Parser a -> Bool
@@ -211,13 +211,13 @@ instance HFoldable ParserF where
     _ -> mempty
 
 instance Functor (Rec ParserF v) where
-  fmap f = compact' . In . Map f
+  fmap f = compact' . rec . Map f
 
 instance Functor (Graph ParserF) where
   fmap f (Graph rec) = Graph (f <$> rec)
 
 instance Applicative (Rec ParserF v) where
-  pure = In . Ret . pure
+  pure = rec . Ret . pure
   a <*> b = uncurry ($) <$> (a `cat` b)
 
 instance Applicative (Graph ParserF) where
@@ -225,10 +225,10 @@ instance Applicative (Graph ParserF) where
   Graph f <*> Graph a = Graph (f <*> a)
 
 instance Alternative (Rec ParserF v) where
-  empty = In Nul
-  a <|> b = compact' (In (Alt a b))
+  empty = rec Nul
+  a <|> b = compact' (rec (Alt a b))
   some v = (:) <$> v <*> many v
-  many = compact' . In . Rep
+  many = compact' . rec . Rep
 
 instance Alternative (Graph ParserF) where
   empty = Graph empty
@@ -238,7 +238,7 @@ instance Alternative (Graph ParserF) where
 
 instance Monad (Rec ParserF v) where
   return = pure
-  (>>=) = (compact' .) . (In .) . Bnd
+  (>>=) = (compact' .) . (rec .) . Bnd
 
 instance Monad (Graph ParserF) where
   return = pure

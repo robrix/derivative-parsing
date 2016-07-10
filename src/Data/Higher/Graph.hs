@@ -1,7 +1,11 @@
-{-# LANGUAGE FlexibleInstances, InstanceSigs, RankNTypes, ScopedTypeVariables, TypeOperators #-}
+{-# LANGUAGE FlexibleInstances, InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeOperators #-}
 module Data.Higher.Graph
 ( Rec(..)
+, RecF(..)
 , Graph(..)
+, var
+, mu
+, rec
 , gfold
 , grfold
 , fold
@@ -26,12 +30,26 @@ import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
 import Data.Higher.Transformation
 
-data Rec f v a
+data RecF f v a b
   = Var (v a)
-  | Mu (v a -> f (Rec f v) a)
-  | In (f (Rec f v) a)
+  | Mu (v a -> f b a)
+  | In (f b a)
+
+newtype Rec f v a = Rec { unRec :: RecF f v a (Rec f v) }
 
 newtype Graph f a = Graph { unGraph :: forall v. Rec f v a }
+
+
+-- Smart constructors
+
+var :: v a -> Rec f v a
+var = Rec . Var
+
+mu :: (v a -> f (Rec f v) a) -> Rec f v a
+mu = Rec . Mu
+
+rec :: f (Rec f v) a -> Rec f v a
+rec = Rec . In
 
 
 -- Folds
@@ -40,7 +58,7 @@ gfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c)
 gfold var bind recur = grfold var bind recur . unGraph
 
 grfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> c
-grfold var bind algebra rec = case rec of
+grfold var bind algebra rec = case unRec rec of
   Var x -> var x
   Mu g -> bind (algebra . hfmap recur . g)
   In fa -> algebra (hfmap recur fa)
@@ -65,33 +83,33 @@ transform :: HFunctor f => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> 
 transform f = modifyGraph (graphMap f)
 
 graphMap :: HFunctor f => (f (Rec g v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
-graphMap f rec = case rec of
+graphMap f rec = Rec $ case unRec rec of
   Var x -> Var x
   Mu g -> Mu (f . hfmap (graphMap f) . g)
   In x -> In (f (hfmap (graphMap f) x))
 
 liftRec :: (f (Rec f v) ~> f (Rec f v)) -> Rec f v ~> Rec f v
-liftRec f rec = case rec of
+liftRec f rec = Rec $ case unRec rec of
   Var v -> Var v
   Mu g -> Mu (f . g)
   In r -> In (f r)
 
 pjoin :: HFunctor f => Rec f (Rec f v) ~> Rec f v
-pjoin rec = case rec of
+pjoin rec = case unRec rec of
   Var x -> x
-  Mu g -> Mu (hfmap pjoin . g . Var)
-  In r -> In (hfmap pjoin r)
+  Mu g -> Rec (Mu (hfmap pjoin . g . Rec .Var))
+  In r -> Rec (In (hfmap pjoin r))
 
 preturn :: v ~> Rec f v
-preturn = Var
+preturn = Rec . Var
 
 modifyGraph :: (forall v. Rec f v ~> Rec g v) -> Graph f ~> Graph g
 modifyGraph f g = Graph (f (unGraph g))
 
 unroll :: HFunctor f => Rec f (Rec f v) a -> Rec f (Rec f v) a
-unroll rec = case rec of
+unroll rec = Rec $ case unRec rec of
   Var v -> Var v
-  Mu g -> In (g (pjoin (unroll (Mu g))))
+  Mu g -> In (g (pjoin (unroll (Rec (Mu g)))))
   In r -> In (hfmap unroll r)
 
 unrollGraph :: HFunctor f => Graph f ~> Graph f
@@ -101,7 +119,7 @@ unrollGraph g = Graph (pjoin (unroll (unGraph g)))
 -- Equality
 
 eqRec :: HEqF f => Int -> Rec f (Const Int) a -> Rec f (Const Int) a -> Bool
-eqRec n a b = case (a, b) of
+eqRec n a b = case (unRec a, unRec b) of
   (Var x, Var y) -> x == y
   (Mu g, Mu h) -> let a = g (Const (succ n))
                       b = h (Const (succ n)) in
@@ -113,7 +131,7 @@ eqRec n a b = case (a, b) of
 -- Show
 
 showsRec :: HShowF f => (forall b. [Const Char b]) -> Int -> Rec f (Const Char) a -> ShowS
-showsRec s n rec = case rec of
+showsRec s n rec = case unRec rec of
   Var c -> showChar (getConst c)
   Mu g -> let (a, s') = (head s, tail s) in
               showString "Mu (\\ " . showChar (getConst a) . showString " ->\n  "
