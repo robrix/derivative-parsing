@@ -7,7 +7,7 @@ import Data.Higher.Transformation
 type family Base (t :: k -> *) :: (k -> *) -> k -> *
 
 class HFunctor (Base t) => Recursive t where
-  project :: t a -> Base t t a
+  project :: t ~> Base t t
 
   cata :: forall c. (Base t c ~> c) -> t ~> c
   cata f = go
@@ -15,7 +15,7 @@ class HFunctor (Base t) => Recursive t where
           go = f . hfmap go . project
 
 class HFunctor (Base t) => Corecursive  t where
-  embed :: Base t t a -> t a
+  embed :: Base t t ~> t
 
 hylo :: forall f a b . HFunctor f => (f b ~> b) -> (a ~> f a) -> a ~> b
 hylo f g = go
