@@ -3,7 +3,6 @@ module Control.Higher.Monad.Free where
 
 import Data.Higher.Bifunctor
 import Data.Higher.Functor
-import Data.Higher.Functor.Foldable
 import Data.Higher.Profunctor
 import Data.Higher.Transformation
 
@@ -44,9 +43,3 @@ instance HFunctor f => HFunctor (Free f) where
   hfmap f = go
     where go :: Free f a ~> Free f b
           go = Free . hbimap f go . runFree
-
-
-type instance Base (Free f v) = FreeF f v
-
-instance HFunctor f => Recursive (Free f v) where project = runFree
-instance HFunctor f => Corecursive (Free f v) where embed = free

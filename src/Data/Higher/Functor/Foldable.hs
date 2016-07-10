@@ -3,6 +3,7 @@ module Data.Higher.Functor.Foldable where
 
 import Control.Arrow ((&&&))
 import Control.Higher.Comonad.Cofree
+import Control.Higher.Monad.Free
 import Data.Higher.Bifunctor
 import Data.Higher.Functor
 import Data.Higher.Product
@@ -73,3 +74,9 @@ type instance Base (Cofree f v) = CofreeF f v
 
 instance HFunctor f => Recursive (Cofree f v) where project = runCofree
 instance HFunctor f => Corecursive (Cofree f v) where embed = cofree
+
+
+type instance Base (Free f v) = FreeF f v
+
+instance HFunctor f => Recursive (Free f v) where project = runFree
+instance HFunctor f => Corecursive (Free f v) where embed = free
