@@ -11,3 +11,4 @@ class HFunctor w => HComonad w where
   hduplicate = hextend id
 
   hextend :: (w a ~> b) -> w a ~> w b
+  hextend f = hfmap f . hduplicate
