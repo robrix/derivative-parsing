@@ -1,10 +1,11 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, TypeOperators #-}
 module Data.Higher.Foldable where
 
 import Control.Applicative
+import Data.Higher.Transformation
 
 class HFoldable f where
-  hfoldMap :: Monoid m => (forall a. c a -> m) -> f c a -> m
+  hfoldMap :: (Monad c, Alternative m) => (c ~> m) -> f c ~> m
 
-  hfold :: Monoid m => f (Const m) a -> m
-  hfold = hfoldMap getConst
+  hfold :: (Monad m, Alternative m) => f m ~> m
+  hfold = hfoldMap id

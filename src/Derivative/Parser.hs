@@ -182,10 +182,30 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   _ -> Const False
 
 size :: Parser a -> Int
-size = getSum . getConst . fold (Const . mappend (Sum 1) . hfold) (Const (Sum 0))
+size = getSum . getK . fold ((K (Sum 1) <|>) . hfold) (K (Sum 0))
+
+newtype K a b = K { getK :: a }
+  deriving (Eq, Functor, Ord, Show)
 
 
 -- Instances
+
+instance Monoid m => Monoid (K m a) where
+  mempty = K mempty
+  mappend (K a) (K b) = K (a <> b)
+
+instance Monoid m => Applicative (K m) where
+  pure = const (K mempty)
+  K a <*> K b = K (a <> b)
+
+instance Monoid m => Alternative (K m) where
+  empty = mempty
+  (<|>) = mappend
+
+instance Monoid m => Monad (K m) where
+  return = pure
+  K m >>= _ = K m
+
 
 instance HFunctor ParserF where
   hfmap f p = case p of
@@ -202,14 +222,14 @@ instance HFunctor ParserF where
 
 instance HFoldable ParserF where
   hfoldMap f p = case p of
-    Cat a b -> f a <> f b
-    Alt a b -> f a <> f b
-    Rep p -> f p
-    Map _ p -> f p
-    Bnd p _ -> f p
+    Cat a b -> (,) <$> f a <*> f b
+    Alt a b -> f a <|> f b
+    Rep p -> pure <$> f p
+    Map g p -> g <$> f p
+    Bnd p g -> f (p >>= g)
     Lab p _ -> f p
     Del a -> f a
-    _ -> mempty
+    _ -> empty
 
 instance Functor (Rec ParserF v) where
   fmap f = compact' . rec . Map f
