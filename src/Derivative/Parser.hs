@@ -208,6 +208,7 @@ instance HFoldable ParserF where
     Map _ p -> f p
     Bnd p _ -> f p
     Lab p _ -> f p
+    Del a -> f a
     _ -> mempty
 
 instance Functor (Rec ParserF v) where
