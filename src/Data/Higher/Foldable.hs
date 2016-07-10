@@ -13,6 +13,9 @@ class HFoldable f where
   hfold :: (Monad m, Alternative m) => f m ~> m
   hfold = hfoldMap id
 
+  hlength :: Monad c => f c a -> Int
+  hlength = getSum . getConst . hfoldMap (const (Const (Sum 1)))
+
 
 newtype Const a b = Const { getConst :: a }
   deriving (Eq, Functor, Ord, Show)
