@@ -20,4 +20,4 @@ instance HBifunctor (:+:) where
   hbimap f g = heither (L . f) (R . g)
 
 instance HFunctor ((:+:) f) where
-  hfmap = hbimap id
+  hfmap = hsecond

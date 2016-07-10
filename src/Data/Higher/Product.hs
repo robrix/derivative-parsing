@@ -13,4 +13,4 @@ instance HBifunctor (:*:) where
   hbimap f g p = f (hfst p) :*: g (hsnd p)
 
 instance HFunctor ((:*:) f) where
-  hfmap = hbimap id
+  hfmap = hsecond
