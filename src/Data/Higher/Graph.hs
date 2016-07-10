@@ -18,6 +18,7 @@ module Data.Higher.Graph
 , sfold
 , transform
 , graphMap
+, agraphMap
 , liftRec
 , pjoin
 , modifyGraph
@@ -107,6 +108,12 @@ graphMap f = cata $ \ rc -> case rc of
   Var v -> var v
   Mu g -> mu (f . g)
   In r -> rec (f r)
+
+agraphMap :: HFunctor f => (f (Rec g v) ~> g (Rec g v)) -> Rec f v ~> Cofree (RecF f v) (Rec g v)
+agraphMap f = acata $ \ rc -> case rc of
+  Var v -> var v
+  Mu g -> mu (f . g)
+  In x -> rec (f x)
 
 liftRec :: (f (Rec f v) ~> f (Rec f v)) -> Rec f v ~> Rec f v
 liftRec f rc = case unRec rc of
