@@ -3,7 +3,6 @@ module Control.Higher.Comonad.Cofree where
 
 import Data.Higher.Bifunctor
 import Data.Higher.Functor
-import Data.Higher.Product
 import Data.Higher.Transformation
 
 data CofreeF f v b a = (:<) { headF :: v a, tailF :: f b a }
