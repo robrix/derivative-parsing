@@ -4,6 +4,7 @@ module Control.Higher.Comonad.Cofree where
 import Control.Arrow
 import Control.Higher.Comonad
 import Data.Higher.Bifunctor
+import Data.Higher.Copointed
 import Data.Higher.Functor
 import Data.Higher.Product
 import Data.Higher.Transformation
@@ -42,9 +43,10 @@ instance HFunctor f => HFunctor (Cofree f) where
     where go :: Cofree f a ~> Cofree f b
           go = cofree . hbimap f go . runCofree
 
-instance HFunctor f => HComonad (Cofree f) where
-  hextract = headF . runCofree
+instance HCopointed (Cofree f) where
+  hcopoint = headF . runCofree
 
+instance HFunctor f => HComonad (Cofree f) where
   hduplicate = cofree . uncurry (:<) . (id &&& hfmap hduplicate . unwrap)
 
   hextend :: forall a b. (Cofree f a ~> b) -> Cofree f a ~> Cofree f b
