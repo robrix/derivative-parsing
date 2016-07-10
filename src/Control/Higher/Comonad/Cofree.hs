@@ -1,6 +1,8 @@
 {-# LANGUAGE FlexibleContexts, InstanceSigs, RankNTypes, PolyKinds, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
 module Control.Higher.Comonad.Cofree where
 
+import Control.Arrow
+import Control.Higher.Comonad
 import Data.Higher.Bifunctor
 import Data.Higher.Functor
 import Data.Higher.Transformation
@@ -32,3 +34,10 @@ instance HFunctor f => HFunctor (Cofree f) where
   hfmap f = go
     where go :: Cofree f a ~> Cofree f b
           go = cofree . hbimap f go . runCofree
+
+instance HFunctor f => HComonad (Cofree f) where
+  hextract = headF . runCofree
+
+  hduplicate = cofree . uncurry (:<) . (id &&& hfmap hduplicate . unwrap)
+
+  hextend f = cofree . uncurry (:<) . (f &&& hfmap (hextend f) . unwrap)
