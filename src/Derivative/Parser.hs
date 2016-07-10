@@ -24,8 +24,9 @@ module Derivative.Parser
 , nullable
 ) where
 
-import Control.Applicative
+import Control.Applicative hiding (Const(..))
 import Data.Bifunctor (first)
+import Data.Function
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
