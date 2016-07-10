@@ -1,4 +1,4 @@
-{-# LANGUAGE RankNTypes, TypeOperators #-}
+{-# LANGUAGE PolyKinds, RankNTypes, TypeOperators #-}
 module Control.Higher.Comonad where
 
 import Data.Higher.Functor
