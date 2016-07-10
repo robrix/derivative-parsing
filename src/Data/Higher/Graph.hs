@@ -12,6 +12,8 @@ module Data.Higher.Graph
 , agrfold
 , fold
 , rfold
+, afold
+, arfold
 , cfold
 , sfold
 , transform
@@ -81,6 +83,12 @@ fold alg k = rfold alg k . unGraph
 
 rfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> c
 rfold alg k = grfold id ($ k) alg
+
+afold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> Cofree (RecF f c) c
+afold alg k = arfold alg k . unGraph
+
+arfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> Cofree (RecF f c) c
+arfold ag k = agrfold id ($ k) ag
 
 cfold :: HFunctor f => (f t ~> t) -> Graph f ~> t
 cfold = gfold id fix
