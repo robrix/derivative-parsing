@@ -16,9 +16,6 @@ newtype Cofree f v a = Cofree { runCofree :: CofreeF f v (Cofree f v) a }
 cofree :: CofreeF f v (Cofree f v) a -> Cofree f v a
 cofree = Cofree
 
-extract :: Cofree f a ~> a
-extract = headF . runCofree
-
 unwrap :: Cofree f a ~> f (Cofree f a)
 unwrap = tailF . runCofree
 

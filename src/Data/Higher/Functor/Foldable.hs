@@ -6,6 +6,7 @@ import Control.Higher.Comonad
 import Control.Higher.Comonad.Cofree
 import Control.Higher.Monad.Free
 import Data.Higher.Bifunctor
+import Data.Higher.Copointed
 import Data.Higher.Functor
 import Data.Higher.Functor.Identity
 import Data.Higher.Product
@@ -57,7 +58,7 @@ agcata dist alg = go
         go = hfmap alg . dist . hfmap (hduplicate . go) . project
 
 histo :: Recursive t => (Base t (Cofree (Base t) a) ~> a) -> t ~> a
-histo alg = extract . agcata distHisto alg
+histo alg = hextract . agcata distHisto alg
 
 ahisto :: Recursive t => (Base t (Cofree (Base t) a) ~> a) -> t ~> Cofree (Base t) a
 ahisto = agcata distHisto
@@ -74,12 +75,12 @@ distGHisto k = unfold (\ as -> hextract `hfmap` as :*: k (unwrap `hfmap` as))
 acata :: forall c t. (HFunctor (Base t), Recursive t) => (Base t c ~> c) -> t ~> Cofree (Base t) c
 acata f = go
   where go :: t ~> Cofree (Base t) c
-        go = cofree . uncurry (:<) . (f . hfmap extract &&& id) . hfmap go . project
+        go = cofree . uncurry (:<) . (f . hfmap hextract &&& id) . hfmap go . project
 
 apara :: forall c t. (HFunctor (Base t), Recursive t) => (Base t (t :*: c) ~> c) -> t ~> Cofree (Base t) c
 apara f = go
   where go :: t ~> Cofree (Base t) c
-        go = cofree . uncurry (:<) . (f . hfmap (hsecond extract) &&& hfmap hsnd) . hfmap ((:*:) <*> go) . project
+        go = cofree . uncurry (:<) . (f . hfmap (hsecond hextract) &&& hfmap hsnd) . hfmap ((:*:) <*> go) . project
 
 
 unannotate :: (HFunctor (Base t), Corecursive t) => Cofree (Base t) c ~> t
@@ -98,7 +99,7 @@ aiter f = go
   where go :: Free (f v) a ~> Cofree (FreeF (f v) a) a
         go rec = cofree $ case runFree rec of
           Pure a -> a :< Pure a
-          Impure r -> let r' = hrmap go r in f (hrmap extract r') :< Impure r'
+          Impure r -> let r' = hrmap go r in f (hrmap hcopoint r') :< Impure r'
 
 
 -- Instances
