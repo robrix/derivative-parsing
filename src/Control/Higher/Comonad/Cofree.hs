@@ -40,4 +40,7 @@ instance HFunctor f => HComonad (Cofree f) where
 
   hduplicate = cofree . uncurry (:<) . (id &&& hfmap hduplicate . unwrap)
 
-  hextend f = cofree . uncurry (:<) . (f &&& hfmap (hextend f) . unwrap)
+  hextend :: forall a b. (Cofree f a ~> b) -> Cofree f a ~> Cofree f b
+  hextend f = go
+    where go :: Cofree f a ~> Cofree f b
+          go = cofree . uncurry (:<) . (f &&& hfmap go . unwrap)
