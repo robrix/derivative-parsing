@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, RankNTypes #-}
+{-# LANGUAGE DeriveFunctor, FlexibleInstances, GeneralizedNewtypeDeriving, GADTs, RankNTypes #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -182,29 +182,25 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   _ -> Const False
 
 size :: Parser a -> Int
-size = getSum . getK . fold ((K (Sum 1) <|>) . hfold) (K (Sum 0))
+size = getSum . getConst . fold ((Const (Sum 1) <|>) . hfold) (Const (Sum 0))
 
-newtype K a b = K { getK :: a }
+newtype Const a b = Const { getConst :: a }
   deriving (Eq, Functor, Ord, Show)
 
 
 -- Instances
 
-instance Monoid m => Monoid (K m a) where
-  mempty = K mempty
-  mappend (K a) (K b) = K (a <> b)
+instance Monoid m => Applicative (Const m) where
+  pure _ = empty
+  Const a <*> Const b = Const (a <> b)
 
-instance Monoid m => Applicative (K m) where
-  pure = const (K mempty)
-  K a <*> K b = K (a <> b)
+instance Monoid m => Alternative (Const m) where
+  empty = Const mempty
+  (<|>) = (Const .) . (mappend `on` getConst)
 
-instance Monoid m => Alternative (K m) where
-  empty = mempty
-  (<|>) = mappend
-
-instance Monoid m => Monad (K m) where
+instance Monoid m => Monad (Const m) where
   return = pure
-  K m >>= _ = K m
+  Const m >>= _ = Const m
 
 
 instance HFunctor ParserF where
