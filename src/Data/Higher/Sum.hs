@@ -7,6 +7,11 @@ data (f :+: g) a
   = L (f a)
   | R (g a)
 
+heither :: (f a -> b) -> (g a -> b) -> (f :+: g) a -> b
+heither f g s = case s of
+  L l -> f l
+  R r -> g r
+
 
 -- Instances
 
