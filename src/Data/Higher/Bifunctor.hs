@@ -3,7 +3,7 @@ module Data.Higher.Bifunctor where
 
 import Data.Higher.Transformation
 
-class Bifunctor p where
+class HBifunctor p where
   hbimap :: (a ~> c) -> (b ~> d) -> p a b -> p c d
 
   hfirst :: (a ~> c) -> p a b -> p c b
