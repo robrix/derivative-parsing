@@ -18,3 +18,5 @@ hylo :: forall f a b . HFunctor f => (f b ~> b) -> (a ~> f a) -> a ~> b
 hylo f g = go
   where go :: a ~> b
         go = f . hfmap go . g
+
+newtype Fix f = Fix { unFix :: f (Fix f) }
