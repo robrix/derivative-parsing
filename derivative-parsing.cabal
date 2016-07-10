@@ -14,7 +14,8 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Data.Higher.Eq
+  exposed-modules:     Control.Higher.Comonad.Cofree
+                     , Data.Higher.Eq
                      , Data.Higher.Foldable
                      , Data.Higher.Functor
                      , Data.Higher.Functor.Eq
