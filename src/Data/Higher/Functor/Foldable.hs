@@ -55,6 +55,15 @@ gcata dist alg = alg . hextract . go
   where go :: t ~> w (Base t (w a))
         go = dist . hfmap (hduplicate . hfmap alg . go) . project
 
+histo :: Recursive t => (Base t (Cofree (Base t) a) ~> a) -> t ~> a
+histo = gcata distHisto
+
+distHisto :: HFunctor f => f (Cofree f a) ~> Cofree f (f a)
+distHisto = distGHisto id
+
+distGHisto :: (HFunctor f, HFunctor h) => (forall b. f (h b) ~> h (f b)) -> f (Cofree h a) ~> Cofree h (f a)
+distGHisto k = unfold (\ as -> hextract `hfmap` as :*: k (unwrap `hfmap` as))
+
 acata :: forall c t. (HFunctor (Base t), Recursive t) => (Base t c ~> c) -> t ~> Cofree (Base t) c
 acata f = go
   where go :: t ~> Cofree (Base t) c
