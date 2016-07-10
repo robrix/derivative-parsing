@@ -1,8 +1,9 @@
-{-# LANGUAGE InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeOperators #-}
+{-# LANGUAGE InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
 module Control.Higher.Monad.Free where
 
 import Data.Higher.Bifunctor
 import Data.Higher.Functor
+import Data.Higher.Functor.Foldable
 import Data.Higher.Transformation
 
 data FreeF f v b a
@@ -31,3 +32,5 @@ instance HFunctor f => HFunctor (Free f) where
   hfmap f = go
     where go :: Free f a ~> Free f b
           go = Free . hbimap f go . runFree
+
+type instance Base (Free f v) = FreeF f v
