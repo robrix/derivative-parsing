@@ -30,12 +30,12 @@ import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
 import Data.Higher.Transformation
 
-data RecF f v a b
+data RecF f v b a
   = Var (v a)
   | Mu (v a -> f b a)
   | In (f b a)
 
-newtype Rec f v a = Rec { unRec :: RecF f v a (Rec f v) }
+newtype Rec f v a = Rec { unRec :: RecF f v (Rec f v) a }
 
 newtype Graph f a = Graph { unGraph :: forall v. Rec f v a }
 
