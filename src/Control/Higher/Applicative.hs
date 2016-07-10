@@ -7,11 +7,14 @@ import Data.Higher.Transformation
 class HFunctor f => HApplicative (f :: (k -> *) -> k -> *) where
   hpure :: a ~> f a
 
+  infixl 4 <:*:>
   (<:*:>) :: f (a ~~> b) z -> f a z -> f b z
 
+  infixl 4 *:>
   (*:>) :: f b a -> f c a -> f c a
   a *:> b = const (A id) `hfmap` a <:*:> b
 
+  infixl 4 <:*
   (<:*) :: f c a -> f b a -> f c a
   (<:*) = hliftA2 const
 
