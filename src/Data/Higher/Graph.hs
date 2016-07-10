@@ -60,6 +60,13 @@ rec :: f (Rec f v) a -> Rec f v a
 rec = Rec . Impure . In
 
 
+toFree :: HFunctor f => Rec f a ~> Free (RecF f a) a
+toFree = hylo free unRec
+
+fromFree :: HFunctor f => Free (RecF f a) a ~> Rec f a
+fromFree = hylo Rec runFree
+
+
 -- Folds
 
 gfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> c
