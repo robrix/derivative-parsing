@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeOperators #-}
+{-# LANGUAGE FlexibleInstances, InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
 module Data.Higher.Graph
 ( Rec(..)
 , RecF(..)
@@ -137,7 +137,7 @@ showsRec s n rec = case unRec rec of
   Var c -> showChar (getConst c)
   Mu g -> let (a, s') = (head s, tail s) in
               showString "Mu (\\ " . showChar (getConst a) . showString " ->\n  "
-              . hshowsPrecF n (showsRec s') (g a) . showString "\n)\n"
+              . hshowsPrecF n (showsRec (fmap (Const . getConst) s')) (g a) . showString "\n)\n"
   In fa -> hshowsPrecF n (showsRec s) fa
 
 
@@ -164,3 +164,5 @@ instance HFunctor f => HFunctor (RecF f v)
           Var v -> Var v
           Mu g -> Mu (hfmap f . g)
           In r -> In (hfmap f r)
+
+type instance Base (Rec f v) = RecF f v
