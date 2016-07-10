@@ -157,8 +157,8 @@ instance HShowF f => Show (Graph f a)
 instance HShowF f => Show (Rec f (Const Char) a)
   where showsPrec = showsRec (iterate (first succ) (Const 'a'))
 
-instance HFunctor f => HFunctor (RecF f v) where
-  hfmap f rec = case rec of
-    Var v -> Var v
-    Mu g -> Mu (hfmap f . g)
-    In r -> In (hfmap f r)
+instance HFunctor f => HFunctor (RecF f v)
+  where hfmap f rec = case rec of
+          Var v -> Var v
+          Mu g -> Mu (hfmap f . g)
+          In r -> In (hfmap f r)
