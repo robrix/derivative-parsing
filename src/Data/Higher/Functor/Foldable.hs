@@ -63,6 +63,9 @@ gcata dist alg = alg . hextract . go
 histo :: Recursive t => (Base t (Cofree (Base t) a) ~> a) -> t ~> a
 histo = gcata distHisto
 
+ahisto :: Recursive t => (Base t (Cofree (Base t) a) ~> a) -> t ~> Cofree (Base t) a
+ahisto = agcata distHisto
+
 distHisto :: HFunctor f => f (Cofree f a) ~> Cofree f (f a)
 distHisto = distGHisto id
 
