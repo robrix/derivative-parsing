@@ -1,6 +1,7 @@
-{-# LANGUAGE InstanceSigs, RankNTypes, PolyKinds, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
+{-# LANGUAGE FlexibleContexts, InstanceSigs, RankNTypes, PolyKinds, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
 module Control.Higher.Comonad.Cofree where
 
+import Control.Arrow
 import Data.Higher.Bifunctor
 import Data.Higher.Functor
 import Data.Higher.Functor.Foldable
@@ -30,3 +31,9 @@ instance HFunctor f => HFunctor (Cofree f) where
 
 
 type instance Base (Cofree f v) = CofreeF f v
+
+
+acata :: forall c t. (HFunctor (Base t), Recursive t) => (Base t c ~> c) -> t ~> Cofree (Base t) c
+acata f = go
+  where go :: t ~> Cofree (Base t) c
+        go = cofree . uncurry (:<) . (f . hfmap extract &&& id) . hfmap go . project
