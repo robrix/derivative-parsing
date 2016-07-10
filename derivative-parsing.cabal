@@ -15,6 +15,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Control.Higher.Applicative
+                     , Control.Higher.Monad
                      , Control.Higher.Comonad.Cofree
                      , Control.Higher.Monad.Free
                      , Data.Higher.Bifunctor
