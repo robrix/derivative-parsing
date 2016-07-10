@@ -182,7 +182,7 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   _ -> Const False
 
 size :: Parser a -> Int
-size = getSum . getConst . fold (Const . mappend (Sum 1) . hfoldMap getConst) (Const (Sum 0))
+size = getSum . getConst . fold (Const . mappend (Sum 1) . hfold) (Const (Sum 0))
 
 
 -- Instances
