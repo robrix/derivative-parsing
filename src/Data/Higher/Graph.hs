@@ -6,6 +6,8 @@ module Data.Higher.Graph
 , var
 , mu
 , rec
+, toFree
+, fromFree
 , gfold
 , grfold
 , agfold
