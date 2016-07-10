@@ -1,4 +1,4 @@
-{-# LANGUAGE RankNTypes, TypeOperators #-}
+{-# LANGUAGE PolyKinds, RankNTypes, TypeOperators #-}
 module Data.Higher.Bifunctor where
 
 import Data.Higher.Transformation
