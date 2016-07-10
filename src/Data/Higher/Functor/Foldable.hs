@@ -4,7 +4,7 @@ module Data.Higher.Functor.Foldable where
 import Data.Higher.Functor
 import Data.Higher.Transformation
 
-type family Base (t :: j) :: (k -> *) -> k -> *
+type family Base (t :: k -> *) :: (k -> *) -> k -> *
 
 class HFunctor (Base t) => Recursive t where
   project :: t a -> Base t t a
