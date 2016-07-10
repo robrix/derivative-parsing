@@ -5,6 +5,7 @@ import Control.Arrow
 import Control.Higher.Comonad
 import Data.Higher.Bifunctor
 import Data.Higher.Functor
+import Data.Higher.Product
 import Data.Higher.Transformation
 
 data CofreeF f v b a = (:<) { headF :: v a, tailF :: f b a }
@@ -19,6 +20,12 @@ extract = headF . runCofree
 
 unwrap :: Cofree f a ~> f (Cofree f a)
 unwrap = tailF . runCofree
+
+
+unfold :: forall f a b. HFunctor f => (b ~> (a :*: f b)) -> b ~> Cofree f a
+unfold f = go
+  where go :: b ~> Cofree f a
+        go = cofree . huncurry (:<) . hsecond (hfmap go) . f
 
 
 -- Instances
