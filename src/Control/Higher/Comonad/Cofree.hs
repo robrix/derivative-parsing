@@ -35,6 +35,7 @@ instance HFunctor f => HFunctor (Cofree f) where
 
 type instance Base (Cofree f v) = CofreeF f v
 
+instance HFunctor f => Recursive (Cofree f v) where project = runCofree
 
 acata :: forall c t. (HFunctor (Base t), Recursive t) => (Base t c ~> c) -> t ~> Cofree (Base t) c
 acata f = go
