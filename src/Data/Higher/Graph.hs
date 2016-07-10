@@ -36,6 +36,7 @@ import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Foldable
 import Data.Higher.Functor.Show
+import Data.Higher.Profunctor
 import Data.Higher.Transformation
 
 data RecF f v b a
@@ -213,3 +214,8 @@ instance HFunctor f => HIsofunctor (Rec f)
 
 instance HFunctor f => HIsofunctor (RecF f v) where
   hisomap f g = (hfmap f, hfmap g)
+
+instance HFunctor f => HProfunctor (RecF f) where
+  hdimap f g rec = case rec of
+    Mu h -> Mu (hfmap g . h . f)
+    In r -> In (hfmap g r)
