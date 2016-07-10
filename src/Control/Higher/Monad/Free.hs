@@ -23,6 +23,9 @@ instance HFunctor f => HBifunctor (FreeF f) where
     Pure a -> Pure (f a)
     Impure r -> Impure (hfmap g r)
 
+instance HFunctor f => HFunctor (FreeF f v) where
+  hfmap = hsecond
+
 instance HFunctor f => HFunctor (Free f) where
   hfmap :: forall a b. (a ~> b) -> Free f a ~> Free f b
   hfmap f = go
