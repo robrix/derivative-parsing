@@ -83,10 +83,10 @@ transform :: HFunctor f => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> 
 transform f = modifyGraph (graphMap f)
 
 graphMap :: HFunctor f => (f (Rec g v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
-graphMap f rec = Rec $ case unRec rec of
+graphMap f = cata $ \ rec -> Rec $ case rec of
   Var x -> Var x
-  Mu g -> Mu (f . hfmap (graphMap f) . g)
-  In x -> In (f (hfmap (graphMap f) x))
+  Mu g -> Mu (f . g)
+  In x -> In (f x)
 
 liftRec :: (f (Rec f v) ~> f (Rec f v)) -> Rec f v ~> Rec f v
 liftRec f rec = Rec $ case unRec rec of
