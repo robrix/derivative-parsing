@@ -17,6 +17,9 @@ cofree = Cofree
 extract :: Cofree f a ~> a
 extract = headF . runCofree
 
+unwrap :: Cofree f a ~> f (Cofree f a)
+unwrap = tailF . runCofree
+
 
 acata :: forall c t. (HFunctor (Base t), Recursive t) => (Base t c ~> c) -> t ~> Cofree (Base t) c
 acata f = go
