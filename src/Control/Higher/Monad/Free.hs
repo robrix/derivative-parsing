@@ -36,4 +36,5 @@ instance HFunctor f => HFunctor (Free f) where
     where go :: Free f a ~> Free f b
           go = Free . hbimap f go . runFree
 
+
 type instance Base (Free f v) = FreeF f v
