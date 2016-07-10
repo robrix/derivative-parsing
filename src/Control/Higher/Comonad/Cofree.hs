@@ -6,7 +6,7 @@ import Data.Higher.Functor
 import Data.Higher.Functor.Foldable
 import Data.Higher.Transformation
 
-data CofreeF f v b a = v a :< f b a
+data CofreeF f v b a = (:<) { headF :: v a, tailF :: f b a }
 
 newtype Cofree f v a = Cofree { runCofree :: CofreeF f v (Cofree f v) a }
 
