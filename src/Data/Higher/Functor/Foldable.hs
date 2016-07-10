@@ -55,13 +55,8 @@ agcata dist alg = go
   where go :: t ~> w a
         go = hfmap alg . dist . hfmap (hduplicate . go) . project
 
-gcata :: forall t w a. (Recursive t, HComonad w) => (forall b. Base t (w b) ~> w (Base t b)) -> (Base t (w a) ~> a) -> t ~> a
-gcata dist alg = alg . hextract . go
-  where go :: t ~> w (Base t (w a))
-        go = dist . hfmap (hduplicate . hfmap alg . go) . project
-
 histo :: Recursive t => (Base t (Cofree (Base t) a) ~> a) -> t ~> a
-histo = gcata distHisto
+histo alg = extract . agcata distHisto alg
 
 ahisto :: Recursive t => (Base t (Cofree (Base t) a) ~> a) -> t ~> Cofree (Base t) a
 ahisto = agcata distHisto
