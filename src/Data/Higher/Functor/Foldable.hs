@@ -13,3 +13,8 @@ class HFunctor (Base t) => Recursive t where
   cata f = go
     where go :: t ~> c
           go = f . hfmap go . project
+
+hylo :: forall f a b . HFunctor f => (f b ~> b) -> (a ~> f a) -> a ~> b
+hylo f g = go
+  where go :: a ~> b
+        go = f . hfmap go . g
