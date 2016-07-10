@@ -1,6 +1,7 @@
 {-# LANGUAGE InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeOperators #-}
 module Control.Higher.Monad.Free where
 
+import Data.Higher.Bifunctor
 import Data.Higher.Functor
 import Data.Higher.Transformation
 
@@ -16,6 +17,11 @@ wrap = Free . Impure
 
 
 -- Instances
+
+instance HFunctor f => HBifunctor (FreeF f) where
+  hbimap f g r = case r of
+    Pure a -> Pure (f a)
+    Impure r -> Impure (hfmap g r)
 
 instance HFunctor f => HFunctor (Free f) where
   hfmap :: forall a b. (a ~> b) -> Free f a ~> Free f b
