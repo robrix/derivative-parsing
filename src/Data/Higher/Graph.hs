@@ -83,16 +83,16 @@ transform :: HFunctor f => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> 
 transform f = modifyGraph (graphMap f)
 
 graphMap :: HFunctor f => (f (Rec g v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
-graphMap f = cata $ \ rec -> Rec $ case rec of
-  Var x -> Var x
-  Mu g -> Mu (f . g)
-  In x -> In (f x)
+graphMap f = cata $ \ rc -> case rc of
+  Var x -> var x
+  Mu g -> mu (f . g)
+  In x -> rec (f x)
 
 liftRec :: (f (Rec f v) ~> f (Rec f v)) -> Rec f v ~> Rec f v
-liftRec f rec = Rec $ case unRec rec of
-  Var v -> Var v
-  Mu g -> Mu (f . g)
-  In r -> In (f r)
+liftRec f rc = case unRec rc of
+  Var v -> var v
+  Mu g -> mu (f . g)
+  In r -> rec (f r)
 
 pjoin :: HFunctor f => Rec f (Rec f v) ~> Rec f v
 pjoin = cata $ \ rc -> case rc of
@@ -101,16 +101,16 @@ pjoin = cata $ \ rc -> case rc of
   In r -> rec r
 
 preturn :: v ~> Rec f v
-preturn = Rec . Var
+preturn = var
 
 modifyGraph :: (forall v. Rec f v ~> Rec g v) -> Graph f ~> Graph g
 modifyGraph f g = Graph (f (unGraph g))
 
 unroll :: HFunctor f => Rec f (Rec f v) a -> Rec f (Rec f v) a
-unroll rec = Rec $ case unRec rec of
-  Var v -> Var v
-  Mu g -> In (g (pjoin (unroll (Rec (Mu g)))))
-  In r -> In (hfmap unroll r)
+unroll rc = case unRec rc of
+  Var v -> var v
+  Mu g -> rec (g (pjoin (unroll (mu g))))
+  In r -> rec (hfmap unroll r)
 
 unrollGraph :: HFunctor f => Graph f ~> Graph f
 unrollGraph g = Graph (pjoin (unroll (unGraph g)))
@@ -174,15 +174,15 @@ instance HFunctor f => HIsofunctor (Rec f)
   where hisomap :: forall a b z. (a ~> b) -> (b ~> a) -> (Rec f a z -> Rec f b z, Rec f b z -> Rec f a z)
         hisomap f g = (to, from)
           where to :: Rec f a ~> Rec f b
-                to rec = Rec $ case unRec rec of
-                  Var v -> Var (f v)
-                  Mu h -> Mu (hfmap to . h . g)
-                  In r -> In (hfmap to r)
+                to rc = case unRec rc of
+                  Var v -> var (f v)
+                  Mu h -> mu (hfmap to . h . g)
+                  In r -> rec (hfmap to r)
                 from :: Rec f b ~> Rec f a
-                from rec = Rec $ case unRec rec of
-                  Var v -> Var (g v)
-                  Mu h -> Mu (hfmap from . h . f)
-                  In r -> In (hfmap from r)
+                from rc = case unRec rc of
+                  Var v -> var (g v)
+                  Mu h -> mu (hfmap from . h . f)
+                  In r -> rec (hfmap from r)
 
 instance HFunctor f => HIsofunctor (RecF f v) where
   hisomap f g = (hfmap f, hfmap g)
