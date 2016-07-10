@@ -45,3 +45,4 @@ instance HFunctor f => HFunctor (Cofree f) where
 type instance Base (Cofree f v) = CofreeF f v
 
 instance HFunctor f => Recursive (Cofree f v) where project = runCofree
+instance HFunctor f => Corecursive (Cofree f v) where embed = cofree
