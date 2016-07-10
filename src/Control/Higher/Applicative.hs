@@ -6,3 +6,5 @@ import Data.Higher.Transformation
 
 class HFunctor f => HApplicative (f :: (k -> *) -> k -> *) where
   hpure :: a ~> f a
+
+  (<:*:>) :: f (a ~~> b) z -> f a z -> f b z
