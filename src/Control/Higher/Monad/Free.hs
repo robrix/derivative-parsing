@@ -38,3 +38,6 @@ instance HFunctor f => HFunctor (Free f) where
 
 
 type instance Base (Free f v) = FreeF f v
+
+instance HFunctor f => Recursive (Free f v) where project = runFree
+instance HFunctor f => Corecursive (Free f v) where embed = free
