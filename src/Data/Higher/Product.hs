@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE PolyKinds, TypeOperators #-}
 module Data.Higher.Product where
 
 import Data.Higher.Bifunctor
