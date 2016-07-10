@@ -186,6 +186,7 @@ instance HFunctor f => HFunctor (RecF f v)
 type instance Base (Rec f v) = RecF f v
 
 instance HFunctor f => Recursive (Rec f v) where project = unRec
+instance HFunctor f => Corecursive (Rec f v) where embed = Rec
 
 class HIsofunctor f
   where hisomap :: (a ~> b) -> (b ~> a) -> (f a z -> f b z, f b z -> f a z)
