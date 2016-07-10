@@ -23,6 +23,7 @@ library
                      , Data.Higher.Functor.Foldable
                      , Data.Higher.Functor.Show
                      , Data.Higher.Graph
+                     , Data.Higher.Product
                      , Data.Higher.Transformation
                      , Derivative.Parser
   build-depends:       base >= 4.7 && < 5
