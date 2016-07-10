@@ -8,6 +8,8 @@ module Data.Higher.Graph
 , rec
 , gfold
 , grfold
+, agfold
+, agrfold
 , fold
 , rfold
 , cfold
@@ -21,6 +23,7 @@ module Data.Higher.Graph
 , unrollGraph
 ) where
 
+import Control.Higher.Comonad.Cofree
 import Data.Bifunctor (first)
 import Data.Function
 import Data.Higher.Eq
@@ -60,6 +63,15 @@ gfold var bind recur = grfold var bind recur . unGraph
 
 grfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> c
 grfold var bind algebra = cata $ \ rec -> case rec of
+  Var x -> var x
+  Mu g -> bind (algebra . g)
+  In fa -> algebra fa
+
+agfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> Cofree (RecF f v) c
+agfold var bind recur = agrfold var bind recur . unGraph
+
+agrfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> Cofree (RecF f v) c
+agrfold var bind algebra = acata $ \ rec -> case rec of
   Var x -> var x
   Mu g -> bind (algebra . g)
   In fa -> algebra fa
