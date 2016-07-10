@@ -2,6 +2,7 @@
 module Data.Higher.Sum where
 
 import Data.Higher.Bifunctor
+import Data.Higher.Functor
 
 data (f :+: g) a
   = L (f a)
@@ -17,3 +18,6 @@ heither f g s = case s of
 
 instance HBifunctor (:+:) where
   hbimap f g = heither (L . f) (R . g)
+
+instance HFunctor ((:+:) f) where
+  hfmap g = heither L (R . g)
