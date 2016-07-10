@@ -27,6 +27,7 @@ import Data.Higher.Eq
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
+import Data.Higher.Functor.Foldable
 import Data.Higher.Functor.Show
 import Data.Higher.Transformation
 
@@ -57,12 +58,13 @@ rec = Rec . In
 gfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> c
 gfold var bind recur = grfold var bind recur . unGraph
 
-grfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> c
-grfold var bind algebra rec = case unRec rec of
-  Var x -> var x
-  Mu g -> bind (algebra . hfmap recur . g)
-  In fa -> algebra (hfmap recur fa)
-  where recur = grfold var bind algebra
+grfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> c
+grfold var bind algebra = go
+  where go :: Rec f v ~> c
+        go rec = case unRec rec of
+          Var x -> var x
+          Mu g -> bind (algebra . hfmap go . g)
+          In fa -> algebra (hfmap go fa)
 
 fold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 fold alg k = rfold alg k . unGraph
