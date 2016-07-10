@@ -13,6 +13,7 @@ huncurry f (a :*: b) = f a b
 hswap :: (f :*: g) ~> (g :*: f)
 hswap (a :*: b) = b :*: a
 
+
 -- Instances
 
 instance HBifunctor (:*:) where
