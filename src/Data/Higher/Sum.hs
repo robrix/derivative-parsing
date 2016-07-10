@@ -16,6 +16,4 @@ heither f g s = case s of
 -- Instances
 
 instance HBifunctor (:+:) where
-  hbimap f g s = case s of
-    L l -> L (f l)
-    R r -> R (g r)
+  hbimap f g = heither (L . f) (R . g)
