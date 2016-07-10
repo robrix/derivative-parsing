@@ -27,6 +27,7 @@ module Data.Higher.Graph
 ) where
 
 import Control.Higher.Comonad.Cofree
+import Control.Higher.Monad.Free
 import Data.Bifunctor (first)
 import Data.Function
 import Data.Higher.Eq
@@ -38,11 +39,10 @@ import Data.Higher.Functor.Show
 import Data.Higher.Transformation
 
 data RecF f v b a
-  = Var (v a)
-  | Mu (v a -> f b a)
+  = Mu (v a -> f b a)
   | In (f b a)
 
-newtype Rec f v a = Rec { unRec :: RecF f v (Rec f v) a }
+newtype Rec f v a = Rec { unRec :: FreeF (RecF f v) v (Rec f v) a }
 
 newtype Graph f a = Graph { unGraph :: forall v. Rec f v a }
 
@@ -50,13 +50,13 @@ newtype Graph f a = Graph { unGraph :: forall v. Rec f v a }
 -- Smart constructors
 
 var :: v a -> Rec f v a
-var = Rec . Var
+var = Rec . Pure
 
 mu :: (v a -> f (Rec f v) a) -> Rec f v a
-mu = Rec . Mu
+mu = Rec . Impure . Mu
 
 rec :: f (Rec f v) a -> Rec f v a
-rec = Rec . In
+rec = Rec . Impure . In
 
 
 -- Folds
@@ -66,18 +66,18 @@ gfold var bind recur = grfold var bind recur . unGraph
 
 grfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> c
 grfold var bind algebra = cata $ \ rec -> case rec of
-  Var x -> var x
-  Mu g -> bind (algebra . g)
-  In fa -> algebra fa
+  Pure x -> var x
+  Impure (Mu g) -> bind (algebra . g)
+  Impure (In fa) -> algebra fa
 
-agfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> Cofree (RecF f v) c
+agfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> Cofree (FreeF (RecF f v) v) c
 agfold var bind recur = agrfold var bind recur . unGraph
 
-agrfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> Cofree (RecF f v) c
+agrfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> Cofree (FreeF (RecF f v) v) c
 agrfold var bind algebra = acata $ \ rec -> case rec of
-  Var x -> var x
-  Mu g -> bind (algebra . g)
-  In fa -> algebra fa
+  Pure x -> var x
+  Impure (Mu g) -> bind (algebra . g)
+  Impure (In fa) -> algebra fa
 
 fold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 fold alg k = rfold alg k . unGraph
@@ -85,10 +85,10 @@ fold alg k = rfold alg k . unGraph
 rfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> c
 rfold alg k = grfold id ($ k) alg
 
-afold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> Cofree (RecF f c) c
+afold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> Cofree (FreeF (RecF f c) c) c
 afold alg k = arfold alg k . unGraph
 
-arfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> Cofree (RecF f c) c
+arfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> Cofree (FreeF (RecF f c) c) c
 arfold ag k = agrfold id ($ k) ag
 
 cfold :: HFunctor f => (f t ~> t) -> Graph f ~> t
@@ -105,27 +105,27 @@ transform f = modifyGraph (graphMap f)
 
 graphMap :: HFunctor f => (f (Rec g v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
 graphMap f = cata $ \ rc -> case rc of
-  Var v -> var v
-  Mu g -> mu (f . g)
-  In r -> rec (f r)
+  Pure v -> var v
+  Impure (Mu g) -> mu (f . g)
+  Impure (In r) -> rec (f r)
 
-agraphMap :: HFunctor f => (f (Rec g v) ~> g (Rec g v)) -> Rec f v ~> Cofree (RecF f v) (Rec g v)
+agraphMap :: HFunctor f => (f (Rec g v) ~> g (Rec g v)) -> Rec f v ~> Cofree (FreeF (RecF f v) v) (Rec g v)
 agraphMap f = acata $ \ rc -> case rc of
-  Var v -> var v
-  Mu g -> mu (f . g)
-  In x -> rec (f x)
+  Pure v -> var v
+  Impure (Mu g) -> mu (f . g)
+  Impure (In x) -> rec (f x)
 
 liftRec :: (f (Rec f v) ~> f (Rec f v)) -> Rec f v ~> Rec f v
 liftRec f rc = case unRec rc of
-  Var v -> var v
-  Mu g -> mu (f . g)
-  In r -> rec (f r)
+  Pure v -> var v
+  Impure (Mu g) -> mu (f . g)
+  Impure (In r) -> rec (f r)
 
 pjoin :: HFunctor f => Rec f (Rec f v) ~> Rec f v
 pjoin = cata $ \ rc -> case rc of
-  Var x -> x
-  Mu g -> mu (g . var)
-  In r -> rec r
+  Pure x -> x
+  Impure (Mu g) -> mu (g . var)
+  Impure (In r) -> rec r
 
 preturn :: v ~> Rec f v
 preturn = var
@@ -135,9 +135,9 @@ modifyGraph f g = Graph (f (unGraph g))
 
 unroll :: HFunctor f => Rec f (Rec f v) a -> Rec f (Rec f v) a
 unroll = cata $ \ rc -> case rc of
-  Var v -> var v
-  Mu g -> rec (g (pjoin (unroll (mu g))))
-  In r -> rec r
+  Pure v -> var v
+  Impure (Mu g) -> rec (g (pjoin (unroll (mu g))))
+  Impure (In r) -> rec r
 
 unrollGraph :: HFunctor f => Graph f ~> Graph f
 unrollGraph g = Graph (pjoin (unroll (unGraph g)))
@@ -147,11 +147,11 @@ unrollGraph g = Graph (pjoin (unroll (unGraph g)))
 
 eqRec :: HEqF f => Int -> Rec f (Const Int) a -> Rec f (Const Int) a -> Bool
 eqRec n a b = case (unRec a, unRec b) of
-  (Var x, Var y) -> x == y
-  (Mu g, Mu h) -> let a = g (Const (succ n))
-                      b = h (Const (succ n)) in
-                      heqF (eqRec (succ n)) a b
-  (In x, In y) -> heqF (eqRec n) x y
+  (Pure x, Pure y) -> x == y
+  (Impure (Mu g), Impure (Mu h)) -> let a = g (Const (succ n))
+                                        b = h (Const (succ n)) in
+                                        heqF (eqRec (succ n)) a b
+  (Impure (In x), Impure (In y)) -> heqF (eqRec n) x y
   _ -> False
 
 
@@ -159,11 +159,11 @@ eqRec n a b = case (unRec a, unRec b) of
 
 showsRec :: HShowF f => (forall b. [Const Char b]) -> Int -> Rec f (Const Char) a -> ShowS
 showsRec s n rec = case unRec rec of
-  Var c -> showChar (getConst c)
-  Mu g -> let (a, s') = (head s, tail s) in
-              showString "Mu (\\ " . showChar (getConst a) . showString " ->\n  "
-              . hshowsPrecF n (showsRec (fmap (Const . getConst) s')) (g a) . showString "\n)\n"
-  In fa -> hshowsPrecF n (showsRec s) fa
+  Pure c -> showChar (getConst c)
+  Impure (Mu g) -> let (a, s') = (head s, tail s) in
+                       showString "Mu (\\ " . showChar (getConst a) . showString " ->\n  "
+                       . hshowsPrecF n (showsRec (fmap (Const . getConst) s')) (g a) . showString "\n)\n"
+  Impure (In fa) -> hshowsPrecF n (showsRec s) fa
 
 
 -- Implementation details
@@ -186,11 +186,10 @@ instance HShowF f => Show (Rec f (Const Char) a)
 
 instance HFunctor f => HFunctor (RecF f v)
   where hfmap f rec = case rec of
-          Var v -> Var v
           Mu g -> Mu (hfmap f . g)
           In r -> In (hfmap f r)
 
-type instance Base (Rec f v) = RecF f v
+type instance Base (Rec f v) = FreeF (RecF f v) v
 
 instance HFunctor f => Recursive (Rec f v) where project = unRec
 instance HFunctor f => Corecursive (Rec f v) where embed = Rec
@@ -203,14 +202,14 @@ instance HFunctor f => HIsofunctor (Rec f)
         hisomap f g = (to, from)
           where to :: Rec f a ~> Rec f b
                 to rc = case unRec rc of
-                  Var v -> var (f v)
-                  Mu h -> mu (hfmap to . h . g)
-                  In r -> rec (hfmap to r)
+                  Pure v -> var (f v)
+                  Impure (Mu h) -> mu (hfmap to . h . g)
+                  Impure (In r) -> rec (hfmap to r)
                 from :: Rec f b ~> Rec f a
                 from rc = case unRec rc of
-                  Var v -> var (g v)
-                  Mu h -> mu (hfmap from . h . f)
-                  In r -> rec (hfmap from r)
+                  Pure v -> var (g v)
+                  Impure (Mu h) -> mu (hfmap from . h . f)
+                  Impure (In r) -> rec (hfmap from r)
 
 instance HFunctor f => HIsofunctor (RecF f v) where
   hisomap f g = (hfmap f, hfmap g)
