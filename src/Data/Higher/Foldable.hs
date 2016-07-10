@@ -2,6 +2,7 @@
 module Data.Higher.Foldable where
 
 import Control.Applicative hiding (Const(..))
+import Data.Bifunctor
 import Data.Function
 import Data.Higher.Transformation
 import Data.Monoid
@@ -15,6 +16,9 @@ class HFoldable f where
 
 newtype Const a b = Const { getConst :: a }
   deriving (Eq, Functor, Ord, Show)
+
+instance Bifunctor Const where
+  bimap f _ (Const a) = Const (f a)
 
 instance Monoid m => Applicative (Const m) where
   pure _ = empty
