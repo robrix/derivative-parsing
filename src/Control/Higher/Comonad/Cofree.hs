@@ -23,6 +23,9 @@ extract = headF . runCofree
 instance HFunctor f => HBifunctor (CofreeF f) where
   hbimap f g (va :< fba) = f va :< hfmap g fba
 
+instance HFunctor f => HFunctor (CofreeF f v) where
+  hfmap = hsecond
+
 instance HFunctor f => HFunctor (Cofree f) where
   hfmap :: forall a b. (a ~> b) -> Cofree f a ~> Cofree f b
   hfmap f = go
