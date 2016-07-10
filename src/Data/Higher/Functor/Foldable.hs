@@ -2,6 +2,7 @@
 module Data.Higher.Functor.Foldable where
 
 import Control.Arrow ((&&&))
+import Control.Higher.Comonad
 import Control.Higher.Comonad.Cofree
 import Control.Higher.Monad.Free
 import Data.Higher.Bifunctor
@@ -48,6 +49,11 @@ hylo f g = go
 
 newtype Fix f a = Fix { unFix :: f (Fix f) a }
 
+
+gcata :: forall t w a. (Recursive t, HComonad w) => (forall b. Base t (w b) ~> w (Base t b)) -> (Base t (w a) ~> a) -> t ~> a
+gcata dist alg = alg . hextract . go
+  where go :: t ~> w (Base t (w a))
+        go = dist . hfmap (hduplicate . hfmap alg . go) . project
 
 acata :: forall c t. (HFunctor (Base t), Recursive t) => (Base t c ~> c) -> t ~> Cofree (Base t) c
 acata f = go
