@@ -9,6 +9,9 @@ data CofreeF f v b a = v a :< f b a
 
 newtype Cofree f v a = Cofree { runCofree :: CofreeF f v (Cofree f v) a }
 
+cofree :: CofreeF f v (Cofree f v) a -> Cofree f v a
+cofree = Cofree
+
 
 -- Instances
 
