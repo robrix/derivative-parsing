@@ -166,3 +166,5 @@ instance HFunctor f => HFunctor (RecF f v)
           In r -> In (hfmap f r)
 
 type instance Base (Rec f v) = RecF f v
+
+instance HFunctor f => Recursive (Rec f v) where project = unRec
