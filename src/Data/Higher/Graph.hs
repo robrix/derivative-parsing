@@ -21,10 +21,10 @@ module Data.Higher.Graph
 , unrollGraph
 ) where
 
-import Control.Applicative
 import Data.Bifunctor (first)
 import Data.Function
 import Data.Higher.Eq
+import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
