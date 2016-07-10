@@ -7,6 +7,7 @@ import Control.Higher.Monad.Free
 import Data.Higher.Bifunctor
 import Data.Higher.Functor
 import Data.Higher.Product
+import Data.Higher.Profunctor
 import Data.Higher.Sum
 import Data.Higher.Transformation
 
@@ -61,6 +62,14 @@ apara f = go
 
 unannotate :: (HFunctor (Base t), Corecursive t) => Cofree (Base t) c ~> t
 unannotate = cata (embed . tailF)
+
+
+iter :: forall f v a . HProfunctor f => (f v a ~> a) -> Free (f v) a ~> a
+iter f = go
+  where go :: Free (f v) a ~> a
+        go rec = case runFree rec of
+          Pure a -> a
+          Impure r -> f (hrmap go r)
 
 
 -- Instances

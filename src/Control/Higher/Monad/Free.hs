@@ -3,7 +3,6 @@ module Control.Higher.Monad.Free where
 
 import Data.Higher.Bifunctor
 import Data.Higher.Functor
-import Data.Higher.Profunctor
 import Data.Higher.Transformation
 
 data FreeF f v b a
@@ -18,14 +17,6 @@ free = Free
 
 wrap :: f (Free f v) ~> Free f v
 wrap = free . Impure
-
-
-iter :: forall f v a . HProfunctor f => (f v a ~> a) -> Free (f v) a ~> a
-iter f = go
-  where go :: Free (f v) a ~> a
-        go rec = case runFree rec of
-          Pure a -> a
-          Impure r -> f (hrmap go r)
 
 
 -- Instances
