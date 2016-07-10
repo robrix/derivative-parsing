@@ -20,6 +20,7 @@ library
                      , Control.Higher.Monad
                      , Control.Higher.Monad.Free
                      , Data.Higher.Bifunctor
+                     , Data.Higher.Copointed
                      , Data.Higher.Eq
                      , Data.Higher.Foldable
                      , Data.Higher.Functor
