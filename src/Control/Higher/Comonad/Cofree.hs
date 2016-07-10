@@ -18,6 +18,12 @@ extract :: Cofree f a ~> a
 extract = headF . runCofree
 
 
+acata :: forall c t. (HFunctor (Base t), Recursive t) => (Base t c ~> c) -> t ~> Cofree (Base t) c
+acata f = go
+  where go :: t ~> Cofree (Base t) c
+        go = cofree . uncurry (:<) . (f . hfmap extract &&& id) . hfmap go . project
+
+
 -- Instances
 
 instance HFunctor f => HBifunctor (CofreeF f) where
@@ -36,8 +42,3 @@ instance HFunctor f => HFunctor (Cofree f) where
 type instance Base (Cofree f v) = CofreeF f v
 
 instance HFunctor f => Recursive (Cofree f v) where project = runCofree
-
-acata :: forall c t. (HFunctor (Base t), Recursive t) => (Base t c ~> c) -> t ~> Cofree (Base t) c
-acata f = go
-  where go :: t ~> Cofree (Base t) c
-        go = cofree . uncurry (:<) . (f . hfmap extract &&& id) . hfmap go . project
