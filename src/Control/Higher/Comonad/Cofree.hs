@@ -5,6 +5,7 @@ import Control.Arrow
 import Data.Higher.Bifunctor
 import Data.Higher.Functor
 import Data.Higher.Functor.Foldable
+import Data.Higher.Product
 import Data.Higher.Transformation
 
 data CofreeF f v b a = (:<) { headF :: v a, tailF :: f b a }
@@ -25,6 +26,11 @@ acata :: forall c t. (HFunctor (Base t), Recursive t) => (Base t c ~> c) -> t ~>
 acata f = go
   where go :: t ~> Cofree (Base t) c
         go = cofree . uncurry (:<) . (f . hfmap extract &&& id) . hfmap go . project
+
+apara :: forall c t. (HFunctor (Base t), Recursive t) => (Base t (t :*: c) ~> c) -> t ~> Cofree (Base t) c
+apara f = go
+  where go :: t ~> Cofree (Base t) c
+        go = cofree . uncurry (:<) . (f . hfmap (hsecond extract) &&& hfmap hsnd) . hfmap ((:*:) <*> go) . project
 
 
 -- Instances
