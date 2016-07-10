@@ -2,6 +2,7 @@
 module Data.Higher.Product where
 
 import Data.Higher.Bifunctor
+import Data.Higher.Functor
 
 data (f :*: g) a = (:*:) { hfst :: f a, hsnd :: g a }
 
@@ -10,3 +11,6 @@ data (f :*: g) a = (:*:) { hfst :: f a, hsnd :: g a }
 
 instance HBifunctor (:*:) where
   hbimap f g p = f (hfst p) :*: g (hsnd p)
+
+instance HFunctor ((:*:) f) where
+  hfmap = hbimap id
