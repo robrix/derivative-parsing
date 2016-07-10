@@ -59,12 +59,10 @@ gfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c)
 gfold var bind recur = grfold var bind recur . unGraph
 
 grfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> c
-grfold var bind algebra = go
-  where go :: Rec f v ~> c
-        go rec = case unRec rec of
-          Var x -> var x
-          Mu g -> bind (algebra . hfmap go . g)
-          In fa -> algebra (hfmap go fa)
+grfold var bind algebra = cata $ \ rec -> case rec of
+  Var x -> var x
+  Mu g -> bind (algebra . g)
+  In fa -> algebra fa
 
 fold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 fold alg k = rfold alg k . unGraph
