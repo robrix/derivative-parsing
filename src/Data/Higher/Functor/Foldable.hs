@@ -3,6 +3,7 @@ module Data.Higher.Functor.Foldable where
 
 import Data.Higher.Functor
 import Data.Higher.Product
+import Data.Higher.Sum
 import Data.Higher.Transformation
 
 type family Base (t :: k -> *) :: (k -> *) -> k -> *
@@ -27,6 +28,11 @@ class HFunctor (Base t) => Corecursive t where
   ana f = go
     where go :: c ~> t
           go = embed . hfmap go . f
+
+  apo :: forall c. (c ~> Base t (t :+: c)) -> c ~> t
+  apo f = go
+    where go :: c ~> t
+          go = embed . hfmap (heither id go) . f
 
 
 hylo :: forall f a b . HFunctor f => (f b ~> b) -> (a ~> f a) -> a ~> b
