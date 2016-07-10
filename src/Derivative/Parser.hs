@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor, FlexibleInstances, GeneralizedNewtypeDeriving, GADTs, RankNTypes #-}
+{-# LANGUAGE FlexibleInstances, GADTs, RankNTypes #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -26,7 +26,6 @@ module Derivative.Parser
 
 import Control.Applicative hiding (Const(..))
 import Data.Bifunctor (first)
-import Data.Function
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
@@ -185,24 +184,9 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
 size :: Parser a -> Int
 size = getSum . getConst . fold ((Const (Sum 1) <|>) . hfold) (Const (Sum 0))
 
-newtype Const a b = Const { getConst :: a }
-  deriving (Eq, Functor, Ord, Show)
 
 
 -- Instances
-
-instance Monoid m => Applicative (Const m) where
-  pure _ = empty
-  Const a <*> Const b = Const (a <> b)
-
-instance Monoid m => Alternative (Const m) where
-  empty = Const mempty
-  (<|>) = (Const .) . (mappend `on` getConst)
-
-instance Monoid m => Monad (Const m) where
-  return = pure
-  Const m >>= _ = Const m
-
 
 instance HFunctor ParserF where
   hfmap f p = case p of
