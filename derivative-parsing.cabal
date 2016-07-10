@@ -24,6 +24,7 @@ library
                      , Data.Higher.Functor.Show
                      , Data.Higher.Graph
                      , Data.Higher.Product
+                     , Data.Higher.Profunctor
                      , Data.Higher.Sum
                      , Data.Higher.Transformation
                      , Derivative.Parser
