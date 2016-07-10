@@ -33,6 +33,10 @@ apara f = go
         go = cofree . uncurry (:<) . (f . hfmap (hsecond extract) &&& hfmap hsnd) . hfmap ((:*:) <*> go) . project
 
 
+unannotate :: (HFunctor (Base t), Corecursive t) => Cofree (Base t) c ~> t
+unannotate = cata (embed . tailF)
+
+
 -- Instances
 
 instance HFunctor f => HBifunctor (CofreeF f) where
