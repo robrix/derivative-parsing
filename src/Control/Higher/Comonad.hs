@@ -12,3 +12,5 @@ class HFunctor w => HComonad w where
 
   hextend :: (w a ~> b) -> w a ~> w b
   hextend f = hfmap f . hduplicate
+
+  {-# MINIMAL hextract, (hduplicate | hextend) #-}
