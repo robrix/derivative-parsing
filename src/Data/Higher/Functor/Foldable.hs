@@ -7,6 +7,7 @@ import Control.Higher.Comonad.Cofree
 import Control.Higher.Monad.Free
 import Data.Higher.Bifunctor
 import Data.Higher.Functor
+import Data.Higher.Functor.Identity
 import Data.Higher.Product
 import Data.Higher.Profunctor
 import Data.Higher.Sum
@@ -60,6 +61,9 @@ histo alg = extract . agcata distHisto alg
 
 ahisto :: Recursive t => (Base t (Cofree (Base t) a) ~> a) -> t ~> Cofree (Base t) a
 ahisto = agcata distHisto
+
+distCata :: HFunctor f => f (Identity a) ~> Identity (f a)
+distCata = Identity . hfmap runIdentity
 
 distHisto :: HFunctor f => f (Cofree f a) ~> Cofree f (f a)
 distHisto = distGHisto id
