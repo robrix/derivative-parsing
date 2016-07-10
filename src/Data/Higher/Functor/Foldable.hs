@@ -58,7 +58,7 @@ agcata dist alg = go
         go = hfmap alg . dist . hfmap (hduplicate . go) . project
 
 histo :: Recursive t => (Base t (Cofree (Base t) a) ~> a) -> t ~> a
-histo alg = hextract . agcata distHisto alg
+histo alg = hcopoint . agcata distHisto alg
 
 ahisto :: Recursive t => (Base t (Cofree (Base t) a) ~> a) -> t ~> Cofree (Base t) a
 ahisto = agcata distHisto
@@ -70,17 +70,17 @@ distHisto :: HFunctor f => f (Cofree f a) ~> Cofree f (f a)
 distHisto = distGHisto id
 
 distGHisto :: (HFunctor f, HFunctor h) => (forall b. f (h b) ~> h (f b)) -> f (Cofree h a) ~> Cofree h (f a)
-distGHisto k = unfold (\ as -> hextract `hfmap` as :*: k (unwrap `hfmap` as))
+distGHisto k = unfold (\ as -> hcopoint `hfmap` as :*: k (unwrap `hfmap` as))
 
 acata :: forall c t. (HFunctor (Base t), Recursive t) => (Base t c ~> c) -> t ~> Cofree (Base t) c
 acata f = go
   where go :: t ~> Cofree (Base t) c
-        go = cofree . uncurry (:<) . (f . hfmap hextract &&& id) . hfmap go . project
+        go = cofree . uncurry (:<) . (f . hfmap hcopoint &&& id) . hfmap go . project
 
 apara :: forall c t. (HFunctor (Base t), Recursive t) => (Base t (t :*: c) ~> c) -> t ~> Cofree (Base t) c
 apara f = go
   where go :: t ~> Cofree (Base t) c
-        go = cofree . uncurry (:<) . (f . hfmap (hsecond hextract) &&& hfmap hsnd) . hfmap ((:*:) <*> go) . project
+        go = cofree . uncurry (:<) . (f . hfmap (hsecond hcopoint) &&& hfmap hsnd) . hfmap ((:*:) <*> go) . project
 
 
 unannotate :: (HFunctor (Base t), Corecursive t) => Cofree (Base t) c ~> t

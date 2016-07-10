@@ -6,9 +6,6 @@ import Data.Higher.Functor
 import Data.Higher.Transformation
 
 class (HFunctor w, HCopointed w) => HComonad w where
-  hextract :: w a ~> a
-  hextract = hcopoint
-
   hduplicate :: w a ~> w (w a)
   hduplicate = hextend id
 
