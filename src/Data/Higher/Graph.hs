@@ -185,3 +185,6 @@ instance HFunctor f => HIsofunctor (Rec f)
                   Var v -> Var (g v)
                   Mu h -> Mu (hfmap from . h . f)
                   In r -> In (hfmap from r)
+
+instance HFunctor f => HIsofunctor (RecF f v) where
+  hisomap f g = (hfmap f, hfmap g)
