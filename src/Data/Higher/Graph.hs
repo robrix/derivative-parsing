@@ -107,10 +107,10 @@ modifyGraph :: (forall v. Rec f v ~> Rec g v) -> Graph f ~> Graph g
 modifyGraph f g = Graph (f (unGraph g))
 
 unroll :: HFunctor f => Rec f (Rec f v) a -> Rec f (Rec f v) a
-unroll rc = case unRec rc of
+unroll = cata $ \ rc -> case rc of
   Var v -> var v
   Mu g -> rec (g (pjoin (unroll (mu g))))
-  In r -> rec (hfmap unroll r)
+  In r -> rec r
 
 unrollGraph :: HFunctor f => Graph f ~> Graph f
 unrollGraph g = Graph (pjoin (unroll (unGraph g)))
