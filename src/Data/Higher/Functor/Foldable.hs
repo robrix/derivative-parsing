@@ -26,3 +26,5 @@ newtype Fix f a = Fix { unFix :: f (Fix f) a }
 -- Instances
 
 type instance Base (Fix f) = f
+
+instance HFunctor f => Recursive (Fix f) where project = unFix
