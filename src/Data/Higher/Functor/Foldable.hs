@@ -21,3 +21,8 @@ hylo f g = go
 
 
 newtype Fix f a = Fix { unFix :: f (Fix f) a }
+
+
+-- Instances
+
+type instance Base (Fix f) = f
