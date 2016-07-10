@@ -17,6 +17,11 @@ class HFunctor (Base t) => Recursive t where
 class HFunctor (Base t) => Corecursive  t where
   embed :: Base t t ~> t
 
+  ana :: forall c. (c ~> Base t c) -> c ~> t
+  ana f = go
+    where go :: c ~> t
+          go = embed . hfmap go . f
+
 hylo :: forall f a b . HFunctor f => (f b ~> b) -> (a ~> f a) -> a ~> b
 hylo f g = go
   where go :: a ~> b
