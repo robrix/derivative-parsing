@@ -95,10 +95,10 @@ liftRec f rec = Rec $ case unRec rec of
   In r -> In (f r)
 
 pjoin :: HFunctor f => Rec f (Rec f v) ~> Rec f v
-pjoin rc = case unRec rc of
+pjoin = cata $ \ rc -> case rc of
   Var x -> x
-  Mu g -> mu (hfmap pjoin . g . var)
-  In r -> rec (hfmap pjoin r)
+  Mu g -> mu (g . var)
+  In r -> rec r
 
 preturn :: v ~> Rec f v
 preturn = Rec . Var
