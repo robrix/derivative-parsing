@@ -90,7 +90,7 @@ afold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> Cofree (FreeF
 afold alg k = arfold alg k . unGraph
 
 arfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> Cofree (FreeF (RecF f c) c) c
-arfold ag k = agrfold id ($ k) ag
+arfold alg k = agrfold id ($ k) alg
 
 cfold :: HFunctor f => (f t ~> t) -> Graph f ~> t
 cfold = gfold id fix
