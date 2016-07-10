@@ -13,8 +13,11 @@ data FreeF f v b a
 newtype Free f v a = Free { runFree :: FreeF f v (Free f v) a }
 
 
-wrap :: f (Free f v) a -> Free f v a
-wrap = Free . Impure
+free :: FreeF f v (Free f v) ~> Free f v
+free = Free
+
+wrap :: f (Free f v) ~> Free f v
+wrap = free . Impure
 
 
 -- Instances
