@@ -6,6 +6,9 @@ import Data.Higher.Functor
 
 data (f :*: g) a = (:*:) { hfst :: f a, hsnd :: g a }
 
+huncurry :: (f a -> g a -> h) -> (f :*: g) a -> h
+huncurry f (a :*: b) = f a b
+
 
 -- Instances
 
