@@ -2,6 +2,7 @@
 module Data.Higher.Functor.Foldable where
 
 import Data.Higher.Functor
+import Data.Higher.Product
 import Data.Higher.Transformation
 
 type family Base (t :: k -> *) :: (k -> *) -> k -> *
@@ -13,6 +14,11 @@ class HFunctor (Base t) => Recursive t where
   cata f = go
     where go :: t ~> c
           go = f . hfmap go . project
+
+  para :: forall c. (Base t (t :*: c) ~> c) -> t ~> c
+  para f = go
+    where go :: t ~> c
+          go = f . hfmap ((:*:) <*> go) . project
 
 class HFunctor (Base t) => Corecursive t where
   embed :: Base t t ~> t
