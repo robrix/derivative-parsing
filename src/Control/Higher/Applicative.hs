@@ -21,6 +21,8 @@ class HFunctor f => HApply f where
   (<:*) :: f c a -> f b a -> f c a
   (<:*) = hliftA2 const
 
+  {-# MINIMAL ((<:*:>) | hfmap2) #-}
+
 class (HApply f, HPointed f) => HApplicative (f :: (k -> *) -> k -> *) where
   hpure :: a ~> f a
   hpure = hpoint
