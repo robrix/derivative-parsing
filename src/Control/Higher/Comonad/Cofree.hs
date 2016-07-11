@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, InstanceSigs, RankNTypes, PolyKinds, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
+{-# LANGUAGE InstanceSigs, RankNTypes, PolyKinds, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
 module Control.Higher.Comonad.Cofree where
 
 import Control.Arrow
