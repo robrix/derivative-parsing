@@ -7,6 +7,7 @@ import Data.Higher.Transformation
 
 class (HFunctor f, HPointed f) => HApplicative (f :: (k -> *) -> k -> *) where
   hpure :: a ~> f a
+  hpure = hpoint
 
   infixl 4 <:*:>
   (<:*:>) :: f (a ~~> b) z -> f a z -> f b z
