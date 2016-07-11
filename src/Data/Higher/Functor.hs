@@ -3,5 +3,5 @@ module Data.Higher.Functor where
 
 import Data.Higher.Transformation
 
-class HFunctor h where
-  hfmap :: (f ~> g) -> h f ~> h g
+class HFunctor f where
+  hfmap :: (a ~> b) -> f a ~> f b
