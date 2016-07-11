@@ -70,7 +70,7 @@ distHisto :: HFunctor f => f (Cofree f a) ~> Cofree f (f a)
 distHisto = distGHisto id
 
 distGHisto :: (HFunctor f, HFunctor h) => (forall b. f (h b) ~> h (f b)) -> f (Cofree h a) ~> Cofree h (f a)
-distGHisto k = unfold (\ as -> hcopoint `hfmap` as :*: k (unwrap `hfmap` as))
+distGHisto k = unfold (\ as -> (hcopoint `hfmap` as) :*: k (unwrap `hfmap` as))
 
 acata :: forall c t. (HFunctor (Base t), Recursive t) => (Base t c ~> c) -> t ~> Cofree (Base t) c
 acata f = go
