@@ -9,3 +9,7 @@ class HFunctor f where
 
   (<:$) :: (forall z. a z) -> f b ~> f a
   (<:$) z = hfmap (const z)
+
+infixl 4 <:$:>
+(<:$:>) :: HFunctor f => (a ~> b) -> f a ~> f b
+(<:$:>) = hfmap
