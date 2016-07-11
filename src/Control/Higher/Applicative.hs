@@ -19,13 +19,10 @@ class HFunctor f => HApply f where
 
   infixl 4 <:*
   (<:*) :: f c a -> f b a -> f c a
-  (<:*) = hliftA2 const
+  (<:*) = hfmap2 const
 
   {-# MINIMAL ((<:*:>) | hfmap2) #-}
 
 class (HApply f, HPointed f) => HApplicative (f :: (k -> *) -> k -> *) where
   hpure :: a ~> f a
   hpure = hpoint
-
-hliftA2 :: HApply f => (forall z. a z -> b z -> c z) -> f a z -> f b z -> f c z
-hliftA2 f a b = hfmap (A . f) a <:*:> b
