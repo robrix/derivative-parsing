@@ -6,6 +6,8 @@ import Data.Higher.Pointed
 import Data.Higher.Transformation
 
 class HFunctor f => HApply f where
+  hfmap2 :: (forall z. a z -> b z -> c z) -> f a z -> f b z -> f c z
+
   infixl 4 <:*:>
   (<:*:>) :: f (a ~~> b) z -> f a z -> f b z
 
