@@ -29,6 +29,7 @@ library
                      , Data.Higher.Functor.Identity
                      , Data.Higher.Functor.Show
                      , Data.Higher.Graph
+                     , Data.Higher.Pointed
                      , Data.Higher.Product
                      , Data.Higher.Profunctor
                      , Data.Higher.Sum
