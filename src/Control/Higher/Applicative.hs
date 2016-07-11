@@ -5,7 +5,7 @@ import Data.Higher.Functor
 import Data.Higher.Pointed
 import Data.Higher.Transformation
 
-class (HFunctor f, HPointed f) => HApplicative (f :: (k -> *) -> k -> *) where
+class HFunctor f => HApply f where
   infixl 4 <:*:>
   (<:*:>) :: f (a ~~> b) z -> f a z -> f b z
 
@@ -17,6 +17,7 @@ class (HFunctor f, HPointed f) => HApplicative (f :: (k -> *) -> k -> *) where
   (<:*) :: f c a -> f b a -> f c a
   (<:*) = hliftA2 const
 
+class (HApply f, HPointed f) => HApplicative (f :: (k -> *) -> k -> *)
 
-hliftA2 :: HApplicative f => (forall z. a z -> b z -> c z) -> f a z -> f b z -> f c z
+hliftA2 :: HApply f => (forall z. a z -> b z -> c z) -> f a z -> f b z -> f c z
 hliftA2 f a b = hfmap (A . f) a <:*:> b
