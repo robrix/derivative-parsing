@@ -7,6 +7,7 @@ import Data.Higher.Transformation
 
 class HFunctor f => HApply f where
   hfmap2 :: (forall z. a z -> b z -> c z) -> f a z -> f b z -> f c z
+  hfmap2 h x y = hfmap (A . h) x <:*:> y
 
   infixl 4 <:*:>
   (<:*:>) :: f (a ~~> b) z -> f a z -> f b z
