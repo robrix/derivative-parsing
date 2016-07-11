@@ -1,4 +1,4 @@
-{-# LANGUAGE RankNTypes, TypeOperators #-}
+{-# LANGUAGE PolyKinds, RankNTypes, TypeOperators #-}
 module Control.Higher.Monad where
 
 import Control.Higher.Applicative
