@@ -11,6 +11,7 @@ class HFunctor f => HApply f where
 
   infixl 4 <:*:>
   (<:*:>) :: f (a ~~> b) z -> f a z -> f b z
+  g <:*:> x = hfmap2 unA g x
 
   infixl 4 *:>
   (*:>) :: f b a -> f c a -> f c a
