@@ -5,6 +5,7 @@ import Data.Higher.Bifunctor
 import Data.Higher.Functor
 import Data.Higher.Transformation
 
+infixr 8 :*:
 data (f :*: g) a = (:*:) { hfst :: f a, hsnd :: g a }
 
 huncurry :: (f a -> g a -> h) -> (f :*: g) a -> h
