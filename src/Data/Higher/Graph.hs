@@ -134,11 +134,10 @@ graphMap f = griter var $ \ rc -> case rc of
   Mu g -> mu (f . g)
   In r -> rec (f r)
 
-agraphMap :: HFunctor f => (f (Rec g v) ~> g (Rec g v)) -> Rec f v ~> Cofree (FreeF (RecF f v) v) (Rec g v)
-agraphMap f = acata $ \ rc -> case rc of
-  Pure v -> var v
-  Impure (Mu g) -> mu (f . g)
-  Impure (In x) -> rec (f x)
+agraphMap :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Cofree (FreeF (RecF f a) (Rec g a)) (Rec g a)
+agraphMap f = agriter var $ \ rc -> case rc of
+  Mu g -> mu (f . g)
+  In r -> rec (f r)
 
 liftRec :: (f (Rec f v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
 liftRec f rc = case unRec rc of
