@@ -19,7 +19,9 @@ module Data.Higher.Graph
 , cfold
 , sfold
 , giter
+, agiter
 , griter
+, agriter
 , transform
 , graphMap
 , agraphMap
@@ -112,8 +114,14 @@ sfold alg k = gfold id (fixVal k) alg
 giter :: HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Graph f ~> b
 giter f alg = griter f alg . unGraph
 
+agiter :: HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Graph f ~> Cofree (FreeF (RecF f a) b) b
+agiter f alg = agriter f alg . unGraph
+
 griter :: forall f a b. HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Rec f a ~> b
 griter f alg = iter alg . hfmap f . toFree
+
+agriter :: forall f a b. HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Rec f a ~> Cofree (FreeF (RecF f a) b) b
+agriter f alg = aiter alg . hfmap f . toFree
 
 
 -- Maps
