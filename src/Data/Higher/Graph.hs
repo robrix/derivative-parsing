@@ -146,10 +146,9 @@ liftRec f rc = case unRec rc of
   Impure (In r) -> rec (f r)
 
 pjoin :: HFunctor f => Rec f (Rec f v) ~> Rec f v
-pjoin = cata $ \ rc -> case rc of
-  Pure x -> x
-  Impure (Mu g) -> mu (g . var)
-  Impure (In r) -> rec r
+pjoin = griter id $ \ rc -> case rc of
+  Mu g -> mu (g . var)
+  In r -> rec r
 
 preturn :: v ~> Rec f v
 preturn = var
