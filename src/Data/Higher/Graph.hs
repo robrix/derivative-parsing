@@ -125,7 +125,7 @@ agraphMap f = acata $ \ rc -> case rc of
   Impure (Mu g) -> mu (f . g)
   Impure (In x) -> rec (f x)
 
-liftRec :: (f (Rec f v) ~> f (Rec f v)) -> Rec f v ~> Rec f v
+liftRec :: (f (Rec f v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
 liftRec f rc = case unRec rc of
   Pure v -> var v
   Impure (Mu g) -> mu (f . g)
