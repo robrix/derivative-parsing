@@ -130,10 +130,9 @@ transform :: HFunctor f => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> 
 transform f = modifyGraph (graphMap f)
 
 graphMap :: HFunctor f => (f (Rec g v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
-graphMap f = cata $ \ rc -> case rc of
-  Pure v -> var v
-  Impure (Mu g) -> mu (f . g)
-  Impure (In r) -> rec (f r)
+graphMap f = griter var $ \ rc -> case rc of
+  Mu g -> mu (f . g)
+  In r -> rec (f r)
 
 agraphMap :: HFunctor f => (f (Rec g v) ~> g (Rec g v)) -> Rec f v ~> Cofree (FreeF (RecF f v) v) (Rec g v)
 agraphMap f = acata $ \ rc -> case rc of
