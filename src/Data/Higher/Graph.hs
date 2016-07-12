@@ -6,8 +6,6 @@ module Data.Higher.Graph
 , var
 , mu
 , rec
-, toFree
-, fromFree
 , gfold
 , grfold
 , agfold
@@ -20,8 +18,6 @@ module Data.Higher.Graph
 , sfold
 , giter
 , agiter
-, griter
-, agriter
 , transform
 , graphMap
 , agraphMap
@@ -66,20 +62,13 @@ rec :: f (Rec f v) a -> Rec f v a
 rec = free . Impure . In
 
 
-toFree :: HFunctor f => Rec f a ~> Free (RecF f a) a
-toFree = id
-
-fromFree :: HFunctor f => Free (RecF f a) a ~> Rec f a
-fromFree = id
-
-
 -- Folds
 
 gfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> c
 gfold var bind recur = grfold var bind recur . unGraph
 
 grfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> c
-grfold var bind algebra = griter var $ \ rec -> case rec of
+grfold var bind algebra = iter var $ \ rec -> case rec of
   Mu g -> bind (algebra . g)
   In fa -> algebra fa
 
@@ -87,7 +76,7 @@ agfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c
 agfold var bind recur = agrfold var bind recur . unGraph
 
 agrfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> Cofree (FreeF (RecF f v) v) c
-agrfold var bind algebra = agriter var $ \ rec -> case rec of
+agrfold var bind algebra = aiter var $ \ rec -> case rec of
   Mu g -> bind (algebra . g)
   In fa -> algebra fa
 
@@ -110,16 +99,10 @@ sfold :: (HFunctor f, HEq c) => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 sfold alg k = gfold id (fixVal k) alg
 
 giter :: HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Graph f ~> b
-giter f alg = griter f alg . unGraph
+giter f alg = iter f alg . unGraph
 
 agiter :: HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Graph f ~> Cofree (FreeF (RecF f a) a) b
-agiter f alg = agriter f alg . unGraph
-
-griter :: forall f a b. HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Rec f a ~> b
-griter f alg = iter f alg . toFree
-
-agriter :: forall f a b. HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Rec f a ~> Cofree (FreeF (RecF f a) a) b
-agriter f alg = aiter f alg . toFree
+agiter f alg = aiter f alg . unGraph
 
 
 -- Maps
@@ -128,12 +111,12 @@ transform :: HFunctor f => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> 
 transform f = modifyGraph (graphMap f)
 
 graphMap :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Rec g a
-graphMap f = griter var $ \ rc -> case rc of
+graphMap f = iter var $ \ rc -> case rc of
   Mu g -> mu (f . g)
   In r -> rec (f r)
 
 agraphMap :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Cofree (FreeF (RecF f a) a) (Rec g a)
-agraphMap f = agriter var $ \ rc -> case rc of
+agraphMap f = aiter var $ \ rc -> case rc of
   Mu g -> mu (f . g)
   In r -> rec (f r)
 
@@ -144,7 +127,7 @@ liftRec f rc = case runFree rc of
   Impure (In r) -> rec (f r)
 
 pjoin :: HFunctor f => Rec f (Rec f v) ~> Rec f v
-pjoin = griter id $ \ rc -> case rc of
+pjoin = iter id $ \ rc -> case rc of
   Mu g -> mu (g . var)
   In r -> rec r
 
@@ -155,7 +138,7 @@ modifyGraph :: (forall v. Rec f v ~> Rec g v) -> Graph f ~> Graph g
 modifyGraph f g = Graph (f (unGraph g))
 
 unroll :: HFunctor f => Rec f (Rec f v) a -> Rec f (Rec f v) a
-unroll = griter var $ \ rc -> case rc of
+unroll = iter var $ \ rc -> case rc of
   Mu g -> rec (g (pjoin (unroll (mu g))))
   In r -> rec r
 
