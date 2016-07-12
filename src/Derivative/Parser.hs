@@ -79,9 +79,9 @@ literal :: String -> Combinator v String
 literal string = sequenceA (rec . Lit <$> string)
 
 mu :: (Combinator v a -> Combinator v a) -> Combinator v a
-mu f = Graph.mu $ \ v -> case unRec (f (var v)) of
+mu f = Graph.mu $ \ v -> case runFree (f (var v)) of
   Impure (In r) -> r
-  p -> Rec p `Lab` ""
+  p -> Free p `Lab` ""
 
 parser :: (forall v. Combinator v a) -> Parser a
 parser r = compact $ Graph r
@@ -125,7 +125,7 @@ deriv g c = modifyGraph deriv' g
           Lit c' -> if c == c' then pure c else empty
           Lab p s -> deriv' p `label` s
           _ -> empty
-        repack (Rec (Impure (In r))) = r
+        repack (Free (Impure (In r))) = r
         repack a = Lab a ""
 
 parseNull :: Parser a -> [a]
@@ -148,26 +148,26 @@ compact' = liftRec compact''
 
 compact'' :: ParserF (Combinator v) a -> ParserF (Combinator v) a
 compact'' parser = case parser of
-  Cat (Rec (Impure (In Nul))) _ -> Nul
-  Cat _ (Rec (Impure (In Nul))) -> Nul
-  Cat (Rec (Impure (In (Ret [t])))) b -> Map ((,) t) b
-  Cat a (Rec (Impure (In (Ret [t])))) -> Map (flip (,) t) a
-  Cat (Rec (Impure (In (Cat a b)))) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (cat a (cat b c))
-  Cat (Rec (Impure (In (Map f a)))) b -> Map (first f) (cat a b)
-  Alt (Rec (Impure (In Nul))) (Rec (Impure (In p))) -> p
-  Alt (Rec (Impure (In p))) (Rec (Impure (In Nul))) -> p
-  Alt (Rec (Impure (In (Ret a)))) (Rec (Impure (In (Ret b)))) -> Ret (a <> b)
-  Map f (Rec (Impure (In (Ret as)))) -> Ret (f <$> as)
-  Map g (Rec (Impure (In (Map f p)))) -> Map (g . f) p
-  Map _ (Rec (Impure (In Nul))) -> Nul
-  Rep (Rec (Impure (In Nul))) -> Ret [[]]
-  Lab (Rec (Impure (In Nul))) _ -> Nul
-  Lab (Rec (Impure (In (Ret t)))) _ -> Ret t
-  Lab (Rec (Impure (In (Del p)))) _ -> Del p
-  Del (Rec (Impure (In Nul))) -> Nul
-  Del (Rec (Impure (In (Lit _)))) -> Nul
-  Del (Rec (Impure (In (Del p)))) -> Del p
-  Del (Rec (Impure (In (Ret a)))) -> Ret a
+  Cat (Free (Impure (In Nul))) _ -> Nul
+  Cat _ (Free (Impure (In Nul))) -> Nul
+  Cat (Free (Impure (In (Ret [t])))) b -> Map ((,) t) b
+  Cat a (Free (Impure (In (Ret [t])))) -> Map (flip (,) t) a
+  Cat (Free (Impure (In (Cat a b)))) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (cat a (cat b c))
+  Cat (Free (Impure (In (Map f a)))) b -> Map (first f) (cat a b)
+  Alt (Free (Impure (In Nul))) (Free (Impure (In p))) -> p
+  Alt (Free (Impure (In p))) (Free (Impure (In Nul))) -> p
+  Alt (Free (Impure (In (Ret a)))) (Free (Impure (In (Ret b)))) -> Ret (a <> b)
+  Map f (Free (Impure (In (Ret as)))) -> Ret (f <$> as)
+  Map g (Free (Impure (In (Map f p)))) -> Map (g . f) p
+  Map _ (Free (Impure (In Nul))) -> Nul
+  Rep (Free (Impure (In Nul))) -> Ret [[]]
+  Lab (Free (Impure (In Nul))) _ -> Nul
+  Lab (Free (Impure (In (Ret t)))) _ -> Ret t
+  Lab (Free (Impure (In (Del p)))) _ -> Del p
+  Del (Free (Impure (In Nul))) -> Nul
+  Del (Free (Impure (In (Lit _)))) -> Nul
+  Del (Free (Impure (In (Del p)))) -> Del p
+  Del (Free (Impure (In (Ret a)))) -> Ret a
   a -> a
 
 nullable :: Parser a -> Bool

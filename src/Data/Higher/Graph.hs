@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances, InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
 module Data.Higher.Graph
-( Rec(..)
+( Rec
 , RecF(..)
 , Graph(..)
 , var
@@ -49,7 +49,7 @@ data RecF f v b a
   = Mu (v a -> f b a)
   | In (f b a)
 
-newtype Rec f v a = Rec { unRec :: FreeF (RecF f v) v (Rec f v) a }
+type Rec f v = Free (RecF f v) v
 
 newtype Graph f a = Graph { unGraph :: forall v. Rec f v a }
 
@@ -57,20 +57,20 @@ newtype Graph f a = Graph { unGraph :: forall v. Rec f v a }
 -- Smart constructors
 
 var :: v a -> Rec f v a
-var = Rec . Pure
+var = free . Pure
 
 mu :: (v a -> f (Rec f v) a) -> Rec f v a
-mu = Rec . Impure . Mu
+mu = free . Impure . Mu
 
 rec :: f (Rec f v) a -> Rec f v a
-rec = Rec . Impure . In
+rec = free . Impure . In
 
 
 toFree :: HFunctor f => Rec f a ~> Free (RecF f a) a
-toFree = hylo free unRec
+toFree = id
 
 fromFree :: HFunctor f => Free (RecF f a) a ~> Rec f a
-fromFree = hylo Rec runFree
+fromFree = id
 
 
 -- Folds
@@ -138,7 +138,7 @@ agraphMap f = agriter var $ \ rc -> case rc of
   In r -> rec (f r)
 
 liftRec :: (f (Rec f v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
-liftRec f rc = case unRec rc of
+liftRec f rc = case runFree rc of
   Pure v -> var v
   Impure (Mu g) -> mu (f . g)
   Impure (In r) -> rec (f r)
@@ -166,7 +166,7 @@ unrollGraph g = Graph (pjoin (unroll (unGraph g)))
 -- Equality
 
 eqRec :: HEqF f => Int -> Rec f (Const Int) a -> Rec f (Const Int) a -> Bool
-eqRec n a b = case (unRec a, unRec b) of
+eqRec n a b = case (runFree a, runFree b) of
   (Pure x, Pure y) -> x == y
   (Impure (Mu g), Impure (Mu h)) -> let a = g (Const (succ n))
                                         b = h (Const (succ n)) in
@@ -178,7 +178,7 @@ eqRec n a b = case (unRec a, unRec b) of
 -- Show
 
 showsRec :: HShowF f => (forall b. [Const Char b]) -> Int -> Rec f (Const Char) a -> ShowS
-showsRec s n rec = case unRec rec of
+showsRec s n rec = case runFree rec of
   Pure c -> showChar (getConst c)
   Impure (Mu g) -> let (a, s') = (head s, tail s) in
                        showString "Mu (\\ " . showChar (getConst a) . showString " ->\n  "
@@ -208,31 +208,6 @@ instance HFunctor f => HFunctor (RecF f v)
   where hfmap f rec = case rec of
           Mu g -> Mu (hfmap f . g)
           In r -> In (hfmap f r)
-
-type instance Base (Rec f v) = FreeF (RecF f v) v
-
-instance HFunctor f => Recursive (Rec f v) where project = unRec
-instance HFunctor f => Corecursive (Rec f v) where embed = Rec
-
-class HIsofunctor f
-  where hisomap :: (a ~> b) -> (b ~> a) -> (f a z -> f b z, f b z -> f a z)
-
-instance HFunctor f => HIsofunctor (Rec f)
-  where hisomap :: forall a b z. (a ~> b) -> (b ~> a) -> (Rec f a z -> Rec f b z, Rec f b z -> Rec f a z)
-        hisomap f g = (to, from)
-          where to :: Rec f a ~> Rec f b
-                to rc = case unRec rc of
-                  Pure v -> var (f v)
-                  Impure (Mu h) -> mu (hfmap to . h . g)
-                  Impure (In r) -> rec (hfmap to r)
-                from :: Rec f b ~> Rec f a
-                from rc = case unRec rc of
-                  Pure v -> var (g v)
-                  Impure (Mu h) -> mu (hfmap from . h . f)
-                  Impure (In r) -> rec (hfmap from r)
-
-instance HFunctor f => HIsofunctor (RecF f v) where
-  hisomap f g = (hfmap f, hfmap g)
 
 instance HFunctor f => HProfunctor (RecF f) where
   hdimap f g rec = case rec of
