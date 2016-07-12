@@ -18,6 +18,8 @@ module Data.Higher.Graph
 , arfold
 , cfold
 , sfold
+, giter
+, griter
 , transform
 , graphMap
 , agraphMap
@@ -106,6 +108,12 @@ cfold = gfold id fix
 
 sfold :: (HFunctor f, HEq c) => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 sfold alg k = gfold id (fixVal k) alg
+
+giter :: HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Graph f ~> b
+giter f alg = griter f alg . unGraph
+
+griter :: forall f a b. HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Rec f a ~> b
+griter f alg = iter alg . hfmap f . toFree
 
 
 -- Maps
