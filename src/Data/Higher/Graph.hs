@@ -87,10 +87,9 @@ agfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c
 agfold var bind recur = agrfold var bind recur . unGraph
 
 agrfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> Cofree (FreeF (RecF f v) v) c
-agrfold var bind algebra = acata $ \ rec -> case rec of
-  Pure x -> var x
-  Impure (Mu g) -> bind (algebra . g)
-  Impure (In fa) -> algebra fa
+agrfold var bind algebra = agriter var $ \ rec -> case rec of
+  Mu g -> bind (algebra . g)
+  In fa -> algebra fa
 
 fold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 fold alg k = rfold alg k . unGraph
