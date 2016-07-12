@@ -114,14 +114,14 @@ sfold alg k = gfold id (fixVal k) alg
 giter :: HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Graph f ~> b
 giter f alg = griter f alg . unGraph
 
-agiter :: HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Graph f ~> Cofree (FreeF (RecF f a) b) b
+agiter :: HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Graph f ~> Cofree (FreeF (RecF f a) a) b
 agiter f alg = agriter f alg . unGraph
 
 griter :: forall f a b. HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Rec f a ~> b
-griter f alg = iter alg . hfmap f . toFree
+griter f alg = iter f alg . toFree
 
-agriter :: forall f a b. HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Rec f a ~> Cofree (FreeF (RecF f a) b) b
-agriter f alg = aiter alg . hfmap f . toFree
+agriter :: forall f a b. HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Rec f a ~> Cofree (FreeF (RecF f a) a) b
+agriter f alg = aiter f alg . toFree
 
 
 -- Maps
@@ -134,7 +134,7 @@ graphMap f = griter var $ \ rc -> case rc of
   Mu g -> mu (f . g)
   In r -> rec (f r)
 
-agraphMap :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Cofree (FreeF (RecF f a) (Rec g a)) (Rec g a)
+agraphMap :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Cofree (FreeF (RecF f a) a) (Rec g a)
 agraphMap f = agriter var $ \ rc -> case rc of
   Mu g -> mu (f . g)
   In r -> rec (f r)

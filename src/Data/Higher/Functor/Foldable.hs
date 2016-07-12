@@ -87,19 +87,19 @@ unannotate :: (HFunctor (Base t), Corecursive t) => Cofree (Base t) c ~> t
 unannotate = cata (embed . tailF)
 
 
-iter :: forall f v a . HProfunctor f => (f v a ~> a) -> Free (f v) a ~> a
-iter f = go
-  where go :: Free (f v) a ~> a
+iter :: forall f v a b. HProfunctor f => (a ~> b) -> (f v b ~> b) -> Free (f v) a ~> b
+iter f alg = go
+  where go :: Free (f v) a ~> b
         go rec = case runFree rec of
-          Pure a -> a
-          Impure r -> f (hrmap go r)
+          Pure a -> f a
+          Impure r -> alg (hrmap go r)
 
-aiter :: forall f v a. HProfunctor f => (f v a ~> a) -> Free (f v) a ~> Cofree (FreeF (f v) a) a
-aiter f = go
-  where go :: Free (f v) a ~> Cofree (FreeF (f v) a) a
+aiter :: forall f v a b. HProfunctor f => (a ~> b) -> (f v b ~> b) -> Free (f v) a ~> Cofree (FreeF (f v) a) b
+aiter f alg = go
+  where go :: Free (f v) a ~> Cofree (FreeF (f v) a) b
         go rec = cofree $ case runFree rec of
-          Pure a -> a :< Pure a
-          Impure r -> let r' = hrmap go r in f (hrmap hcopoint r') :< Impure r'
+          Pure a -> f a :< Pure a
+          Impure r -> let r' = hrmap go r in alg (hrmap hcopoint r') :< Impure r'
 
 
 -- Instances
