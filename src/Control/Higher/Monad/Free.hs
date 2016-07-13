@@ -19,6 +19,11 @@ free = Free
 wrap :: f (Free f v) ~> Free f v
 wrap = free . Impure
 
+unFree :: Free f v a -> Either (v a) (f (Free f v) a)
+unFree r = case runFree r of
+  Pure a -> Left a
+  Impure f -> Right f
+
 
 -- Instances
 
