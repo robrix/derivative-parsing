@@ -101,6 +101,13 @@ aiter f alg = go
           Pure a -> f a :< Pure a
           Impure r -> let r' = hrmap go r in alg (hrmap hcopoint r') :< Impure r'
 
+aiter' :: forall f v a b. HProfunctor f => (a ~> b) -> (f v b ~> b) -> Free (f v) a ~> Free (CofreeF (f v) b) a
+aiter' f alg = go
+  where go :: Free (f v) a ~> Free (CofreeF (f v) b) a
+        go rec = free $ case runFree rec of
+          Pure a -> Pure a
+          Impure r -> Impure $ let r' = hrmap go r in alg (hrmap (either f headF . unFree) r') :< r'
+
 
 -- Instances
 
