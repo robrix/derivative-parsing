@@ -10,7 +10,6 @@ import Data.Higher.Copointed
 import Data.Higher.Functor
 import Data.Higher.Functor.Identity
 import Data.Higher.Product
-import Data.Higher.Profunctor
 import Data.Higher.Sum
 import Data.Higher.Transformation
 
@@ -87,26 +86,26 @@ unannotate :: (HFunctor (Base t), Corecursive t) => Cofree (Base t) c ~> t
 unannotate = cata (embed . tailF)
 
 
-iter :: forall f v a b. HProfunctor f => (a ~> b) -> (f v b ~> b) -> Free (f v) a ~> b
+iter :: forall f a b. HFunctor f => (a ~> b) -> (f b ~> b) -> Free f a ~> b
 iter f alg = go
-  where go :: Free (f v) a ~> b
+  where go :: Free f a ~> b
         go rec = case runFree rec of
           Pure a -> f a
-          Impure r -> alg (hrmap go r)
+          Impure r -> alg (hfmap go r)
 
-aiter :: forall f v a b. HProfunctor f => (a ~> b) -> (f v b ~> b) -> Free (f v) a ~> Cofree (FreeF (f v) a) b
+aiter :: forall f a b. HFunctor f => (a ~> b) -> (f b ~> b) -> Free f a ~> Cofree (FreeF f a) b
 aiter f alg = go
-  where go :: Free (f v) a ~> Cofree (FreeF (f v) a) b
+  where go :: Free f a ~> Cofree (FreeF f a) b
         go rec = cofree $ case runFree rec of
           Pure a -> f a :< Pure a
-          Impure r -> let r' = hrmap go r in alg (hrmap hcopoint r') :< Impure r'
+          Impure r -> let r' = hfmap go r in alg (hfmap hcopoint r') :< Impure r'
 
-aiter' :: forall f v a b. HProfunctor f => (a ~> b) -> (f v b ~> b) -> Free (f v) a ~> Free (CofreeF (f v) b) a
+aiter' :: forall f a b. HFunctor f => (a ~> b) -> (f b ~> b) -> Free f a ~> Free (CofreeF f b) a
 aiter' f alg = go
-  where go :: Free (f v) a ~> Free (CofreeF (f v) b) a
+  where go :: Free f a ~> Free (CofreeF f b) a
         go rec = free $ case runFree rec of
           Pure a -> Pure a
-          Impure r -> Impure $ let r' = hrmap go r in alg (hrmap (either f headF . unFree) r') :< r'
+          Impure r -> Impure $ let r' = hfmap go r in alg (hfmap (either f headF . unFree) r') :< r'
 
 
 -- Instances
