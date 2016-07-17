@@ -15,5 +15,8 @@ data Showable a = Showable !(Int -> a -> ShowS) !a
 instance Show a => ShowF (Const a)
   where showsPrecF n _ = showsPrec n . getConst
 
+instance ShowF []
+  where showsPrecF n f = showsPrec n . fmap (Showable f)
+
 instance Show (Showable a)
   where showsPrec n (Showable f a) = f n a
