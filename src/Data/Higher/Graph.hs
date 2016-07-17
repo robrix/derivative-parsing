@@ -182,7 +182,7 @@ instance HEqF f => Eq (Graph f a)
   where a == b = eqRec 0 (unGraph a) (unGraph b)
 
 instance HShowF f => Show (Graph f a)
-  where showsPrec n = showsRec (iterate (first succ) (Const 'a')) n . unGraph
+  where showsPrec n = showsPrec n . (unGraph :: Graph f ~> Rec f (Const Char))
 
 instance HShowF f => Show (Rec f (Const Char) a)
   where showsPrec = showsRec (iterate (first succ) (Const 'a'))
