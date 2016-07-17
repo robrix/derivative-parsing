@@ -41,16 +41,16 @@ parse :: Parser a -> String -> [a]
 parse p = parseNull . foldl deriv (compact p)
 
 
-commaSep1 :: Parser a -> Parser [a]
-commaSep1 = sep1 (Graph (lit ','))
+commaSep1 :: Combinator v a -> Combinator v [a]
+commaSep1 = sep1 (lit ',')
 
-commaSep :: Parser a -> Parser [a]
-commaSep = sep (Graph (lit ','))
+commaSep :: Combinator v a -> Combinator v [a]
+commaSep = sep (lit ',')
 
-sep1 :: Parser sep -> Parser a -> Parser [a]
+sep1 :: Combinator v sep -> Combinator v a -> Combinator v [a]
 sep1 s p = (:) <$> p <*> many (s *> p)
 
-sep :: Parser sep -> Parser a -> Parser [a]
+sep :: Combinator v sep -> Combinator v a -> Combinator v [a]
 sep s p = s `sep1` p <|> pure []
 
 oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
