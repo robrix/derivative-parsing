@@ -165,8 +165,8 @@ showsRec s n rec = case runFree rec of
   Pure c -> showChar (getConst c)
   Impure (Mu g) -> let (a, s') = (head s, tail s) in
                        showString "Mu (\\ " . showChar (getConst a) . showString " ->\n  "
-                       . hshowsPrecF n (showsRec (fmap (Const . getConst) s')) (g a) . showString "\n)\n"
-  Impure (In fa) -> hshowsPrecF n (showsRec s) fa
+                       . hshowsPrecF (showsRec (fmap (Const . getConst) s')) n (g a) . showString "\n)\n"
+  Impure (In fa) -> hshowsPrecF (showsRec s) n fa
 
 
 -- Implementation details
