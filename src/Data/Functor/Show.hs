@@ -1,4 +1,4 @@
-module Data.Functor.Show where
+module Data.Functor.Show (ShowF(..)) where
 
 import Data.Functor.Const
 
