@@ -32,8 +32,8 @@ import Control.Higher.Comonad.Cofree
 import Control.Higher.Monad.Free
 import Data.Bifunctor (first)
 import Data.Function
+import Data.Functor.Const
 import Data.Higher.Eq
-import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Foldable

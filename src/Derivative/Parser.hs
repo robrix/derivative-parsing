@@ -27,6 +27,7 @@ module Derivative.Parser
 import Control.Applicative hiding (Const(..))
 import Control.Higher.Monad.Free
 import Data.Bifunctor (first)
+import Data.Functor.Const
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
