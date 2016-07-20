@@ -113,6 +113,7 @@ aiter' f alg = go
 type instance Base (Fix f) = f
 
 instance HFunctor f => Recursive (Fix f) where project = unFix
+instance HFunctor f => Corecursive (Fix f) where embed = Fix
 
 
 type instance Base (Cofree f v) = CofreeF f v
