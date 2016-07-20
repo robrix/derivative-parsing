@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, RankNTypes #-}
+{-# LANGUAGE FlexibleInstances, GADTs, MultiParamTypeClasses, RankNTypes #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -33,6 +33,7 @@ import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
 import Data.Higher.Graph as Graph
+import Data.Higher.Monoid
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
 
@@ -203,16 +204,16 @@ instance HFunctor ParserF where
     Lab p s -> Lab (f p) s
     Del a -> Del (f a)
 
-instance HFoldable ParserF where
+instance (Alternative a, Monad a) => HFoldable ParserF a where
   hfoldMap f p = case p of
-    Cat a b -> (,) <$> f a <*> f b
-    Alt a b -> f a <|> f b
-    Rep p -> pure <$> f p
-    Map g p -> g <$> f p
+    Cat a b -> f ((,) <$> a <*> b)
+    Alt a b -> f (a <|> b)
+    Rep p -> f (pure <$> p)
+    Map g p -> f (g <$> p)
     Bnd p g -> f (p >>= g)
     Lab p _ -> f p
     Del a -> f a
-    _ -> empty
+    _ -> hempty
 
 instance Functor (Rec ParserF v) where
   fmap f = compact' . rec . Map f

@@ -1,16 +1,16 @@
-{-# LANGUAGE RankNTypes, TypeOperators #-}
+{-# LANGUAGE MultiParamTypeClasses, RankNTypes, TypeOperators #-}
 module Data.Higher.Foldable where
 
-import Control.Applicative hiding (Const(..))
 import Data.Functor.Const
+import Data.Higher.Monoid
 import Data.Higher.Transformation
 import Data.Monoid
 
-class HFoldable f where
-  hfoldMap :: (Monad c, Alternative m) => (c ~> m) -> f c ~> m
+class HFoldable f a where
+  hfoldMap :: HMonoid m => (a ~> m) -> f a ~> m
 
-  hfold :: (Monad m, Alternative m) => f m ~> m
+  hfold :: HMonoid a => f a ~> a
   hfold = hfoldMap id
 
-  hlength :: Monad c => f c a -> Int
+  hlength :: f a z -> Int
   hlength = getSum . getConst . hfoldMap (const (Const (Sum 1)))
