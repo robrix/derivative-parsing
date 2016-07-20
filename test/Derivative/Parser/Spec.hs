@@ -283,6 +283,11 @@ lam = parser $ mu (\ lam ->
 data Lam = Var' String | Abs String Lam | App Lam Lam
   deriving (Eq, Show)
 
+data Sexpr
+  = Atom String
+  | List [Sexpr]
+  deriving (Eq, Show)
+
 
 -- Instances
 
