@@ -4,7 +4,6 @@ module Data.Functor.Const where
 import Control.Applicative hiding (Const(..))
 import Data.Bifunctor
 import Data.Function
-import Data.Higher.Monoid
 import Data.Monoid
 
 newtype Const a b = Const { getConst :: a }
@@ -24,7 +23,3 @@ instance Monoid m => Alternative (Const m) where
 instance Monoid m => Monad (Const m) where
   return = pure
   Const m >>= _ = Const m
-
-instance Monoid a => HMonoid (Const a)
-  where hempty = Const mempty
-        Const a `happend` Const b = Const (a <> b)
