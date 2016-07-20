@@ -8,6 +8,7 @@ import Data.Monoid
 
 class HFoldable f a where
   hfoldMap :: HMonoid m => (a ~> m) -> f a ~> m
+  hfoldMap f = hfoldr (happend . f) hempty
 
   hfoldr :: (forall z. a z -> b z -> b z) -> forall z. b z -> f a z -> b z
   hfoldr f z t = appHEndo (hfoldMap (HEndo . f) t) z
@@ -17,6 +18,8 @@ class HFoldable f a where
 
   hlength :: f a z -> Int
   hlength = getSum . getConst . hfoldMap (const (Const (Sum 1)))
+
+  {-# MINIMAL (hfoldr | hfoldMap) #-}
 
 newtype HEndo a z = HEndo { appHEndo :: a z -> a z }
 
