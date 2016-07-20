@@ -54,20 +54,8 @@ agcata dist alg = go
   where go :: t ~> w a
         go = hfmap alg . dist . hfmap (hduplicate . go) . project
 
-histo :: Recursive t => (Base t (Cofree (Base t) a) ~> a) -> t ~> a
-histo alg = hcopoint . agcata distHisto alg
-
-ahisto :: Recursive t => (Base t (Cofree (Base t) a) ~> a) -> t ~> Cofree (Base t) a
-ahisto = agcata distHisto
-
 distCata :: HFunctor f => f (Identity a) ~> Identity (f a)
 distCata = Identity . hfmap runIdentity
-
-distHisto :: HFunctor f => f (Cofree f a) ~> Cofree f (f a)
-distHisto = distGHisto id
-
-distGHisto :: (HFunctor f, HFunctor h) => (forall b. f (h b) ~> h (f b)) -> f (Cofree h a) ~> Cofree h (f a)
-distGHisto k = unfold (\ as -> (hcopoint `hfmap` as) :*: k (unwrap `hfmap` as))
 
 
 unannotate :: Corecursive t => Cofree (Base t) c ~> t
