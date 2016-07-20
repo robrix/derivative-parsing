@@ -114,16 +114,19 @@ type Combinator v = Rec ParserF v
 -- Algorithm
 
 deriv :: Parser a -> Char -> Parser a
-deriv g c = modifyGraph deriv' g
-  where deriv' :: Combinator v a -> Combinator v a
-        deriv' = liftRec deriv''
-        deriv'' :: ParserF (Combinator v) a -> ParserF (Combinator v) a
+deriv g c = Graph (deriv' (unGraph g))
+  where deriv' :: Combinator (Combinator v) a -> Combinator v a
+        deriv' rc = case runFree rc of
+          Pure v -> v
+          Impure (Mu g) -> rec (deriv'' (g (pjoin (Graph.mu g))))
+          Impure (In r) -> rec (deriv'' r)
+        deriv'' :: ParserF (Combinator (Combinator v)) a -> ParserF (Combinator v) a
         deriv'' p = repack $ case p of
-          Cat a b -> deriv' a `cat` b <|> delta a `cat` deriv' b
+          Cat a b -> deriv' a `cat` pjoin b <|> delta (pjoin a) `cat` deriv' b
           Alt a b -> deriv' a <|> deriv' b
-          Rep p -> (:) <$> deriv' p <*> many p
+          Rep p -> (:) <$> deriv' p <*> many (pjoin p)
           Map f p -> f <$> deriv' p
-          Bnd p f -> deriv' p >>= f
+          Bnd p f -> deriv' p >>= pjoin . f
           Lit c' -> if c == c' then pure c else empty
           Lab p s -> deriv' p `label` s
           _ -> empty
