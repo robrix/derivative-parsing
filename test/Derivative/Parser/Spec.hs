@@ -277,6 +277,10 @@ lam = parser $ mu (\ lam ->
       abs = (Abs . pure <$> (lit '\\' *> lit 'x') <*> (lit '.' *> lam)) `label` "abs" in
       abs <|> var <|> app) `label` "lambda"
 
+sexpr :: Parser Sexpr
+sexpr = parser $ Derivative.Parser.mu (\ a -> Atom <$> literal "x" <|> List <$> (lit open *> sep (lit ' ') a <* lit close))
+  where (open, close) = ('(', ')')
+
 
 -- Types
 
