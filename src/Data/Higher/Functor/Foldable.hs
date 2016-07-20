@@ -1,10 +1,8 @@
 {-# LANGUAGE FlexibleContexts, PolyKinds, RankNTypes, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
 module Data.Higher.Functor.Foldable where
 
-import Control.Higher.Comonad
 import Control.Higher.Monad.Free
 import Data.Higher.Functor
-import Data.Higher.Functor.Identity
 import Data.Higher.Product
 import Data.Higher.Sum
 import Data.Higher.Transformation
@@ -45,15 +43,6 @@ hylo f g = go
 
 
 newtype Fix f a = Fix { unFix :: f (Fix f) a }
-
-
-agcata :: forall t w a. (Recursive t, HComonad w) => (forall b. Base t (w b) ~> w (Base t b)) -> (Base t (w a) ~> a) -> t ~> w a
-agcata dist alg = go
-  where go :: t ~> w a
-        go = hfmap alg . dist . hfmap (hduplicate . go) . project
-
-distCata :: HFunctor f => f (Identity a) ~> Identity (f a)
-distCata = Identity . hfmap runIdentity
 
 
 iter :: forall f a b. HFunctor f => (a ~> b) -> (f b ~> b) -> Free f a ~> b
