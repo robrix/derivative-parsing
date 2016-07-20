@@ -10,3 +10,7 @@ class HMonoid a where
 instance Monoid a => HMonoid (Const a)
   where hempty = Const mempty
         Const a `happend` Const b = Const (a `mappend` b)
+
+instance HMonoid []
+  where hempty = []
+        as `happend` bs = as `mappend` bs
