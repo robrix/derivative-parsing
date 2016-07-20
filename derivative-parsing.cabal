@@ -27,7 +27,6 @@ library
                      , Data.Higher.Graph
                      , Data.Higher.Monoid
                      , Data.Higher.Pointed
-                     , Data.Higher.Product
                      , Data.Higher.Profunctor
                      , Data.Higher.Transformation
                      , Derivative.Parser
