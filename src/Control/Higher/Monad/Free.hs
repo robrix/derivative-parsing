@@ -1,7 +1,6 @@
 {-# LANGUAGE InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
 module Control.Higher.Monad.Free where
 
-import Data.Higher.Bifunctor
 import Data.Higher.Functor
 import Data.Higher.Pointed
 import Data.Higher.Transformation
@@ -31,16 +30,15 @@ iter f alg = go
           Pure a -> f a
           Impure r -> alg (hfmap go r)
 
+hbimap :: HFunctor f => (a ~> c) -> (b ~> d) -> FreeF f a b ~> FreeF f c d
+hbimap f g r = case r of
+  Pure a -> Pure (f a)
+  Impure r -> Impure (hfmap g r)
 
 -- Instances
 
-instance HFunctor f => HBifunctor (FreeF f) where
-  hbimap f g r = case r of
-    Pure a -> Pure (f a)
-    Impure r -> Impure (hfmap g r)
-
 instance HFunctor f => HFunctor (FreeF f v) where
-  hfmap = hsecond
+  hfmap = hbimap id
 
 instance HPointed (Free f) where
   hpoint = free . Pure
