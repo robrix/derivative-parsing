@@ -1,6 +1,6 @@
 module Data.Higher.Monoid where
 
 class HMonoid a where
-  hmempty :: a z
+  hempty :: a z
 
-  hmappend :: a z -> a z -> a z
+  happend :: a z -> a z -> a z

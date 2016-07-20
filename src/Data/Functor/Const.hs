@@ -26,5 +26,5 @@ instance Monoid m => Monad (Const m) where
   Const m >>= _ = Const m
 
 instance Monoid a => HMonoid (Const a)
-  where hmempty = Const mempty
-        Const a `hmappend` Const b = Const (a <> b)
+  where hempty = Const mempty
+        Const a `happend` Const b = Const (a <> b)
