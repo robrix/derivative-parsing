@@ -42,9 +42,6 @@ hylo f g = go
         go = f . hfmap go . g
 
 
-newtype Fix f a = Fix { unFix :: f (Fix f) a }
-
-
 iter :: forall f a b. HFunctor f => (a ~> b) -> (f b ~> b) -> Free f a ~> b
 iter f alg = go
   where go :: Free f a ~> b
@@ -54,12 +51,6 @@ iter f alg = go
 
 
 -- Instances
-
-type instance Base (Fix f) = f
-
-instance HFunctor f => Recursive (Fix f) where project = unFix
-instance HFunctor f => Corecursive (Fix f) where embed = Fix
-
 
 type instance Base (Free f v) = FreeF f v
 
