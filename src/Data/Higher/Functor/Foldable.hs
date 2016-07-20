@@ -93,20 +93,6 @@ iter f alg = go
           Pure a -> f a
           Impure r -> alg (hfmap go r)
 
-aiter :: forall f a b. HFunctor f => (a ~> b) -> (f b ~> b) -> Free f a ~> Cofree (FreeF f a) b
-aiter f alg = go
-  where go :: Free f a ~> Cofree (FreeF f a) b
-        go rec = cofree $ case runFree rec of
-          Pure a -> f a :< Pure a
-          Impure r -> let r' = hfmap go r in alg (hfmap hcopoint r') :< Impure r'
-
-aiter' :: forall f a b. HFunctor f => (a ~> b) -> (f b ~> b) -> Free f a ~> Free (CofreeF f b) a
-aiter' f alg = go
-  where go :: Free f a ~> Free (CofreeF f b) a
-        go rec = free $ case runFree rec of
-          Pure a -> Pure a
-          Impure r -> Impure $ let r' = hfmap go r in alg (hfmap (either f headF . unFree) r') :< r'
-
 
 -- Instances
 
