@@ -1,4 +1,4 @@
-module Data.Functor.Monoid where
+module Data.Higher.Monoid where
 
 class HMonoid a where
   hmempty :: a z
