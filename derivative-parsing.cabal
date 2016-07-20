@@ -20,6 +20,7 @@ library
                      , Control.Higher.Monad
                      , Control.Higher.Monad.Free
                      , Data.Functor.Const
+                     , Data.Functor.Monoid
                      , Data.Functor.Show
                      , Data.Higher.Bifunctor
                      , Data.Higher.Copointed
