@@ -166,11 +166,10 @@ showsRec s n rec = case runFree rec of
                    . hshowsPrecF (showsRec (tail s)) n (g (Const (head s))) . showString "\n)\n"
   Impure (In fa) -> hshowsPrecF (showsRec s) n fa
 
-showsRecF :: HShowF f => (forall b. [Const Char b]) -> Int -> RecF f (Const Char) (Const Char) a -> ShowS
+showsRecF :: HShowF f => String -> Int -> RecF f (Const Char) (Const Char) a -> ShowS
 showsRecF s n rec = case rec of
-  Mu g -> let (a, s') = (head s, tail s) in
-              showString "Mu (\\ " . showChar (getConst a) . showString " ->\n  "
-              . hshowsPrecF showsPrec n (g a) . showString "\n)\n"
+  Mu g -> showString "Mu (\\ " . showChar (head s) . showString " ->\n  "
+          . hshowsPrecF showsPrec n (g (Const (head s))) . showString "\n)\n"
   In fa -> hshowsPrecF showsPrec n fa
 
 
