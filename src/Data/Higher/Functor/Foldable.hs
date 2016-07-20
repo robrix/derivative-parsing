@@ -74,12 +74,6 @@ instance HFunctor f => Recursive (Fix f) where project = unFix
 instance HFunctor f => Corecursive (Fix f) where embed = Fix
 
 
-type instance Base (Cofree f v) = CofreeF f v
-
-instance HFunctor f => Recursive (Cofree f v) where project = runCofree
-instance HFunctor f => Corecursive (Cofree f v) where embed = cofree
-
-
 type instance Base (Free f v) = FreeF f v
 
 instance HFunctor f => Recursive (Free f v) where project = runFree
