@@ -1,11 +1,9 @@
 {-# LANGUAGE FlexibleContexts, PolyKinds, RankNTypes, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
 module Data.Higher.Functor.Foldable where
 
-import Control.Arrow ((&&&))
 import Control.Higher.Comonad
 import Control.Higher.Comonad.Cofree
 import Control.Higher.Monad.Free
-import Data.Higher.Bifunctor
 import Data.Higher.Copointed
 import Data.Higher.Functor
 import Data.Higher.Functor.Identity
@@ -70,16 +68,6 @@ distHisto = distGHisto id
 
 distGHisto :: (HFunctor f, HFunctor h) => (forall b. f (h b) ~> h (f b)) -> f (Cofree h a) ~> Cofree h (f a)
 distGHisto k = unfold (\ as -> (hcopoint `hfmap` as) :*: k (unwrap `hfmap` as))
-
-acata :: forall c t. Recursive t => (Base t c ~> c) -> t ~> Cofree (Base t) c
-acata f = go
-  where go :: t ~> Cofree (Base t) c
-        go = cofree . uncurry (:<) . (f . hfmap hcopoint &&& id) . hfmap go . project
-
-apara :: forall c t. Recursive t => (Base t (t :*: c) ~> c) -> t ~> Cofree (Base t) c
-apara f = go
-  where go :: t ~> Cofree (Base t) c
-        go = cofree . uncurry (:<) . (f . hfmap (hsecond hcopoint) &&& hfmap hsnd) . hfmap ((:*:) <*> go) . project
 
 
 unannotate :: Corecursive t => Cofree (Base t) c ~> t
