@@ -2,9 +2,7 @@
 module Data.Higher.Functor.Foldable where
 
 import Control.Higher.Comonad
-import Control.Higher.Comonad.Cofree
 import Control.Higher.Monad.Free
-import Data.Higher.Copointed
 import Data.Higher.Functor
 import Data.Higher.Functor.Identity
 import Data.Higher.Product
