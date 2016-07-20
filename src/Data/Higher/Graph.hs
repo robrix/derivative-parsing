@@ -8,19 +8,13 @@ module Data.Higher.Graph
 , rec
 , gfold
 , grfold
-, agfold
-, agrfold
 , fold
 , rfold
-, afold
-, arfold
 , cfold
 , sfold
 , giter
-, agiter
 , transform
 , graphMap
-, agraphMap
 , liftRec
 , pjoin
 , modifyGraph
@@ -28,7 +22,6 @@ module Data.Higher.Graph
 , unrollGraph
 ) where
 
-import Control.Higher.Comonad.Cofree
 import Control.Higher.Monad.Free
 import Data.Function
 import Data.Functor.Const
@@ -71,25 +64,11 @@ grfold var bind algebra = iter var $ \ rec -> case rec of
   Mu g -> bind (algebra . g)
   In fa -> algebra fa
 
-agfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> Cofree (FreeF (RecF f v) v) c
-agfold var bind recur = agrfold var bind recur . unGraph
-
-agrfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> Cofree (FreeF (RecF f v) v) c
-agrfold var bind algebra = aiter var $ \ rec -> case rec of
-  Mu g -> bind (algebra . g)
-  In fa -> algebra fa
-
 fold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 fold alg k = rfold alg k . unGraph
 
 rfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> c
 rfold alg k = grfold id ($ k) alg
-
-afold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> Cofree (FreeF (RecF f c) c) c
-afold alg k = arfold alg k . unGraph
-
-arfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> Cofree (FreeF (RecF f c) c) c
-arfold alg k = agrfold id ($ k) alg
 
 cfold :: HFunctor f => (f t ~> t) -> Graph f ~> t
 cfold = gfold id fix
@@ -100,9 +79,6 @@ sfold alg k = gfold id (fixVal k) alg
 giter :: HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Graph f ~> b
 giter f alg = iter f alg . unGraph
 
-agiter :: HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Graph f ~> Cofree (FreeF (RecF f a) a) b
-agiter f alg = aiter f alg . unGraph
-
 
 -- Maps
 
@@ -111,11 +87,6 @@ transform f = modifyGraph (graphMap f)
 
 graphMap :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Rec g a
 graphMap f = iter var $ \ rc -> case rc of
-  Mu g -> mu (f . g)
-  In r -> rec (f r)
-
-agraphMap :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Cofree (FreeF (RecF f a) a) (Rec g a)
-agraphMap f = aiter var $ \ rc -> case rc of
   Mu g -> mu (f . g)
   In r -> rec (f r)
 
