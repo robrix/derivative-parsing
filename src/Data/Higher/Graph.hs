@@ -160,11 +160,11 @@ eqRec n a b = case (runFree a, runFree b) of
 
 -- Show
 
-showsRec :: HShowF f => (forall b. [Const Char b]) -> Int -> Rec f (Const Char) a -> ShowS
+showsRec :: HShowF f => String -> Int -> Rec f (Const Char) a -> ShowS
 showsRec s n rec = case runFree rec of
   Pure c -> showChar (getConst c)
-  Impure (Mu g) -> showString "Mu (\\ " . showChar (getConst (head s)) . showString " ->\n  "
-                   . hshowsPrecF (showsRec (tail s)) n (g (head s)) . showString "\n)\n"
+  Impure (Mu g) -> showString "Mu (\\ " . showChar (head s) . showString " ->\n  "
+                   . hshowsPrecF (showsRec (tail s)) n (g (Const (head s))) . showString "\n)\n"
   Impure (In fa) -> hshowsPrecF (showsRec s) n fa
 
 showsRecF :: HShowF f => (forall b. [Const Char b]) -> Int -> RecF f (Const Char) (Const Char) a -> ShowS
@@ -191,7 +191,7 @@ instance HShowF f => Show (Graph f a)
   where showsPrec n = showsPrec n . (unGraph :: Graph f ~> Rec f (Const Char))
 
 instance HShowF f => Show (Rec f (Const Char) a)
-  where showsPrec = showsRec (iterate (first succ) (Const 'a'))
+  where showsPrec = showsRec (iterate succ 'a')
 
 instance HFunctor f => HFunctor (RecF f v)
   where hfmap f rec = case rec of
