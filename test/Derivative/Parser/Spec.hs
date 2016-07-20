@@ -112,6 +112,9 @@ spec = do
       prop "passes through nullable parsers" $
         \ c d -> parser (ret [c :: Char] `cat` lit d) `deriv` d `shouldBe` parser (empty `cat` lit d <|> ret [c] `cat` ret [d])
 
+      it "applies to recursive grammars" $
+        parseNull (((sexpr `deriv` '(') `deriv` 'x') `deriv` ')') `shouldBe` [ List [ Atom "x" ] ]
+
 
   describe "nullable" $ do
     describe "cat" $ do
