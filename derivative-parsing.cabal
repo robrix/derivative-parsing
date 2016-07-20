@@ -22,7 +22,6 @@ library
                      , Data.Higher.Foldable
                      , Data.Higher.Functor
                      , Data.Higher.Functor.Eq
-                     , Data.Higher.Functor.Foldable
                      , Data.Higher.Functor.Identity
                      , Data.Higher.Functor.Show
                      , Data.Higher.Graph
