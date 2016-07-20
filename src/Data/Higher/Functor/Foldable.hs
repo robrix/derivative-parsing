@@ -58,10 +58,6 @@ distCata :: HFunctor f => f (Identity a) ~> Identity (f a)
 distCata = Identity . hfmap runIdentity
 
 
-unannotate :: Corecursive t => Cofree (Base t) c ~> t
-unannotate = cata (embed . tailF)
-
-
 iter :: forall f a b. HFunctor f => (a ~> b) -> (f b ~> b) -> Free f a ~> b
 iter f alg = go
   where go :: Free f a ~> b
