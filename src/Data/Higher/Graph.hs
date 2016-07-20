@@ -163,9 +163,8 @@ eqRec n a b = case (runFree a, runFree b) of
 showsRec :: HShowF f => (forall b. [Const Char b]) -> Int -> Rec f (Const Char) a -> ShowS
 showsRec s n rec = case runFree rec of
   Pure c -> showChar (getConst c)
-  Impure (Mu g) -> let (a, s') = (head s, tail s) in
-                       showString "Mu (\\ " . showChar (getConst a) . showString " ->\n  "
-                       . hshowsPrecF (showsRec (fmap (Const . getConst) s')) n (g a) . showString "\n)\n"
+  Impure (Mu g) -> showString "Mu (\\ " . showChar (getConst (head s)) . showString " ->\n  "
+                   . hshowsPrecF (showsRec (tail s)) n (g (head s)) . showString "\n)\n"
   Impure (In fa) -> hshowsPrecF (showsRec s) n fa
 
 showsRecF :: HShowF f => (forall b. [Const Char b]) -> Int -> RecF f (Const Char) (Const Char) a -> ShowS
