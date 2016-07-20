@@ -30,7 +30,6 @@ module Data.Higher.Graph
 
 import Control.Higher.Comonad.Cofree
 import Control.Higher.Monad.Free
-import Data.Bifunctor (first)
 import Data.Function
 import Data.Functor.Const
 import Data.Higher.Eq
