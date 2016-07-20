@@ -29,7 +29,6 @@ library
                      , Data.Higher.Pointed
                      , Data.Higher.Product
                      , Data.Higher.Profunctor
-                     , Data.Higher.Sum
                      , Data.Higher.Transformation
                      , Derivative.Parser
   build-depends:       base >= 4.7 && < 5
