@@ -42,14 +42,6 @@ hylo f g = go
         go = f . hfmap go . g
 
 
-iter :: forall f a b. HFunctor f => (a ~> b) -> (f b ~> b) -> Free f a ~> b
-iter f alg = go
-  where go :: Free f a ~> b
-        go rec = case runFree rec of
-          Pure a -> f a
-          Impure r -> alg (hfmap go r)
-
-
 -- Instances
 
 type instance Base (Free f v) = FreeF f v

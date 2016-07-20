@@ -24,6 +24,13 @@ unFree r = case runFree r of
   Pure a -> Left a
   Impure f -> Right f
 
+iter :: forall f a b. HFunctor f => (a ~> b) -> (f b ~> b) -> Free f a ~> b
+iter f alg = go
+  where go :: Free f a ~> b
+        go rec = case runFree rec of
+          Pure a -> f a
+          Impure r -> alg (hfmap go r)
+
 
 -- Instances
 

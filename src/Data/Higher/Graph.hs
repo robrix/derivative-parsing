@@ -28,7 +28,6 @@ import Data.Functor.Const
 import Data.Higher.Eq
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
-import Data.Higher.Functor.Foldable
 import Data.Higher.Functor.Show
 import Data.Higher.Profunctor
 import Data.Higher.Transformation
