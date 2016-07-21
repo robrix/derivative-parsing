@@ -219,7 +219,7 @@ instance Functor (Graph ParserF) where
 
 instance Applicative (Rec ParserF v) where
   pure = rec . Ret . pure
-  a <*> b = uncurry ($) <$> (a `cat` b)
+  a <*> b = compact' (uncurry ($) <$> (a `cat` b))
 
 instance Applicative (Graph ParserF) where
   pure a = Graph (pure a)
