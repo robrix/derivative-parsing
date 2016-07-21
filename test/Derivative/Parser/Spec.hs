@@ -5,6 +5,7 @@ module Derivative.Parser.Spec where
 import Control.Applicative
 import Control.Monad
 import Derivative.Parser
+import Derivative.Parser.Char
 import Derivative.Parser.Char.Spec
 import Prelude hiding (abs)
 import Test.Hspec
@@ -238,16 +239,16 @@ spec = do
       varName `parse` "x" `shouldBe` ["x"]
 
     it "parses whitespace one character at a time" $
-      parseNull (ws `deriv` ' ') `shouldBe` " "
+      parseNull (parser space `deriv` ' ') `shouldBe` " "
 
     it "parses a single character string of whitespace" $
-      ws `parse` " " `shouldBe` " "
+      parser space `parse` " " `shouldBe` " "
 
     it "parses two characters of whitespace" $
-      ((,) <$> ws <*> ws) `parse` "  " `shouldBe` [(' ', ' ')]
+      parser ((,) <$> space <*> space) `parse` "  " `shouldBe` [(' ', ' ')]
 
     it "parses repeated whitespace strings" $
-      many ws `parse` "   " `shouldBe` [ "   " ]
+      parser (many space) `parse` "   " `shouldBe` [ "   " ]
 
     it "the derivative terminates on cyclic grammars" $
       (do { x <- return $! (deriv $! lam) 'x' ; x `seq` return True } ) `shouldReturn` True
@@ -268,9 +269,6 @@ cyclic = parser $ mu $ \ v -> v `label` "cyclic"
 
 varName :: Parser String
 varName = parser $ string "x"
-
-ws :: Parser Char
-ws = parser $ oneOf (char <$> " \t\r\n") `label` "ws"
 
 lam :: Parser Lam
 lam = parser $ mu (\ lam ->
