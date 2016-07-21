@@ -210,7 +210,7 @@ instance (Alternative a, Monad a) => HFoldable ParserF a where
     Bnd p g -> f (p >>= g)
     Lab p _ -> f p
     Del a -> f a
-    _ -> hempty
+    _ -> empty
 
 instance Functor (Rec ParserF v) where
   fmap f = compact' . rec . Map f
