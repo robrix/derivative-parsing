@@ -18,6 +18,10 @@ spec = do
     prop "parses isUpper characters" $
       \ c -> isUpper c `shouldNotBe` null (parser upper `parse` [c])
 
+  describe "lower" $ do
+    prop "parses isLower characters" $
+      \ c -> isLower c `shouldNotBe` null (parser lower `parse` [c])
+
   describe "alphaNum" $ do
     prop "parses isAlphaNum characters" $
       \ c -> isAlphaNum c `shouldNotBe` null (parser alphaNum `parse` [c])
