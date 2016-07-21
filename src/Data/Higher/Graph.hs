@@ -17,7 +17,7 @@ module Data.Higher.Graph
 , modifyGraph
 ) where
 
-import Data.Functor.Const
+import Control.Applicative
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
