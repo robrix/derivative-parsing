@@ -10,6 +10,10 @@ import Test.Hspec.QuickCheck
 
 spec :: Spec
 spec = do
+  describe "space" $ do
+    prop "parses isSpace characters" $
+      \ c -> isSpace c `shouldNotBe` null (parser space `parse` [c])
+
   describe "alphaNum" $ do
     prop "parses isAlphaNum characters" $
       \ c -> isAlphaNum c `shouldNotBe` null (parser alphaNum `parse` [c])
