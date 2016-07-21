@@ -127,10 +127,6 @@ spec = do
 
     describe "ret" $
       prop "is nullable" $
-        \ t -> nullable (parser (ret t) :: Parser Char) `shouldBe` True
-
-    describe "ret" $
-      prop "is nullable" $
         \ c -> nullable (parser (ret (c :: String))) `shouldBe` True
 
 
