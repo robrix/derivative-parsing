@@ -6,8 +6,9 @@ module Derivative.Parser
 , compact
 , deriv
 , label
-, lit
-, literal
+, char
+, category
+, string
 , oneOf
 , parse
 , parseNull
@@ -22,10 +23,12 @@ module Derivative.Parser
 , parser
 , combinator
 , nullable
+, isTerminal
 ) where
 
 import Control.Applicative
 import Data.Bifunctor (first)
+import Data.Char
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
@@ -41,10 +44,10 @@ parse p = parseNull . foldl deriv (compact p)
 
 
 commaSep1 :: Combinator v a -> Combinator v [a]
-commaSep1 = sep1 (lit ',')
+commaSep1 = sep1 (char ',')
 
 commaSep :: Combinator v a -> Combinator v [a]
-commaSep = sep (lit ',')
+commaSep = sep (char ',')
 
 sep1 :: Combinator v sep -> Combinator v a -> Combinator v [a]
 sep1 s p = (:) <$> p <*> many (s *> p)
@@ -60,8 +63,11 @@ infixl 4 `cat`
 cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
 cat a = compact' . rec . Cat a
 
-lit :: Char -> Combinator v Char
-lit = rec . Lit
+char :: Char -> Combinator v Char
+char = rec . Chr
+
+category :: GeneralCategory -> Combinator v Char
+category = rec . Uni
 
 delta :: Combinator v a -> Combinator v a
 delta = compact' . rec . Del
@@ -74,8 +80,8 @@ infixr 2 `label`
 label :: Combinator v a -> String -> Combinator v a
 label p = compact' . rec . Lab p
 
-literal :: String -> Combinator v String
-literal string = sequenceA (rec . Lit <$> string)
+string :: String -> Combinator v String
+string string = sequenceA (rec . Chr <$> string)
 
 mu :: (Combinator v a -> Combinator v a) -> Combinator v a
 mu f = Graph.mu $ \ v -> case f (var v) of
@@ -89,6 +95,8 @@ combinator :: Parser a -> Combinator v a
 combinator = unGraph
 
 
+
+
 -- Types
 
 -- | A parser type encoding concatenation, alternation, repetition, &c. as first-order constructors.
@@ -97,7 +105,8 @@ data ParserF f a where
   Alt :: f a -> f a -> ParserF f a
   Map :: (a -> b) -> f a -> ParserF f b
   Bnd :: f a -> (a -> f b) -> ParserF f b
-  Lit :: Char -> ParserF f Char
+  Chr :: Char -> ParserF f Char
+  Uni :: GeneralCategory -> ParserF f Char
   Ret :: [a] -> ParserF f a
   Nul :: ParserF f a
   Lab :: f a -> String -> ParserF f a
@@ -122,7 +131,8 @@ deriv g c = Graph (deriv' (unGraph g))
           Alt a b -> deriv' a <|> deriv' b
           Map f p -> f <$> deriv' p
           Bnd p f -> deriv' p >>= pjoin . f
-          Lit c' -> if c == c' then pure c else empty
+          Chr c' -> if c == c' then pure c else empty
+          Uni category -> if generalCategory c == category then pure c else empty
           Lab p s -> deriv' p `label` s
           _ -> empty
 
@@ -161,9 +171,9 @@ compact'' parser = case parser of
   Lab (Rec (In (Ret t))) _ -> Ret t
   Lab (Rec (In (Del p))) _ -> Del p
   Del (Rec (In Nul)) -> Nul
-  Del (Rec (In (Lit _))) -> Nul
   Del (Rec (In (Del p))) -> Del p
   Del (Rec (In (Ret a))) -> Ret a
+  Del (Rec (In p)) | isTerminal'' p -> Nul
   a -> a
 
 nullable :: Parser a -> Bool
@@ -176,6 +186,18 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   Lab p _ -> p
   Del a -> a
   _ -> Const False
+
+isTerminal :: Parser a -> Bool
+isTerminal = (getConst .) $ (`fold` Const False) (Const . isTerminal'')
+
+isTerminal'' :: ParserF f a -> Bool
+isTerminal'' p = case p of
+  Cat _ _ -> False
+  Alt _ _ -> False
+  Map _ _ -> False
+  Bnd _ _ -> False
+  Lab _ _ -> False
+  _ -> True
 
 size :: Parser a -> Int
 size = getSum . getK . fold ((K (Sum 1) <|>) . hfoldMap id) (K (Sum 0))
@@ -195,7 +217,8 @@ instance HFunctor ParserF where
     Alt a b -> Alt (f a) (f b)
     Map g p -> Map g (f p)
     Bnd p g -> Bnd (f p) (f . g)
-    Lit c -> Lit c
+    Chr c -> Chr c
+    Uni c -> Uni c
     Ret as -> Ret as
     Nul -> Nul
     Lab p s -> Lab (f p) s
@@ -251,7 +274,8 @@ instance HEqF ParserF
           (Alt a1 b1, Alt a2 b2) -> eq a1 a2 && eq b1 b2
           -- (Map f1 p1, Map f2 p2) -> eq p1 p2
           -- (Bnd p1 f1, Bnd p2 f2) -> eq p1 p2
-          (Lit c1, Lit c2) -> c1 == c2
+          (Chr c1, Chr c2) -> c1 == c2
+          (Uni c1, Uni c2) -> c1 == c2
           (Ret r1, Ret r2) -> length r1 == length r2
           (Nul, Nul) -> True
           (Lab p1 s1, Lab p2 s2) -> s1 == s2 && eq p1 p2
@@ -263,7 +287,8 @@ instance HShowF ParserF
           Alt a b -> showParen (n > 3) $ showsPrec 3 a . showString " <|> " . showsPrec 4 b
           Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
           Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
-          Lit c -> showParen (n >= 10) $ showString "lit " . shows c
+          Chr c -> showParen (n >= 10) $ showString "char " . shows c
+          Uni c -> showParen (n >= 10) $ showString "category " . shows c
           Ret [_] -> showParen (n >= 10) $ showString "pure t"
           Ret t -> showString "ret [" . showIndices (length t) . showString "]"
           Nul -> showString "empty"
