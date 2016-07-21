@@ -12,7 +12,6 @@ module Data.Higher.Graph
 , rfold
 , cfold
 , sfold
-, giter
 , transform
 , graphMap
 , liftRec
@@ -73,9 +72,6 @@ cfold = gfold id fix
 
 sfold :: (HFunctor f, HEq c) => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
 sfold alg k = gfold id (fixVal k) alg
-
-giter :: HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Graph f ~> b
-giter f alg = iter f alg . unGraph
 
 
 -- Maps
