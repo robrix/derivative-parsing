@@ -283,7 +283,3 @@ instance Monoid a => Alternative (K a)
 instance Monoid a => Monad (K a)
   where return = pure
         K a >>= _ = K a
-
-instance Monoid a => HMonoid (K a)
-  where hempty = empty
-        happend = (<|>)
