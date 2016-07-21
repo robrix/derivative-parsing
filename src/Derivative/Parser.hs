@@ -95,6 +95,9 @@ digit = oneOf (char <$> ['0'..'9'])
 octDigit :: Combinator v Char
 octDigit = oneOf (char <$> ['0'..'7'])
 
+hexDigit :: Combinator v Char
+hexDigit = digit <|> oneOf (char <$> ['a'..'f']) <|> oneOf (char <$> ['A'..'F'])
+
 
 -- Types
 
