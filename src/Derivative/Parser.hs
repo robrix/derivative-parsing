@@ -104,6 +104,9 @@ newline = char '\n'
 crlf :: Combinator v Char
 crlf = char '\r' *> newline
 
+endOfLine :: Combinator v Char
+endOfLine = newline <|> crlf
+
 
 -- Types
 
