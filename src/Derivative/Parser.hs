@@ -25,7 +25,6 @@ module Derivative.Parser
 ) where
 
 import Control.Applicative hiding (Const(..))
-import Control.Higher.Monad.Free
 import Data.Bifunctor (first)
 import Data.Functor.Const
 import Data.Higher.Foldable
@@ -81,9 +80,9 @@ literal :: String -> Combinator v String
 literal string = sequenceA (rec . Lit <$> string)
 
 mu :: (Combinator v a -> Combinator v a) -> Combinator v a
-mu f = Graph.mu $ \ v -> case runFree (f (var v)) of
-  Impure (In r) -> r
-  p -> Free p `Lab` ""
+mu f = Graph.mu $ \ v -> case f (var v) of
+  Rec (In r) -> r
+  p -> p `Lab` ""
 
 parser :: (forall v. Combinator v a) -> Parser a
 parser r = compact $ Graph r
@@ -115,10 +114,10 @@ type Combinator v = Rec ParserF v
 deriv :: Parser a -> Char -> Parser a
 deriv g c = Graph (deriv' (unGraph g))
   where deriv' :: Combinator (Combinator v) a -> Combinator v a
-        deriv' rc = case runFree rc of
-          Pure v -> v
-          Impure (Mu g) -> deriv'' (g (pjoin (Graph.mu g)))
-          Impure (In r) -> deriv'' r
+        deriv' rc = case rc of
+          Var v -> v
+          Rec (Mu g) -> deriv'' (g (pjoin (Graph.mu g)))
+          Rec (In r) -> deriv'' r
         deriv'' :: ParserF (Combinator (Combinator v)) a -> Combinator v a
         deriv'' p = case p of
           Cat a b -> deriv' a `cat` pjoin b <|> delta (pjoin a) `cat` deriv' b
@@ -148,25 +147,25 @@ compact' = liftRec compact''
 
 compact'' :: ParserF (Combinator v) a -> ParserF (Combinator v) a
 compact'' parser = case parser of
-  Cat (Free (Impure (In Nul))) _ -> Nul
-  Cat _ (Free (Impure (In Nul))) -> Nul
-  Cat (Free (Impure (In (Ret [t])))) b -> Map ((,) t) b
-  Cat a (Free (Impure (In (Ret [t])))) -> Map (flip (,) t) a
-  Cat (Free (Impure (In (Cat a b)))) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (cat a (cat b c))
-  Cat (Free (Impure (In (Map f a)))) b -> Map (first f) (cat a b)
-  Alt (Free (Impure (In Nul))) (Free (Impure (In p))) -> p
-  Alt (Free (Impure (In p))) (Free (Impure (In Nul))) -> p
-  Alt (Free (Impure (In (Ret a)))) (Free (Impure (In (Ret b)))) -> Ret (a <> b)
-  Map f (Free (Impure (In (Ret as)))) -> Ret (f <$> as)
-  Map g (Free (Impure (In (Map f p)))) -> Map (g . f) p
-  Map _ (Free (Impure (In Nul))) -> Nul
-  Lab (Free (Impure (In Nul))) _ -> Nul
-  Lab (Free (Impure (In (Ret t)))) _ -> Ret t
-  Lab (Free (Impure (In (Del p)))) _ -> Del p
-  Del (Free (Impure (In Nul))) -> Nul
-  Del (Free (Impure (In (Lit _)))) -> Nul
-  Del (Free (Impure (In (Del p)))) -> Del p
-  Del (Free (Impure (In (Ret a)))) -> Ret a
+  Cat (Rec (In Nul)) _ -> Nul
+  Cat _ (Rec (In Nul)) -> Nul
+  Cat (Rec (In (Ret [t]))) b -> Map ((,) t) b
+  Cat a (Rec (In (Ret [t]))) -> Map (flip (,) t) a
+  Cat (Rec (In (Cat a b))) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (cat a (cat b c))
+  Cat (Rec (In (Map f a))) b -> Map (first f) (cat a b)
+  Alt (Rec (In Nul)) (Rec (In p)) -> p
+  Alt (Rec (In p)) (Rec (In Nul)) -> p
+  Alt (Rec (In (Ret a))) (Rec (In (Ret b))) -> Ret (a <> b)
+  Map f (Rec (In (Ret as))) -> Ret (f <$> as)
+  Map g (Rec (In (Map f p))) -> Map (g . f) p
+  Map _ (Rec (In Nul)) -> Nul
+  Lab (Rec (In Nul)) _ -> Nul
+  Lab (Rec (In (Ret t))) _ -> Ret t
+  Lab (Rec (In (Del p))) _ -> Del p
+  Del (Rec (In Nul)) -> Nul
+  Del (Rec (In (Lit _))) -> Nul
+  Del (Rec (In (Del p))) -> Del p
+  Del (Rec (In (Ret a))) -> Ret a
   a -> a
 
 nullable :: Parser a -> Bool

@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances, InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
 module Data.Higher.Graph
-( Rec
+( Rec(..)
 , RecF(..)
 , Graph(..)
 , var
@@ -21,8 +21,6 @@ module Data.Higher.Graph
 , unrollGraph
 ) where
 
-import Control.Higher.Monad.Free hiding (iter)
-import qualified Control.Higher.Monad.Free as Free
 import Data.Function
 import Data.Functor.Const
 import Data.Higher.Eq
@@ -35,7 +33,7 @@ data RecF f v b a
   = Mu (v a -> f b a)
   | In (f b a)
 
-type Rec f v = Free (RecF f v) v
+data Rec f v a = Var (v a) | Rec (RecF f v (Rec f v) a)
 
 newtype Graph f a = Graph { unGraph :: forall v. Rec f v a }
 
@@ -43,13 +41,13 @@ newtype Graph f a = Graph { unGraph :: forall v. Rec f v a }
 -- Smart constructors
 
 var :: v a -> Rec f v a
-var = free . Pure
+var = Var
 
 mu :: (v a -> f (Rec f v) a) -> Rec f v a
-mu = free . Impure . Mu
+mu = Rec . Mu
 
 rec :: f (Rec f v) a -> Rec f v a
-rec = free . Impure . In
+rec = Rec . In
 
 
 -- Folds
@@ -57,9 +55,9 @@ rec = free . Impure . In
 iter :: forall f a b. HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Rec f a ~> b
 iter f alg = go
   where go :: Rec f a ~> b
-        go rec = case runFree rec of
-          Pure a -> f a
-          Impure r -> alg (hfmap go r)
+        go rec = case rec of
+          Var a -> f a
+          Rec r -> alg (hfmap go r)
 
 gfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> c
 gfold var bind recur = grfold var bind recur . unGraph
@@ -93,10 +91,10 @@ graphMap f = iter var $ \ rc -> case rc of
   In r -> rec (f r)
 
 liftRec :: (f (Rec f v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
-liftRec f rc = case runFree rc of
-  Pure v -> var v
-  Impure (Mu g) -> mu (f . g)
-  Impure (In r) -> rec (f r)
+liftRec f rc = case rc of
+  Var v -> var v
+  Rec (Mu g) -> mu (f . g)
+  Rec (In r) -> rec (f r)
 
 pjoin :: HFunctor f => Rec f (Rec f v) ~> Rec f v
 pjoin = iter id $ \ rc -> case rc of
@@ -118,23 +116,23 @@ unrollGraph g = Graph (pjoin (unroll (unGraph g)))
 -- Equality
 
 eqRec :: HEqF f => Int -> Rec f (Const Int) a -> Rec f (Const Int) a -> Bool
-eqRec n a b = case (runFree a, runFree b) of
-  (Pure x, Pure y) -> x == y
-  (Impure (Mu g), Impure (Mu h)) -> let a = g (Const (succ n))
-                                        b = h (Const (succ n)) in
-                                        heqF (eqRec (succ n)) a b
-  (Impure (In x), Impure (In y)) -> heqF (eqRec n) x y
+eqRec n a b = case (a, b) of
+  (Var x, Var y) -> x == y
+  (Rec (Mu g), Rec (Mu h)) -> let a = g (Const (succ n))
+                                  b = h (Const (succ n)) in
+                                  heqF (eqRec (succ n)) a b
+  (Rec (In x), Rec (In y)) -> heqF (eqRec n) x y
   _ -> False
 
 
 -- Show
 
 showsRec :: HShowF f => String -> Int -> Rec f (Const Char) a -> ShowS
-showsRec s n rec = case runFree rec of
-  Pure c -> showChar (getConst c)
-  Impure (Mu g) -> showString "Mu (\\ " . showChar (head s) . showString " ->\n  "
-                   . hshowsPrecF (showsRec (tail s)) n (g (Const (head s))) . showString "\n)\n"
-  Impure (In fa) -> hshowsPrecF (showsRec s) n fa
+showsRec s n rec = case rec of
+  Var c -> showChar (getConst c)
+  Rec (Mu g) -> showString "Mu (\\ " . showChar (head s) . showString " ->\n  "
+                . hshowsPrecF (showsRec (tail s)) n (g (Const (head s))) . showString "\n)\n"
+  Rec (In fa) -> hshowsPrecF (showsRec s) n fa
 
 
 -- Implementation details
