@@ -6,7 +6,7 @@ module Derivative.Parser
 , compact
 , deriv
 , label
-, lit
+, char
 , literal
 , oneOf
 , parse
@@ -41,10 +41,10 @@ parse p = parseNull . foldl deriv (compact p)
 
 
 commaSep1 :: Combinator v a -> Combinator v [a]
-commaSep1 = sep1 (lit ',')
+commaSep1 = sep1 (char ',')
 
 commaSep :: Combinator v a -> Combinator v [a]
-commaSep = sep (lit ',')
+commaSep = sep (char ',')
 
 sep1 :: Combinator v sep -> Combinator v a -> Combinator v [a]
 sep1 s p = (:) <$> p <*> many (s *> p)
@@ -60,8 +60,8 @@ infixl 4 `cat`
 cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
 cat a = compact' . rec . Cat a
 
-lit :: Char -> Combinator v Char
-lit = rec . Lit
+char :: Char -> Combinator v Char
+char = rec . Lit
 
 delta :: Combinator v a -> Combinator v a
 delta = compact' . rec . Del
@@ -263,7 +263,7 @@ instance HShowF ParserF
           Alt a b -> showParen (n > 3) $ showsPrec 3 a . showString " <|> " . showsPrec 4 b
           Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
           Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
-          Lit c -> showParen (n >= 10) $ showString "lit " . shows c
+          Lit c -> showParen (n >= 10) $ showString "char " . shows c
           Ret [_] -> showParen (n >= 10) $ showString "pure t"
           Ret t -> showString "ret [" . showIndices (length t) . showString "]"
           Nul -> showString "empty"
