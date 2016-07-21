@@ -101,6 +101,9 @@ hexDigit = digit <|> oneOf (char <$> ['a'..'f']) <|> oneOf (char <$> ['A'..'F'])
 newline :: Combinator v Char
 newline = char '\n'
 
+crlf :: Combinator v Char
+crlf = char '\r' *> newline
+
 
 -- Types
 
