@@ -209,6 +209,15 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   Del a -> a
   _ -> Const False
 
+isTerminal'' :: ParserF f a -> Bool
+isTerminal'' p = case p of
+  Cat _ _ -> False
+  Alt _ _ -> False
+  Map _ _ -> False
+  Bnd _ _ -> False
+  Lab _ _ -> False
+  _ -> True
+
 size :: Parser a -> Int
 size = getSum . getK . fold ((K (Sum 1) <|>) . hfoldMap id) (K (Sum 0))
 
