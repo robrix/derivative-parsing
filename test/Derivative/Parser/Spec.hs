@@ -277,7 +277,9 @@ lam = parser $ mu (\ lam ->
       abs <|> var <|> app) `label` "lambda"
 
 sexpr :: Parser Sexpr
-sexpr = parser $ Derivative.Parser.mu (\ a -> Atom <$> string "x" <|> List <$> (char open *> sep (char ' ') a <* char close))
+sexpr = parser $ Derivative.Parser.mu (\ a ->
+      Atom <$> string "x"
+  <|> List <$> (char open *> sep (char ' ') a <* char close))
   where (open, close) = ('(', ')')
 
 
