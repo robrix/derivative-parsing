@@ -193,9 +193,9 @@ compact'' parser = case parser of
   Lab (Rec (In (Ret t))) _ -> Ret t
   Lab (Rec (In (Del p))) _ -> Del p
   Del (Rec (In Nul)) -> Nul
-  Del (Rec (In (Chr _))) -> Nul
   Del (Rec (In (Del p))) -> Del p
   Del (Rec (In (Ret a))) -> Ret a
+  Del (Rec (In p)) | isTerminal'' p -> Nul
   a -> a
 
 nullable :: Parser a -> Bool
