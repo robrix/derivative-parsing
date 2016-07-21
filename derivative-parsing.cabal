@@ -26,7 +26,6 @@ library
                      , Data.Higher.Functor.Show
                      , Data.Higher.Graph
                      , Data.Higher.Monoid
-                     , Data.Higher.Pointed
                      , Data.Higher.Transformation
                      , Derivative.Parser
   build-depends:       base >= 4.7 && < 5
