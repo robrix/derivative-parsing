@@ -154,6 +154,7 @@ deriv g c = Graph (deriv' (unGraph g))
           Map f p -> f <$> deriv' p
           Bnd p f -> deriv' p >>= pjoin . f
           Chr c' -> if c == c' then pure c else empty
+          Uni category -> if generalCategory c == category then pure c else empty
           Lab p s -> deriv' p `label` s
           _ -> empty
 
