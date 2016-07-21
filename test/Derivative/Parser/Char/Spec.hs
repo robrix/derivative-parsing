@@ -10,8 +10,8 @@ spec :: Spec
 spec = do
   describe "alphaNum" $ do
     prop "parses isAlphaNum characters" $
-      \ c -> null (parser alphaNum `parse` [c]) `shouldNotBe` isAlphaNum c
+      \ c -> isAlphaNum c `shouldNotBe` null (parser alphaNum `parse` [c])
 
   describe "letter" $ do
     prop "parses isLetter characters" $
-      \ c -> null (parser letter `parse` [c]) `shouldNotBe` isLetter c
+      \ c -> isLetter c `shouldNotBe` null (parser letter `parse` [c])
