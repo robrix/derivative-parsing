@@ -23,6 +23,7 @@ module Derivative.Parser
 , parser
 , combinator
 , nullable
+, letter
 , digit
 , octDigit
 , hexDigit
@@ -99,6 +100,9 @@ parser r = compact $ Graph r
 combinator :: Parser a -> Combinator v a
 combinator = unGraph
 
+
+letter :: Combinator v Char
+letter = oneOf (category <$> [UppercaseLetter .. OtherLetter])
 
 digit :: Combinator v Char
 digit = oneOf (char <$> ['0'..'9'])
