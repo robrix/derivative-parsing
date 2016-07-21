@@ -23,6 +23,12 @@ module Derivative.Parser
 , parser
 , combinator
 , nullable
+, digit
+, octDigit
+, hexDigit
+, newline
+, crlf
+, endOfLine
 ) where
 
 import Control.Applicative
