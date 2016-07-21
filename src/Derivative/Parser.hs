@@ -285,6 +285,7 @@ instance HEqF ParserF
           -- (Map f1 p1, Map f2 p2) -> eq p1 p2
           -- (Bnd p1 f1, Bnd p2 f2) -> eq p1 p2
           (Chr c1, Chr c2) -> c1 == c2
+          (Uni c1, Uni c2) -> c1 == c2
           (Ret r1, Ret r2) -> length r1 == length r2
           (Nul, Nul) -> True
           (Lab p1 s1, Lab p2 s2) -> s1 == s2 && eq p1 p2
