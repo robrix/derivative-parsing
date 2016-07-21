@@ -95,9 +95,6 @@ pjoin = iter id $ \ rc -> case rc of
   Mu g -> mu (g . var)
   In r -> rec r
 
-preturn :: v ~> Rec f v
-preturn = var
-
 modifyGraph :: (forall v. Rec f v ~> Rec g v) -> Graph f ~> Graph g
 modifyGraph f g = Graph (f (unGraph g))
 
