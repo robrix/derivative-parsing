@@ -29,7 +29,6 @@ import Data.Higher.Eq
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
-import Data.Higher.Profunctor
 import Data.Higher.Transformation
 
 data RecF f v b a
@@ -165,8 +164,3 @@ instance HFunctor f => HFunctor (RecF f v)
   where hfmap f rec = case rec of
           Mu g -> Mu (hfmap f . g)
           In r -> In (hfmap f r)
-
-instance HFunctor f => HProfunctor (RecF f) where
-  hdimap f g rec = case rec of
-    Mu h -> Mu (hfmap g . h . f)
-    In r -> In (hfmap g r)
