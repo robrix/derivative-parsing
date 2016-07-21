@@ -1,5 +1,6 @@
 module Derivative.Parser.Char
-( alphaNum
+( space
+, alphaNum
 , letter
 , digit
 , octDigit
@@ -12,6 +13,9 @@ module Derivative.Parser.Char
 import Control.Applicative
 import Data.Char
 import Derivative.Parser
+
+space :: Combinator v Char
+space = oneOf (category <$> [Space .. ParagraphSeparator]) <|> oneOf (char <$> "\t\n\r\f\v")
 
 alphaNum :: Combinator v Char
 alphaNum = letter <|> oneOf (category <$> [DecimalNumber .. OtherNumber])
