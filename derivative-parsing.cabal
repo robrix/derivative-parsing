@@ -16,7 +16,6 @@ library
   hs-source-dirs:      src
   exposed-modules:     Control.Higher.Monad.Free
                      , Data.Functor.Const
-                     , Data.Higher.Bifunctor
                      , Data.Higher.Eq
                      , Data.Higher.Foldable
                      , Data.Higher.Functor
