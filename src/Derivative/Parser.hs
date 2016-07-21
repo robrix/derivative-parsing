@@ -7,6 +7,7 @@ module Derivative.Parser
 , deriv
 , label
 , char
+, category
 , string
 , oneOf
 , parse
@@ -63,6 +64,9 @@ cat a = compact' . rec . Cat a
 
 char :: Char -> Combinator v Char
 char = rec . Chr
+
+category :: GeneralCategory -> Combinator v Char
+category = rec . Uni
 
 delta :: Combinator v a -> Combinator v a
 delta = compact' . rec . Del
