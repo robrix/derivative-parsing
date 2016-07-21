@@ -1,10 +1,8 @@
 {-# LANGUAGE MultiParamTypeClasses, RankNTypes, TypeOperators #-}
 module Data.Higher.Foldable where
 
-import Data.Functor.Const
 import Data.Higher.Monoid
 import Data.Higher.Transformation
-import Data.Monoid
 
 class HFoldable f a where
   hfoldMap :: HMonoid m => (a ~> m) -> f a ~> m
