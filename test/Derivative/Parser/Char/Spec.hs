@@ -8,6 +8,6 @@ import Test.Hspec.QuickCheck
 
 spec :: Spec
 spec = do
-  describe "alphaNum" $
+  describe "alphaNum" $ do
     prop "parses isAlphaNum characters" $
       \ c -> null (parser alphaNum `parse` [c]) `shouldBe` not (isAlphaNum c)
