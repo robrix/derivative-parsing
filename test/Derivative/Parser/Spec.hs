@@ -264,7 +264,7 @@ cyclic :: Parser ()
 cyclic = parser $ mu $ \ v -> v `label` "cyclic"
 
 varName :: Parser String
-varName = parser $ literal "x"
+varName = parser $ string "x"
 
 ws :: Parser Char
 ws = parser $ oneOf (char <$> " \t\r\n") `label` "ws"
@@ -277,7 +277,7 @@ lam = parser $ mu (\ lam ->
       abs <|> var <|> app) `label` "lambda"
 
 sexpr :: Parser Sexpr
-sexpr = parser $ Derivative.Parser.mu (\ a -> Atom <$> literal "x" <|> List <$> (char open *> sep (char ' ') a <* char close))
+sexpr = parser $ Derivative.Parser.mu (\ a -> Atom <$> string "x" <|> List <$> (char open *> sep (char ' ') a <* char close))
   where (open, close) = ('(', ')')
 
 

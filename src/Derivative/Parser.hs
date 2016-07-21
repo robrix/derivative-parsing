@@ -7,7 +7,7 @@ module Derivative.Parser
 , deriv
 , label
 , char
-, literal
+, string
 , oneOf
 , parse
 , parseNull
@@ -74,8 +74,8 @@ infixr 2 `label`
 label :: Combinator v a -> String -> Combinator v a
 label p = compact' . rec . Lab p
 
-literal :: String -> Combinator v String
-literal string = sequenceA (rec . Lit <$> string)
+string :: String -> Combinator v String
+string string = sequenceA (rec . Lit <$> string)
 
 mu :: (Combinator v a -> Combinator v a) -> Combinator v a
 mu f = Graph.mu $ \ v -> case f (var v) of
