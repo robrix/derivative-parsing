@@ -26,6 +26,7 @@ module Derivative.Parser
 
 import Control.Applicative
 import Data.Bifunctor (first)
+import Data.Char
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
@@ -117,6 +118,7 @@ data ParserF f a where
   Map :: (a -> b) -> f a -> ParserF f b
   Bnd :: f a -> (a -> f b) -> ParserF f b
   Chr :: Char -> ParserF f Char
+  Uni :: GeneralCategory -> ParserF f Char
   Ret :: [a] -> ParserF f a
   Nul :: ParserF f a
   Lab :: f a -> String -> ParserF f a
@@ -215,6 +217,7 @@ instance HFunctor ParserF where
     Map g p -> Map g (f p)
     Bnd p g -> Bnd (f p) (f . g)
     Chr c -> Chr c
+    Uni c -> Uni c
     Ret as -> Ret as
     Nul -> Nul
     Lab p s -> Lab (f p) s
@@ -283,6 +286,7 @@ instance HShowF ParserF
           Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
           Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
           Chr c -> showParen (n >= 10) $ showString "char " . shows c
+          Uni c -> showParen (n >= 10) $ showString "category " . shows c
           Ret [_] -> showParen (n >= 10) $ showString "pure t"
           Ret t -> showString "ret [" . showIndices (length t) . showString "]"
           Nul -> showString "empty"
