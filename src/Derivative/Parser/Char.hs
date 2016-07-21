@@ -1,6 +1,7 @@
 module Derivative.Parser.Char
 ( space
 , upper
+, lower
 , alphaNum
 , letter
 , digit
@@ -20,6 +21,9 @@ space = oneOf (category <$> [Space .. ParagraphSeparator]) <|> oneOf (char <$> "
 
 upper :: Combinator v Char
 upper = category UppercaseLetter
+
+lower :: Combinator v Char
+lower = category LowercaseLetter
 
 alphaNum :: Combinator v Char
 alphaNum = letter <|> oneOf (category <$> [DecimalNumber .. OtherNumber])
