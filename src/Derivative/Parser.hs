@@ -98,6 +98,9 @@ octDigit = oneOf (char <$> ['0'..'7'])
 hexDigit :: Combinator v Char
 hexDigit = digit <|> oneOf (char <$> ['a'..'f']) <|> oneOf (char <$> ['A'..'F'])
 
+newline :: Combinator v Char
+newline = char '\n'
+
 
 -- Types
 
