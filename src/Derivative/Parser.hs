@@ -24,13 +24,6 @@ module Derivative.Parser
 , combinator
 , nullable
 , isTerminal
-, letter
-, digit
-, octDigit
-, hexDigit
-, newline
-, crlf
-, endOfLine
 ) where
 
 import Control.Applicative
@@ -102,26 +95,6 @@ combinator :: Parser a -> Combinator v a
 combinator = unGraph
 
 
-letter :: Combinator v Char
-letter = oneOf (category <$> [UppercaseLetter .. OtherLetter])
-
-digit :: Combinator v Char
-digit = oneOf (char <$> ['0'..'9'])
-
-octDigit :: Combinator v Char
-octDigit = oneOf (char <$> ['0'..'7'])
-
-hexDigit :: Combinator v Char
-hexDigit = digit <|> oneOf (char <$> ['a'..'f']) <|> oneOf (char <$> ['A'..'F'])
-
-newline :: Combinator v Char
-newline = char '\n'
-
-crlf :: Combinator v Char
-crlf = char '\r' *> newline
-
-endOfLine :: Combinator v Char
-endOfLine = newline <|> crlf
 
 
 -- Types
