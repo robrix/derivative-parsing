@@ -117,10 +117,10 @@ deriv g c = Graph (deriv' (unGraph g))
   where deriv' :: Combinator (Combinator v) a -> Combinator v a
         deriv' rc = case runFree rc of
           Pure v -> v
-          Impure (Mu g) -> rec (deriv'' (g (pjoin (Graph.mu g))))
-          Impure (In r) -> rec (deriv'' r)
-        deriv'' :: ParserF (Combinator (Combinator v)) a -> ParserF (Combinator v) a
-        deriv'' p = repack $ case p of
+          Impure (Mu g) -> deriv'' (g (pjoin (Graph.mu g)))
+          Impure (In r) -> deriv'' r
+        deriv'' :: ParserF (Combinator (Combinator v)) a -> Combinator v a
+        deriv'' p = case p of
           Cat a b -> deriv' a `cat` pjoin b <|> delta (pjoin a) `cat` deriv' b
           Alt a b -> deriv' a <|> deriv' b
           Map f p -> f <$> deriv' p
@@ -128,8 +128,6 @@ deriv g c = Graph (deriv' (unGraph g))
           Lit c' -> if c == c' then pure c else empty
           Lab p s -> deriv' p `label` s
           _ -> empty
-        repack (Free (Impure (In r))) = r
-        repack a = Lab a ""
 
 parseNull :: Parser a -> [a]
 parseNull = (`fold` []) $ \ parser -> case parser of
