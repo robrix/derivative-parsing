@@ -14,8 +14,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Control.Higher.Monad.Free
-                     , Data.Functor.Const
+  exposed-modules:     Data.Functor.Const
                      , Data.Higher.Eq
                      , Data.Higher.Foldable
                      , Data.Higher.Functor
