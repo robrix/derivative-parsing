@@ -2,7 +2,6 @@
 module Control.Higher.Monad.Free where
 
 import Data.Higher.Functor
-import Data.Higher.Pointed
 import Data.Higher.Transformation
 
 data FreeF f v b a
@@ -39,9 +38,6 @@ hbimap f g r = case r of
 
 instance HFunctor f => HFunctor (FreeF f v) where
   hfmap = hbimap id
-
-instance HPointed (Free f) where
-  hpoint = free . Pure
 
 instance HFunctor f => HFunctor (Free f) where
   hfmap :: forall a b. (a ~> b) -> Free f a ~> Free f b
