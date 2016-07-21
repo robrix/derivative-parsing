@@ -10,7 +10,6 @@ module Data.Higher.Graph
 , grfold
 , fold
 , rfold
-, cfold
 , transform
 , graphMap
 , liftRec
@@ -20,9 +19,7 @@ module Data.Higher.Graph
 , unrollGraph
 ) where
 
-import Data.Function
 import Data.Functor.Const
-import Data.Higher.Eq
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
@@ -71,9 +68,6 @@ fold alg k = rfold alg k . unGraph
 
 rfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> c
 rfold alg k = grfold id ($ k) alg
-
-cfold :: HFunctor f => (f t ~> t) -> Graph f ~> t
-cfold = gfold id fix
 
 
 -- Maps
