@@ -98,7 +98,6 @@ combinator = unGraph
 data ParserF f a where
   Cat :: f a -> f b -> ParserF f (a, b)
   Alt :: f a -> f a -> ParserF f a
-  Rep :: f a -> ParserF f [a]
   Map :: (a -> b) -> f a -> ParserF f b
   Bnd :: f a -> (a -> f b) -> ParserF f b
   Lit :: Char -> ParserF f Char
@@ -124,7 +123,6 @@ deriv g c = Graph (deriv' (unGraph g))
         deriv'' p = repack $ case p of
           Cat a b -> deriv' a `cat` pjoin b <|> delta (pjoin a) `cat` deriv' b
           Alt a b -> deriv' a <|> deriv' b
-          Rep p -> (:) <$> deriv' p <*> many (pjoin p)
           Map f p -> f <$> deriv' p
           Bnd p f -> deriv' p >>= pjoin . f
           Lit c' -> if c == c' then pure c else empty
@@ -137,7 +135,6 @@ parseNull :: Parser a -> [a]
 parseNull = (`fold` []) $ \ parser -> case parser of
   Cat a b -> (,) <$> a <*> b
   Alt a b -> a <> b
-  Rep _ -> [[]]
   Map f p -> f <$> p
   Bnd p f -> p >>= f
   Ret as -> as
@@ -165,7 +162,6 @@ compact'' parser = case parser of
   Map f (Free (Impure (In (Ret as)))) -> Ret (f <$> as)
   Map g (Free (Impure (In (Map f p)))) -> Map (g . f) p
   Map _ (Free (Impure (In Nul))) -> Nul
-  Rep (Free (Impure (In Nul))) -> Ret [[]]
   Lab (Free (Impure (In Nul))) _ -> Nul
   Lab (Free (Impure (In (Ret t)))) _ -> Ret t
   Lab (Free (Impure (In (Del p)))) _ -> Del p
@@ -179,7 +175,6 @@ nullable :: Parser a -> Bool
 nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   Cat a b -> Const $ getConst a && getConst b
   Alt a b -> Const $ getConst a || getConst b
-  Rep _ -> Const True
   Map _ p -> Const (getConst p)
   Bnd p _ -> Const (getConst p)
   Ret _ -> Const True
@@ -198,7 +193,6 @@ instance HFunctor ParserF where
   hfmap f p = case p of
     Cat a b -> Cat (f a) (f b)
     Alt a b -> Alt (f a) (f b)
-    Rep p -> Rep (f p)
     Map g p -> Map g (f p)
     Bnd p g -> Bnd (f p) (f . g)
     Lit c -> Lit c
@@ -211,7 +205,6 @@ instance (Alternative a, Monad a) => HFoldable ParserF a where
   hfoldMap f p = case p of
     Cat a b -> f ((,) <$> a <*> b)
     Alt a b -> f (a <|> b)
-    Rep p -> f (pure <$> p)
     Map g p -> f (g <$> p)
     Bnd p g -> f (p >>= g)
     Lab p _ -> f p
@@ -236,7 +229,7 @@ instance Alternative (Rec ParserF v) where
   empty = rec Nul
   a <|> b = compact' (rec (Alt a b))
   some v = (:) <$> v <*> many v
-  many = compact' . rec . Rep
+  many a = compact' (Derivative.Parser.mu $ \ r -> (:) <$> a <*> r <|> pure [])
 
 instance Alternative (Graph ParserF) where
   empty = Graph empty
@@ -256,7 +249,6 @@ instance HEqF ParserF
   where heqF eq a b = case (a, b) of
           (Cat a1 b1, Cat a2 b2) -> eq a1 a2 && eq b1 b2
           (Alt a1 b1, Alt a2 b2) -> eq a1 a2 && eq b1 b2
-          (Rep p1, Rep p2) -> eq p1 p2
           -- (Map f1 p1, Map f2 p2) -> eq p1 p2
           -- (Bnd p1 f1, Bnd p2 f2) -> eq p1 p2
           (Lit c1, Lit c2) -> c1 == c2
@@ -269,7 +261,6 @@ instance HShowF ParserF
   where hshowsPrecF showsPrec n p = case p of
           Cat a b -> showParen (n > 4) $ showsPrec 4 a . showString " `cat` " . showsPrec 5 b
           Alt a b -> showParen (n > 3) $ showsPrec 3 a . showString " <|> " . showsPrec 4 b
-          Rep p -> showParen (n >= 10) $ showString "many " . showsPrec 10 p
           Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
           Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
           Lit c -> showParen (n >= 10) $ showString "lit " . shows c
