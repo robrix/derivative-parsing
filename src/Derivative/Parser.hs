@@ -89,6 +89,10 @@ combinator :: Parser a -> Combinator v a
 combinator = unGraph
 
 
+digit :: Combinator v Char
+digit = oneOf (char <$> ['0'..'9'])
+
+
 -- Types
 
 -- | A parser type encoding concatenation, alternation, repetition, &c. as first-order constructors.
