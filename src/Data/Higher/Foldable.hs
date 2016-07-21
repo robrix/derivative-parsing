@@ -11,6 +11,3 @@ class HFoldable f a where
 
   hfold :: HMonoid a => f a ~> a
   hfold = hfoldMap id
-
-  hlength :: f a z -> Int
-  hlength = getSum . getConst . hfoldMap (const (Const (Sum 1)))
