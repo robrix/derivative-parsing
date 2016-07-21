@@ -11,7 +11,6 @@ module Data.Higher.Graph
 , fold
 , rfold
 , cfold
-, sfold
 , transform
 , graphMap
 , liftRec
@@ -76,9 +75,6 @@ rfold alg k = grfold id ($ k) alg
 cfold :: HFunctor f => (f t ~> t) -> Graph f ~> t
 cfold = gfold id fix
 
-sfold :: (HFunctor f, HEq c) => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
-sfold alg k = gfold id (fixVal k) alg
-
 
 -- Maps
 
@@ -133,13 +129,6 @@ showsRec s n rec = case rec of
   Rec (Mu g) -> showString "Mu (\\ " . showChar (head s) . showString " ->\n  "
                 . hshowsPrecF (showsRec (tail s)) n (g (Const (head s))) . showString "\n)\n"
   Rec (In fa) -> hshowsPrecF (showsRec s) n fa
-
-
--- Implementation details
-
-fixVal :: HEq h => h a -> (h a -> h a) -> h a
-fixVal v f = if v `heq` v' then v else fixVal v' f
-  where v' = f v
 
 
 -- Instances
