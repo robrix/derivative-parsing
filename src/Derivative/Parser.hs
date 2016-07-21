@@ -23,6 +23,7 @@ module Derivative.Parser
 , parser
 , combinator
 , nullable
+, isTerminal
 , letter
 , digit
 , octDigit
@@ -212,6 +213,9 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   Lab p _ -> p
   Del a -> a
   _ -> Const False
+
+isTerminal :: Parser a -> Bool
+isTerminal = (getConst .) $ (`fold` Const False) (Const . isTerminal'')
 
 isTerminal'' :: ParserF f a -> Bool
 isTerminal'' p = case p of
