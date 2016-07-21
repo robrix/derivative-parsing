@@ -3,7 +3,7 @@
 module Derivative.Parser.Spec where
 
 import Control.Applicative
-import Data.Higher.Graph
+import Control.Monad
 import Derivative.Parser
 import Prelude hiding (abs)
 import Test.Hspec
@@ -23,10 +23,10 @@ spec = do
         \ a b -> parseNull (parser $ pure a `cat` pure b) `shouldBe` [(a, b) :: (Char, Char)]
 
       prop "is empty when its left operand is empty" $
-        \ b -> parseNull (parser $ nul `cat` pure b) `shouldBe` ([] :: [(Char, Char)])
+        \ b -> parseNull (parser $ empty `cat` pure b) `shouldBe` ([] :: [(Char, Char)])
 
       prop "is empty when its right operand is empty" $
-        \ a -> parseNull (parser $ pure a `cat` nul) `shouldBe` ([] :: [(Char, Char)])
+        \ a -> parseNull (parser $ pure a `cat` empty) `shouldBe` ([] :: [(Char, Char)])
 
     describe "<|>" $ do
       prop "returns left parse trees" $
@@ -54,20 +54,18 @@ spec = do
       prop "returns parse trees" $
         \ a -> parseNull (pure (a :: Char)) `shouldBe` [a]
 
-    describe "nul" $ do
+    describe "empty" $ do
       it "is empty" $
-        parseNull (parser nul :: Parser Char) `shouldBe` []
+        parseNull (empty :: Parser Char) `shouldBe` []
 
-    describe "eps" $ do
-      it "is empty" $
-        parseNull (parser eps :: Parser Char) `shouldBe` []
+    describe "ret" $ do
+      prop "is identity" $
+        \ t -> parseNull (parser (ret t) :: Parser Char) `shouldBe` t
 
     it "terminates on cyclic grammars" $
-      let grammar = mu (\ a -> a <|> ret ["x"]) in
+      let grammar = parser $ mu (\ a -> a <|> ret ["x"]) in
       parseNull grammar `shouldBe` ["x"]
 
-    it "terminates on cyclic grammars" $
-      parseNull (lam `deriv` 'x') `shouldBe` [ Var' "x" ]
 
   describe "deriv" $ do
     describe "many" $ do
@@ -82,8 +80,8 @@ spec = do
         \ f c -> parseNull (fmap (getBlind f :: Char -> Char) (pure c)) `shouldBe` [getBlind f c]
 
     describe "lit" $ do
-      prop "represents unmatched content with the nul parser" $
-        \ a -> parser (lit a) `deriv` succ a `shouldBe` parser nul
+      prop "represents unmatched content with the empty parser" $
+        \ a -> parser (lit a) `deriv` succ a `shouldBe` empty
 
       prop "represents matched content with ε reduction parsers" $
         \ a -> parser (lit a) `deriv` a `shouldBe` parser (ret [a])
@@ -94,14 +92,14 @@ spec = do
 
     describe "pure" $ do
       prop "has the null derivative" $
-        \ a c -> parseNull (pure (a :: Char) `deriv` c) `shouldBe` []
+        \ a c -> pure (a :: Char) `deriv` c `shouldBe` empty
 
     it "terminates on cyclic grammars" $
-      compact (lam `deriv` 'x') `shouldNotBe` parser nul
+      compact (lam `deriv` 'x') `shouldNotBe` empty
 
     describe "ret" $ do
       prop "annihilates" $
-        \ a c -> parser (ret (a :: String)) `deriv` c `shouldBe` parser nul
+        \ a c -> parser (ret (a :: String)) `deriv` c `shouldBe` empty
 
     describe "label" $ do
       prop "distributivity" $
@@ -109,28 +107,32 @@ spec = do
 
     describe "cat" $ do
       prop "does not pass through non-nullable parsers" $
-        \ c -> parser (lit c `cat` lit (succ c)) `deriv` c `shouldBe` parser (ret [c] `cat` lit (succ c) <|> nul `cat` nul)
+        \ c -> parser (lit c `cat` pure (succ c)) `deriv` succ c `shouldBe` parser (empty `cat` lit (succ c) <|> empty `cat` pure (succ c))
 
       prop "passes through nullable parsers" $
-        \ c d -> parser (ret [c :: Char] `cat` lit d) `deriv` d `shouldBe` parser (nul `cat` lit d <|> ret [c] `cat` ret [d])
+        \ c d -> parser (ret [c :: Char] `cat` lit d) `deriv` d `shouldBe` parser (empty `cat` lit d <|> ret [c] `cat` ret [d])
+
+      it "applies to recursive grammars" $
+        parseNull (((sexpr `deriv` '(') `deriv` 'x') `deriv` ')') `shouldBe` [ List [ Atom "x" ] ]
 
 
   describe "nullable" $ do
     describe "cat" $ do
       prop "is the conjunction of its operands’ nullability" $
-        \ a b -> nullable (parser (unGraph a `cat` unGraph b)) `shouldBe` nullable (a :: Parser Char) && nullable (b :: Parser Char)
+        \ a b -> nullable (parser (combinator a `cat` combinator b)) `shouldBe` nullable (a :: Parser Char) && nullable (b :: Parser Char)
 
-    describe "nul" $
+    describe "empty" $
       it "is not nullable" $
-        nullable (parser nul) `shouldBe` False
-
-    describe "eps" $
-      it "is nullable" $
-        nullable (parser eps) `shouldBe` True
+        nullable empty `shouldBe` False
 
     describe "ret" $
       prop "is nullable" $
         \ c -> nullable (parser (ret (c :: String))) `shouldBe` True
+
+
+  describe "compaction" $ do
+    prop "reduces parser size" $
+      \ p -> size (compact p :: Parser Char) `shouldSatisfy` (<= size p)
 
 
   describe "Functor" $ do
@@ -153,6 +155,21 @@ spec = do
 
     prop "obeys the interchange law" $
       \ u y -> parseNull ((getBlind u :: Parser (Char -> Char)) <*> pure y) `shouldBe` parseNull (pure ($ y) <*> getBlind u)
+
+    prop "obeys the fmap identity" $
+      \ f x -> parseNull (pure (getBlind f :: Char -> Char) <*> x) `shouldBe` parseNull (fmap (getBlind f) x)
+
+    prop "obeys the return identity" $
+      \ f -> pure (getBlind f :: Char -> Char) `shouldBe` (return (getBlind f :: Char -> Char) :: Parser (Char -> Char))
+
+    prop "obeys the ap identity" $
+      \ f x -> parseNull (pure (getBlind f :: Char -> Char) <*> x) `shouldBe` parseNull (pure (getBlind f :: Char -> Char) `ap` x)
+
+    prop "obeys the left-discarding identity" $
+      \ u v -> parseNull (u *> v) `shouldBe` parseNull (pure (const id) <*> (u :: Parser Char) <*> (v :: Parser Char))
+
+    prop "obeys the right-discarding identity" $
+      \ u v -> parseNull (u <* v) `shouldBe` parseNull (pure const <*> (u :: Parser Char) <*> (v :: Parser Char))
 
 
   describe "Alternative" $ do
@@ -186,12 +203,18 @@ spec = do
       show (parser $ lit 'a' `cat` lit 'b') `shouldBe` "lit 'a' `cat` lit 'b'"
 
     it "terminates for cyclic grammars" $
-      show cyclic `shouldBe` "Mu (\n  a => a `label` \"cyclic\"\n)\n"
+      show cyclic `shouldBe` "Mu (\\ a ->\n  a `label` \"cyclic\"\n)\n"
+
+    it "does not parenthesize left-nested alternations" $
+      show (parser (lit 'a' <|> lit 'b' <|> lit 'c')) `shouldBe` "lit 'a' <|> lit 'b' <|> lit 'c'"
+
+    it "parenthesizes right-nested alternations" $
+      show (parser (lit 'a' <|> (lit 'b' <|> lit 'c'))) `shouldBe` "lit 'a' <|> (lit 'b' <|> lit 'c')"
 
 
   describe "size" $ do
     prop "is 1 for terminals" $
-      \ a b -> let terminals = [ parser $ ret a, parser $ lit b, parser nul, parser eps ] in sum (size <$> terminals) `shouldBe` length terminals
+      \ a b -> let terminals = [ parser $ ret a, parser $ lit b, empty, parser (ret []) ] in sum (size <$> terminals) `shouldBe` length terminals
 
     prop "is 1 + the sum for unary nonterminals" $
       \ a s -> [ size (parser (fmap id (lit a))), size (parser (lit a >>= return)), size (parser (lit a `label` s)) ] `shouldBe` [ 2, 2, 2 ]
@@ -206,7 +229,7 @@ spec = do
       size cyclic `shouldBe` 1
 
     it "terminates on interesting cyclic grammars" $
-      size lam `shouldBe` 32
+      size lam `shouldBe` 21
 
 
   describe "grammar" $ do
@@ -231,11 +254,14 @@ spec = do
     it "compaction terminates on cyclic grammars" $
       (do { x <- return $! compact $! (lam `deriv` 'x') ; x `seq` return True } ) `shouldReturn` True
 
+    it "parses variables" $
+      lam `parse` "x" `shouldBe` [ Var' "x" ]
+
 
 -- Grammar
 
 cyclic :: Parser ()
-cyclic = mu $ \ v -> v `label` "cyclic"
+cyclic = parser $ mu $ \ v -> v `label` "cyclic"
 
 varName :: Parser String
 varName = parser $ literal "x"
@@ -244,16 +270,25 @@ ws :: Parser Char
 ws = parser $ oneOf (lit <$> " \t\r\n") `label` "ws"
 
 lam :: Parser Lam
-lam = mu (\ lam ->
+lam = parser $ mu (\ lam ->
   let var = Var' . pure <$> lit 'x' `label` "var"
       app = (App <$> lam <*> (lit ' ' *> lam)) `label` "app"
-      abs = (Abs <$> (literal "\\" *> (pure <$> lit 'x')) <*> (lit '.' *> lam)) `label` "abs" in
-      abs <|> var <|> app `label` "lambda")
+      abs = (Abs . pure <$> (lit '\\' *> lit 'x') <*> (lit '.' *> lam)) `label` "abs" in
+      abs <|> var <|> app) `label` "lambda"
+
+sexpr :: Parser Sexpr
+sexpr = parser $ Derivative.Parser.mu (\ a -> Atom <$> literal "x" <|> List <$> (lit open *> sep (lit ' ') a <* lit close))
+  where (open, close) = ('(', ')')
 
 
 -- Types
 
 data Lam = Var' String | Abs String Lam | App Lam Lam
+  deriving (Eq, Show)
+
+data Sexpr
+  = Atom String
+  | List [Sexpr]
   deriving (Eq, Show)
 
 
@@ -262,6 +297,8 @@ data Lam = Var' String | Abs String Lam | App Lam Lam
 instance Arbitrary a => Arbitrary (Parser a) where
   arbitrary = oneof
     [ pure <$> arbitrary
-    , pure (parser nul)
-    , pure (parser eps)
+    , pure empty
+    , pure (parser (ret []))
+    , (<|>) <$> arbitrary <*> arbitrary
+    , (\ p s -> parser (combinator p `label` s)) <$> arbitrary <*> arbitrary
     ]

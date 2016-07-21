@@ -1,7 +1,8 @@
-{-# LANGUAGE RankNTypes, TypeOperators #-}
+{-# LANGUAGE PolyKinds, RankNTypes, TypeOperators #-}
 module Data.Higher.Functor where
 
 import Data.Higher.Transformation
 
-class HFunctor h where
-  hfmap :: (f ~> g) -> h f ~> h g
+class HFunctor f where
+  infixl 4 `hfmap`
+  hfmap :: (a ~> b) -> f a ~> f b

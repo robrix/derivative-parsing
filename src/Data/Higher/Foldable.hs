@@ -1,5 +1,8 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE MultiParamTypeClasses, RankNTypes, TypeOperators #-}
 module Data.Higher.Foldable where
 
-class HFoldable h where
-  hfoldMap :: Monoid m => (forall b. f b -> m) -> h f a -> m
+import Control.Applicative
+import Data.Higher.Transformation
+
+class HFoldable f a where
+  hfoldMap :: Alternative m => (a ~> m) -> f a ~> m

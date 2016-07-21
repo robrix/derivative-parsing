@@ -2,4 +2,4 @@
 module Data.Higher.Functor.Show where
 
 class HShowF f
-  where hshowsPrecF :: Int -> (forall a. Int -> r a -> ShowS) -> f r a -> ShowS
+  where hshowsPrecF :: (forall a. Int -> r a -> ShowS) -> Int -> f r a -> ShowS
