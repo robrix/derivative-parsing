@@ -279,9 +279,10 @@ lam = parser $ mu (\ lam ->
 
 sexpr :: Parser Sexpr
 sexpr = parser $ Derivative.Parser.mu (\ a ->
-      Atom <$> string "x"
+      Atom <$> identifier
   <|> List <$> (char open *> sep (char ' ') a <* char close))
   where (open, close) = ('(', ')')
+        identifier = (:) <$> letter <*> many alphaNum
 
 
 -- Types
