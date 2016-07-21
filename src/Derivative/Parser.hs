@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, MultiParamTypeClasses, RankNTypes #-}
+{-# LANGUAGE DeriveFunctor, FlexibleInstances, GADTs, MultiParamTypeClasses, RankNTypes #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -24,9 +24,8 @@ module Derivative.Parser
 , nullable
 ) where
 
-import Control.Applicative hiding (Const(..))
+import Control.Applicative
 import Data.Bifunctor (first)
-import Data.Functor.Const
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
@@ -180,7 +179,13 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   _ -> Const False
 
 size :: Parser a -> Int
-size = getSum . getConst . fold ((Const (Sum 1) <|>) . hfold) (Const (Sum 0))
+size = getSum . getK . fold ((K (Sum 1) <|>) . hfold) (K (Sum 0))
+
+
+-- Implementation details
+
+newtype K a b = K { getK :: a }
+  deriving (Eq, Functor, Ord, Show)
 
 
 -- Instances
@@ -266,3 +271,19 @@ instance HShowF ParserF
           Lab p s -> showParen (n > 2) $ showsPrec 3 p . showString " `label` " . shows s
           Del a -> showParen (n >= 10) $ showString "delta " . showsPrec 10 a
           where showIndices n = foldr (.) id ((showChar 't' .) . shows <$> take n (iterate succ (0 :: Integer)))
+
+instance Monoid a => Applicative (K a)
+  where pure = const (K mempty)
+        K a <*> K b = K (a <> b)
+
+instance Monoid a => Alternative (K a)
+  where empty = K mempty
+        K a <|> K b = K (a <> b)
+
+instance Monoid a => Monad (K a)
+  where return = pure
+        K a >>= _ = K a
+
+instance Monoid a => HMonoid (K a)
+  where hempty = empty
+        happend = (<|>)
