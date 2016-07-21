@@ -92,6 +92,9 @@ combinator = unGraph
 digit :: Combinator v Char
 digit = oneOf (char <$> ['0'..'9'])
 
+octDigit :: Combinator v Char
+octDigit = oneOf (char <$> ['0'..'7'])
+
 
 -- Types
 
