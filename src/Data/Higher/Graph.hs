@@ -21,7 +21,8 @@ module Data.Higher.Graph
 , unrollGraph
 ) where
 
-import Control.Higher.Monad.Free
+import Control.Higher.Monad.Free hiding (iter)
+import qualified Control.Higher.Monad.Free as Free
 import Data.Function
 import Data.Functor.Const
 import Data.Higher.Eq
@@ -52,6 +53,13 @@ rec = free . Impure . In
 
 
 -- Folds
+
+iter :: forall f a b. HFunctor f => (a ~> b) -> (RecF f a b ~> b) -> Rec f a ~> b
+iter f alg = go
+  where go :: Rec f a ~> b
+        go rec = case runFree rec of
+          Pure a -> f a
+          Impure r -> alg (hfmap go r)
 
 gfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> c
 gfold var bind recur = grfold var bind recur . unGraph
