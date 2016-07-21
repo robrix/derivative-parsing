@@ -183,7 +183,6 @@ size :: Parser a -> Int
 size = getSum . getConst . fold ((Const (Sum 1) <|>) . hfold) (Const (Sum 0))
 
 
-
 -- Instances
 
 instance HFunctor ParserF where
