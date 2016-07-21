@@ -1,5 +1,6 @@
 module Derivative.Parser.Char
-( letter
+( alphaNum
+, letter
 , digit
 , octDigit
 , hexDigit
@@ -11,6 +12,9 @@ module Derivative.Parser.Char
 import Control.Applicative
 import Data.Char
 import Derivative.Parser
+
+alphaNum :: Combinator v Char
+alphaNum = letter <|> digit
 
 letter :: Combinator v Char
 letter = oneOf (category <$> [UppercaseLetter .. OtherLetter])
