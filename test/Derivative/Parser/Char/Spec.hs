@@ -14,6 +14,10 @@ spec = do
     prop "parses isSpace characters" $
       \ c -> isSpace c `shouldNotBe` null (parser space `parse` [c])
 
+  describe "upper" $ do
+    prop "parses isUpper characters" $
+      \ c -> isUpper c `shouldNotBe` null (parser upper `parse` [c])
+
   describe "alphaNum" $ do
     prop "parses isAlphaNum characters" $
       \ c -> isAlphaNum c `shouldNotBe` null (parser alphaNum `parse` [c])
