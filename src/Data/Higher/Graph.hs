@@ -15,8 +15,6 @@ module Data.Higher.Graph
 , liftRec
 , pjoin
 , modifyGraph
-, unroll
-, unrollGraph
 ) where
 
 import Data.Functor.Const
@@ -93,14 +91,6 @@ pjoin = iter id $ \ rc -> case rc of
 
 modifyGraph :: (forall v. Rec f v ~> Rec g v) -> Graph f ~> Graph g
 modifyGraph f g = Graph (f (unGraph g))
-
-unroll :: HFunctor f => Rec f (Rec f v) a -> Rec f (Rec f v) a
-unroll = iter var $ \ rc -> case rc of
-  Mu g -> rec (g (pjoin (unroll (mu g))))
-  In r -> rec r
-
-unrollGraph :: HFunctor f => Graph f ~> Graph f
-unrollGraph g = Graph (pjoin (unroll (unGraph g)))
 
 
 -- Equality
