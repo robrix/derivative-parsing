@@ -5,6 +5,7 @@ module Derivative.Parser.Spec where
 import Control.Applicative
 import Control.Monad
 import Derivative.Parser
+import Derivative.Parser.Char.Spec
 import Prelude hiding (abs)
 import Test.Hspec
 import Test.Hspec.QuickCheck
@@ -256,6 +257,8 @@ spec = do
 
     it "parses variables" $
       lam `parse` "x" `shouldBe` [ Var' "x" ]
+
+  describe "Char" Derivative.Parser.Char.Spec.spec
 
 
 -- Grammar
