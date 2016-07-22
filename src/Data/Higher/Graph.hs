@@ -120,6 +120,9 @@ showsRec s n rec = case rec of
 instance HEqF f => Eq (Graph f a)
   where a == b = eqRec 0 (unGraph a) (unGraph b)
 
+instance HEqF f => Eq (Rec f (Const Int) a)
+  where a == b = eqRec 0 a b
+
 instance HShowF f => Show (Graph f a)
   where showsPrec n = showsPrec n . (unGraph :: Graph f ~> Rec f (Const Char))
 
