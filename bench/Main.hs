@@ -11,5 +11,6 @@ main = defaultMain
     , bench "10" $ whnf (parse (parser (many (char 'a')))) (replicate 10 'a')
     , bench "100" $ whnf (parse (parser (many (char 'a')))) (replicate 100 'a')
     , bench "1000" $ whnf (parse (parser (many (char 'a')))) (replicate 1000 'a')
+    , bench "10000" $ whnf (parse (parser (many (char 'a')))) (replicate 10000 'a')
     ]
   ]
