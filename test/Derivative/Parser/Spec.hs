@@ -77,6 +77,10 @@ spec = do
       prop "produces no parse trees when unsuccessful" $
         \ c -> parseNull (parser (many (char c)) `deriv` succ c) `shouldBe` []
 
+      prop "is constant in parser size" $
+        \ c i -> let p = parser (many (char c)) in
+          take i (size <$> iterate (`deriv` c) p) `shouldBe` take i (size p : repeat (succ (size p)))
+
     describe "fmap" $ do
       prop "distributivity" $
         \ f c -> parseNull (fmap (getBlind f :: Char -> Char) (pure c)) `shouldBe` [getBlind f c]
