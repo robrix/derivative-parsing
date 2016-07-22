@@ -95,8 +95,6 @@ combinator :: Parser a -> Combinator v a
 combinator = unGraph
 
 
-
-
 -- Types
 
 -- | A parser type encoding concatenation, alternation, repetition, &c. as first-order constructors.
