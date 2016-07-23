@@ -29,6 +29,7 @@ module Derivative.Parser
 import Control.Applicative
 import Data.Bifunctor (first)
 import Data.Char
+import Data.Foldable (foldl')
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
@@ -40,7 +41,7 @@ import Data.Monoid hiding (Alt)
 -- API
 
 parse :: Foldable f => Parser t a -> f t -> [a]
-parse p = parseNull . foldl deriv (compact p)
+parse p = parseNull . foldl' deriv (compact p)
 
 
 commaSep1 :: Combinator v Char a -> Combinator v Char [a]
