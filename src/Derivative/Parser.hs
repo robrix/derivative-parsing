@@ -98,21 +98,21 @@ combinator = unGraph
 -- Types
 
 -- | A parser type encoding concatenation, alternation, repetition, &c. as first-order constructors.
-data ParserF f a where
-  Cat :: f a -> f b -> ParserF f (a, b)
-  Alt :: f a -> f a -> ParserF f a
-  Rep :: f a -> ParserF f [a]
-  Map :: (a -> b) -> f a -> ParserF f b
-  Bnd :: f a -> (a -> f b) -> ParserF f b
-  Tok :: Char -> ParserF f Char
-  Uni :: GeneralCategory -> ParserF f Char
-  Ret :: [a] -> ParserF f a
-  Nul :: ParserF f a
-  Lab :: f a -> String -> ParserF f a
-  Del :: f a -> ParserF f a
+data ParserF t f a where
+  Cat :: f a -> f b -> ParserF t f (a, b)
+  Alt :: f a -> f a -> ParserF t f a
+  Rep :: f a -> ParserF t f [a]
+  Map :: (a -> b) -> f a -> ParserF t f b
+  Bnd :: f a -> (a -> f b) -> ParserF t f b
+  Tok :: Char -> ParserF t f Char
+  Uni :: GeneralCategory -> ParserF t f Char
+  Ret :: [a] -> ParserF t f a
+  Nul :: ParserF t f a
+  Lab :: f a -> String -> ParserF t f a
+  Del :: f a -> ParserF t f a
 
-type Parser t = Graph ParserF
-type Combinator v t = Rec ParserF v
+type Parser t = Graph (ParserF t)
+type Combinator v t = Rec (ParserF t) v
 
 
 -- Algorithm
@@ -124,7 +124,7 @@ deriv g c = Graph (deriv' (unGraph g))
           Var v -> v
           Rec (Mu g) -> deriv'' (g (pjoin (Graph.mu g)))
           Rec (In r) -> deriv'' r
-        deriv'' :: ParserF (Combinator (Combinator v t) t) a -> Combinator v t a
+        deriv'' :: ParserF t (Combinator (Combinator v t) t) a -> Combinator v t a
         deriv'' p = case p of
           Cat a b -> deriv' a `cat` pjoin b <|> delta (pjoin a) `cat` deriv' b
           Alt a b -> deriv' a <|> deriv' b
@@ -154,7 +154,7 @@ compact = transform compact''
 compact' :: Combinator v t a -> Combinator v t a
 compact' = liftRec compact''
 
-compact'' :: ParserF (Combinator v t) a -> ParserF (Combinator v t) a
+compact'' :: ParserF t (Combinator v t) a -> ParserF t (Combinator v t) a
 compact'' parser = case parser of
   Cat (Rec (In Nul)) _ -> Nul
   Cat _ (Rec (In Nul)) -> Nul
@@ -193,7 +193,7 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
 isTerminal :: Parser t a -> Bool
 isTerminal = (getConst .) $ (`fold` Const False) (Const . isTerminal'')
 
-isTerminal'' :: ParserF f a -> Bool
+isTerminal'' :: ParserF t f a -> Bool
 isTerminal'' p = case p of
   Cat _ _ -> False
   Alt _ _ -> False
@@ -215,7 +215,7 @@ newtype K a b = K { getK :: a }
 
 -- Instances
 
-instance HFunctor ParserF where
+instance HFunctor (ParserF t) where
   hfmap f p = case p of
     Cat a b -> Cat (f a) (f b)
     Alt a b -> Alt (f a) (f b)
@@ -229,7 +229,7 @@ instance HFunctor ParserF where
     Lab p s -> Lab (f p) s
     Del a -> Del (f a)
 
-instance (Alternative a, Monad a) => HFoldable ParserF a where
+instance (Alternative a, Monad a) => HFoldable (ParserF t) a where
   hfoldMap f p = case p of
     Cat a b -> f ((,) <$> a <*> b)
     Alt a b -> f (a <|> b)
@@ -239,41 +239,41 @@ instance (Alternative a, Monad a) => HFoldable ParserF a where
     Del a -> f a
     _ -> empty
 
-instance Functor (Rec ParserF v) where
+instance Functor (Rec (ParserF t) v) where
   fmap f = compact' . rec . Map f
 
-instance Functor (Graph ParserF) where
+instance Functor (Graph (ParserF t)) where
   fmap f (Graph rec) = Graph (f <$> rec)
 
-instance Applicative (Rec ParserF v) where
+instance Applicative (Rec (ParserF t) v) where
   pure = rec . Ret . pure
   a <*> b = compact' (uncurry ($) <$> (a `cat` b))
 
-instance Applicative (Graph ParserF) where
+instance Applicative (Graph (ParserF t)) where
   pure a = Graph (pure a)
   Graph f <*> Graph a = Graph (f <*> a)
 
-instance Alternative (Rec ParserF v) where
+instance Alternative (Rec (ParserF t) v) where
   empty = rec Nul
   a <|> b = compact' (rec (Alt a b))
   some v = (:) <$> v <*> many v
   many = compact' . rec . Rep
 
-instance Alternative (Graph ParserF) where
+instance Alternative (Graph (ParserF t)) where
   empty = Graph empty
   Graph a <|> Graph b = Graph (a <|> b)
   some (Graph p) = Graph (some p)
   many (Graph p) = Graph (many p)
 
-instance Monad (Rec ParserF v) where
+instance Monad (Rec (ParserF t) v) where
   return = pure
   (>>=) = (compact' .) . (rec .) . Bnd
 
-instance Monad (Graph ParserF) where
+instance Monad (Graph (ParserF t)) where
   return = pure
   Graph p >>= f = Graph (p >>= unGraph . f)
 
-instance HEqF ParserF
+instance HEqF (ParserF t)
   where heqF eq a b = case (a, b) of
           (Cat a1 b1, Cat a2 b2) -> eq a1 a2 && eq b1 b2
           (Alt a1 b1, Alt a2 b2) -> eq a1 a2 && eq b1 b2
@@ -286,7 +286,7 @@ instance HEqF ParserF
           (Lab p1 s1, Lab p2 s2) -> s1 == s2 && eq p1 p2
           _ -> False
 
-instance HShowF ParserF
+instance HShowF (ParserF t)
   where hshowsPrecF showsPrec n p = case p of
           Cat a b -> showParen (n > 4) $ showsPrec 4 a . showString " `cat` " . showsPrec 5 b
           Alt a b -> showParen (n > 3) $ showsPrec 3 a . showString " <|> " . showsPrec 4 b
