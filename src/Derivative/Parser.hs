@@ -273,7 +273,7 @@ instance Monad (Graph (ParserF t)) where
   return = pure
   Graph p >>= f = Graph (p >>= unGraph . f)
 
-instance HEqF (ParserF t)
+instance Eq t => HEqF (ParserF t)
   where heqF eq a b = case (a, b) of
           (Cat a1 b1, Cat a2 b2) -> eq a1 a2 && eq b1 b2
           (Alt a1 b1, Alt a2 b2) -> eq a1 a2 && eq b1 b2
@@ -286,7 +286,7 @@ instance HEqF (ParserF t)
           (Lab p1 s1, Lab p2 s2) -> s1 == s2 && eq p1 p2
           _ -> False
 
-instance HShowF (ParserF t)
+instance Show t => HShowF (ParserF t)
   where hshowsPrecF showsPrec n p = case p of
           Cat a b -> showParen (n > 4) $ showsPrec 4 a . showString " `cat` " . showsPrec 5 b
           Alt a b -> showParen (n > 3) $ showsPrec 3 a . showString " <|> " . showsPrec 4 b
