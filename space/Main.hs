@@ -7,8 +7,9 @@ import Weigh
 
 main :: IO ()
 main = mainWith $ do
-  wgroup "many" $ let p = parser (many (char 'a')) in
-    [ weigh "1" (parse p) (replicate (10 ^ 0) 'a')
+  wgroup "many" $ let p = parser (many (char 'a'))
+                      b n = weigh (show n) (parse p) (replicate n 'a') in
+    [ b 1
     ]
 
 wgroup :: NFData a => String -> [Weighable a b] -> Weigh ()
