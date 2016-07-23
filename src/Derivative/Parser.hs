@@ -140,7 +140,7 @@ parseNull :: Parser a -> [a]
 parseNull = (`fold` []) $ \ parser -> case parser of
   Cat a b -> (,) <$> a <*> b
   Alt a b -> a <> b
-  Rep a -> [[]]
+  Rep _ -> [[]]
   Map f p -> f <$> p
   Bnd p f -> p >>= f
   Ret as -> as
