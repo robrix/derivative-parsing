@@ -64,10 +64,10 @@ cat :: Combinator v t a -> Combinator v t b -> Combinator v t (a, b)
 cat a = compact' . rec . Cat a
 
 char :: Char -> Combinator v Char Char
-char = rec . Tok
+char = rec . Sat . Equal
 
 category :: GeneralCategory -> Combinator v Char Char
-category = rec . Uni
+category = rec . Sat . Category
 
 delta :: Combinator v t a -> Combinator v t a
 delta = compact' . rec . Del
@@ -81,7 +81,7 @@ label :: Combinator v t a -> String -> Combinator v t a
 label p = compact' . rec . Lab p
 
 string :: String -> Combinator v Char String
-string string = sequenceA (rec . Tok <$> string)
+string string = sequenceA (rec . Sat . Equal <$> string)
 
 mu :: (Combinator v t a -> Combinator v t a) -> Combinator v t a
 mu f = Graph.mu $ \ v -> case f (var v) of
@@ -104,8 +104,7 @@ data ParserF t f a where
   Rep :: f a -> ParserF t f [a]
   Map :: (a -> b) -> f a -> ParserF t f b
   Bnd :: f a -> (a -> f b) -> ParserF t f b
-  Tok :: t -> ParserF t f t
-  Uni :: GeneralCategory -> ParserF Char f Char
+  Sat :: Predicate t -> ParserF t f t
   Ret :: [a] -> ParserF t f a
   Nul :: ParserF t f a
   Lab :: f a -> String -> ParserF t f a
@@ -135,8 +134,7 @@ deriv g c = Graph (deriv' (unGraph g))
           Rep a -> uncurry (:) <$> (deriv' a `cat` pjoin (many a))
           Map f p -> f <$> deriv' p
           Bnd p f -> deriv' p >>= pjoin . f
-          Tok c' -> if c == c' then pure c else empty
-          Uni category -> if generalCategory c == category then pure c else empty
+          Sat p -> if c `satisfies` p then pure c else empty
           Lab p s -> deriv' p `label` s
           _ -> empty
 
@@ -232,8 +230,7 @@ instance HFunctor (ParserF t) where
     Rep a -> Rep (f a)
     Map g p -> Map g (f p)
     Bnd p g -> Bnd (f p) (f . g)
-    Tok c -> Tok c
-    Uni c -> Uni c
+    Sat p -> Sat p
     Ret as -> Ret as
     Nul -> Nul
     Lab p s -> Lab (f p) s
@@ -289,8 +286,7 @@ instance HEqF (ParserF t)
           (Alt a1 b1, Alt a2 b2) -> eq a1 a2 && eq b1 b2
           -- (Map f1 p1, Map f2 p2) -> eq p1 p2
           -- (Bnd p1 f1, Bnd p2 f2) -> eq p1 p2
-          (Tok c1, Tok c2) -> c1 == c2
-          (Uni c1, Uni c2) -> c1 == c2
+          (Sat p1, Sat p2) -> p1 == p2
           (Ret r1, Ret r2) -> length r1 == length r2
           (Nul, Nul) -> True
           (Lab p1 s1, Lab p2 s2) -> s1 == s2 && eq p1 p2
@@ -303,8 +299,8 @@ instance Show t => HShowF (ParserF t)
           Rep a -> showParen (n >= 10) $ showString "many " . showsPrec 10 a
           Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
           Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
-          Tok c -> showParen (n >= 10) $ showString "char " . shows c
-          Uni c -> showParen (n >= 10) $ showString "category " . shows c
+          Sat (Equal c) -> showParen (n >= 10) $ showString "char " . shows c
+          Sat (Category c) -> showParen (n >= 10) $ showString "category " . shows c
           Ret [_] -> showParen (n >= 10) $ showString "pure t"
           Ret t -> showString "ret [" . showIndices (length t) . showString "]"
           Nul -> showString "empty"
