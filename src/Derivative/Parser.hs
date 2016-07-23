@@ -323,3 +323,8 @@ instance Monoid a => Alternative (K a)
 instance Monoid a => Monad (K a)
   where return = pure
         K a >>= _ = K a
+
+instance Eq (Predicate t) where
+  Equal a == Equal b = a == b
+  Category a == Category b = a == b
+  _ == _ = False
