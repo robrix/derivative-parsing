@@ -10,10 +10,11 @@ main = mainWith $ do
   let p = parser (many (char 'a'))
   func "many/1" (parse p) (replicate (10 ^ 0) 'a')
 
-wbench :: NFData a => String -> Weighable a b -> Weigh ()
-wbench name w = runWeighable w (func name)
+wgroup :: NFData a => String -> [Weighable a b] -> Weigh ()
+wgroup prefix = fmap (() <$) . traverse $ \ w ->
+  runWeighable w (\ name -> func (prefix ++ "/" ++ name))
 
-newtype Weighable a b = Weighable { runWeighable :: ((b -> a) -> b -> Weigh ()) -> Weigh () }
+newtype Weighable a b = Weighable { runWeighable :: (String -> (b -> a) -> b -> Weigh ()) -> Weigh () }
 
-weigh :: NFData a => (b -> a) -> b -> Weighable a b
-weigh f a = Weighable $ \ g -> g f a
+weigh :: NFData a => String -> (b -> a) -> b -> Weighable a b
+weigh s f a = Weighable $ \ g -> g s f a
