@@ -117,14 +117,14 @@ type Combinator v t = Rec (ParserF t) v
 
 -- Algorithm
 
-deriv :: Parser t a -> Char -> Parser t a
+deriv :: Parser Char a -> Char -> Parser Char a
 deriv g c = Graph (deriv' (unGraph g))
-  where deriv' :: Combinator (Combinator v t) t a -> Combinator v t a
+  where deriv' :: Combinator (Combinator v Char) Char a -> Combinator v Char a
         deriv' rc = case rc of
           Var v -> v
           Rec (Mu g) -> deriv'' (g (pjoin (Graph.mu g)))
           Rec (In r) -> deriv'' r
-        deriv'' :: ParserF t (Combinator (Combinator v t) t) a -> Combinator v t a
+        deriv'' :: ParserF Char (Combinator (Combinator v Char) Char) a -> Combinator v Char a
         deriv'' p = case p of
           Cat a b -> deriv' a `cat` pjoin b <|> delta (pjoin a) `cat` deriv' b
           Alt a b -> deriv' a <|> deriv' b
