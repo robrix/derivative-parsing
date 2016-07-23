@@ -64,7 +64,7 @@ cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
 cat a = compact' . rec . Cat a
 
 char :: Char -> Combinator v Char
-char = rec . Chr
+char = rec . Tok
 
 category :: GeneralCategory -> Combinator v Char
 category = rec . Uni
@@ -81,7 +81,7 @@ label :: Combinator v a -> String -> Combinator v a
 label p = compact' . rec . Lab p
 
 string :: String -> Combinator v String
-string string = sequenceA (rec . Chr <$> string)
+string string = sequenceA (rec . Tok <$> string)
 
 mu :: (Combinator v a -> Combinator v a) -> Combinator v a
 mu f = Graph.mu $ \ v -> case f (var v) of
@@ -104,7 +104,7 @@ data ParserF f a where
   Rep :: f a -> ParserF f [a]
   Map :: (a -> b) -> f a -> ParserF f b
   Bnd :: f a -> (a -> f b) -> ParserF f b
-  Chr :: Char -> ParserF f Char
+  Tok :: Char -> ParserF f Char
   Uni :: GeneralCategory -> ParserF f Char
   Ret :: [a] -> ParserF f a
   Nul :: ParserF f a
@@ -131,7 +131,7 @@ deriv g c = Graph (deriv' (unGraph g))
           Rep a -> uncurry (:) <$> (deriv' a `cat` pjoin (many a))
           Map f p -> f <$> deriv' p
           Bnd p f -> deriv' p >>= pjoin . f
-          Chr c' -> if c == c' then pure c else empty
+          Tok c' -> if c == c' then pure c else empty
           Uni category -> if generalCategory c == category then pure c else empty
           Lab p s -> deriv' p `label` s
           _ -> empty
@@ -222,7 +222,7 @@ instance HFunctor ParserF where
     Rep a -> Rep (f a)
     Map g p -> Map g (f p)
     Bnd p g -> Bnd (f p) (f . g)
-    Chr c -> Chr c
+    Tok c -> Tok c
     Uni c -> Uni c
     Ret as -> Ret as
     Nul -> Nul
@@ -279,7 +279,7 @@ instance HEqF ParserF
           (Alt a1 b1, Alt a2 b2) -> eq a1 a2 && eq b1 b2
           -- (Map f1 p1, Map f2 p2) -> eq p1 p2
           -- (Bnd p1 f1, Bnd p2 f2) -> eq p1 p2
-          (Chr c1, Chr c2) -> c1 == c2
+          (Tok c1, Tok c2) -> c1 == c2
           (Uni c1, Uni c2) -> c1 == c2
           (Ret r1, Ret r2) -> length r1 == length r2
           (Nul, Nul) -> True
@@ -293,7 +293,7 @@ instance HShowF ParserF
           Rep a -> showParen (n >= 10) $ showString "many " . showsPrec 10 a
           Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
           Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
-          Chr c -> showParen (n >= 10) $ showString "char " . shows c
+          Tok c -> showParen (n >= 10) $ showString "char " . shows c
           Uni c -> showParen (n >= 10) $ showString "category " . shows c
           Ret [_] -> showParen (n >= 10) $ showString "pure t"
           Ret t -> showString "ret [" . showIndices (length t) . showString "]"
