@@ -51,7 +51,7 @@ test-suite derivative-parsing-test
 benchmark derivative-parsing-time
   type:                exitcode-stdio-1.0
   main-is:             Main.hs
-  hs-source-dirs:      bench
+  hs-source-dirs:      time
   build-depends:       base
                      , criterion
                      , derivative-parsing
