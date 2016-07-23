@@ -39,7 +39,7 @@ import Data.Monoid hiding (Alt)
 
 -- API
 
-parse :: Parser t a -> String -> [a]
+parse :: Parser Char a -> String -> [a]
 parse p = parseNull . foldl deriv (compact p)
 
 
