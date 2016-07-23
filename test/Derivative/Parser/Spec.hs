@@ -163,13 +163,13 @@ spec = do
       \ u y -> parseNull ((getBlind u :: Parser Char (Char -> Char)) <*> pure y) `shouldBe` parseNull (pure ($ y) <*> getBlind u)
 
     prop "obeys the fmap identity" $
-      \ f x -> parseNull (pure (getBlind f :: Char -> Char) <*> x) `shouldBe` parseNull (fmap (getBlind f) x)
+      \ f x -> parseNull ((pure (getBlind f) :: Parser Char (Char -> Char)) <*> x) `shouldBe` parseNull (fmap (getBlind f) x)
 
     prop "obeys the return identity" $
       \ f -> pure (getBlind f :: Char -> Char) `shouldBe` (return (getBlind f :: Char -> Char) :: Parser Char (Char -> Char))
 
     prop "obeys the ap identity" $
-      \ f x -> parseNull (pure (getBlind f :: Char -> Char) <*> x) `shouldBe` parseNull (pure (getBlind f :: Char -> Char) `ap` x)
+      \ f x -> parseNull ((pure (getBlind f) :: Parser Char (Char -> Char)) <*> x) `shouldBe` parseNull (pure (getBlind f :: Char -> Char) `ap` x)
 
     prop "obeys the left-discarding identity" $
       \ u v -> parseNull (u *> v) `shouldBe` parseNull (pure (const id) <*> (u :: Parser Char Char) <*> (v :: Parser Char Char))
