@@ -268,7 +268,7 @@ spec = do
 
 -- Grammar
 
-cyclic :: Parser t ()
+cyclic :: Parser Char ()
 cyclic = parser $ mu $ \ v -> v `label` "cyclic"
 
 varName :: Parser Char String
