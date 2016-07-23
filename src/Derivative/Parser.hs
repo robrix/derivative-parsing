@@ -43,16 +43,16 @@ parse :: Parser t a -> String -> [a]
 parse p = parseNull . foldl deriv (compact p)
 
 
-commaSep1 :: Combinator v a -> Combinator v [a]
+commaSep1 :: Combinator v t a -> Combinator v t [a]
 commaSep1 = sep1 (char ',')
 
-commaSep :: Combinator v a -> Combinator v [a]
+commaSep :: Combinator v t a -> Combinator v t [a]
 commaSep = sep (char ',')
 
-sep1 :: Combinator v sep -> Combinator v a -> Combinator v [a]
+sep1 :: Combinator v t sep -> Combinator v t a -> Combinator v t [a]
 sep1 s p = (:) <$> p <*> many (s *> p)
 
-sep :: Combinator v sep -> Combinator v a -> Combinator v [a]
+sep :: Combinator v t sep -> Combinator v t a -> Combinator v t [a]
 sep s p = s `sep1` p <|> pure []
 
 oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
@@ -60,38 +60,38 @@ oneOf = getAlt . foldMap Monoid.Alt
 
 infixl 4 `cat`
 
-cat :: Combinator v a -> Combinator v b -> Combinator v (a, b)
+cat :: Combinator v t a -> Combinator v t b -> Combinator v t (a, b)
 cat a = compact' . rec . Cat a
 
-char :: Char -> Combinator v Char
+char :: Char -> Combinator v Char Char
 char = rec . Tok
 
-category :: GeneralCategory -> Combinator v Char
+category :: GeneralCategory -> Combinator v Char Char
 category = rec . Uni
 
-delta :: Combinator v a -> Combinator v a
+delta :: Combinator v t a -> Combinator v t a
 delta = compact' . rec . Del
 
-ret :: [a] -> Combinator v a
+ret :: [a] -> Combinator v t a
 ret = rec . Ret
 
 infixr 2 `label`
 
-label :: Combinator v a -> String -> Combinator v a
+label :: Combinator v t a -> String -> Combinator v t a
 label p = compact' . rec . Lab p
 
-string :: String -> Combinator v String
+string :: String -> Combinator v Char String
 string string = sequenceA (rec . Tok <$> string)
 
-mu :: (Combinator v a -> Combinator v a) -> Combinator v a
+mu :: (Combinator v t a -> Combinator v t a) -> Combinator v t a
 mu f = Graph.mu $ \ v -> case f (var v) of
   Rec (In r) -> r
   p -> p `Lab` ""
 
-parser :: (forall v. Combinator v a) -> Parser t a
+parser :: (forall v. Combinator v t a) -> Parser t a
 parser r = compact $ Graph r
 
-combinator :: Parser t a -> Combinator v a
+combinator :: Parser t a -> Combinator v t a
 combinator = unGraph
 
 
@@ -112,19 +112,19 @@ data ParserF f a where
   Del :: f a -> ParserF f a
 
 type Parser t = Graph ParserF
-type Combinator v = Rec ParserF v
+type Combinator v t = Rec ParserF v
 
 
 -- Algorithm
 
 deriv :: Parser t a -> Char -> Parser t a
 deriv g c = Graph (deriv' (unGraph g))
-  where deriv' :: Combinator (Combinator v) a -> Combinator v a
+  where deriv' :: Combinator (Combinator v t) t a -> Combinator v t a
         deriv' rc = case rc of
           Var v -> v
           Rec (Mu g) -> deriv'' (g (pjoin (Graph.mu g)))
           Rec (In r) -> deriv'' r
-        deriv'' :: ParserF (Combinator (Combinator v)) a -> Combinator v a
+        deriv'' :: ParserF (Combinator (Combinator v t) t) a -> Combinator v t a
         deriv'' p = case p of
           Cat a b -> deriv' a `cat` pjoin b <|> delta (pjoin a) `cat` deriv' b
           Alt a b -> deriv' a <|> deriv' b
@@ -151,10 +151,10 @@ parseNull = (`fold` []) $ \ parser -> case parser of
 compact :: Parser t a -> Parser t a
 compact = transform compact''
 
-compact' :: Combinator v a -> Combinator v a
+compact' :: Combinator v t a -> Combinator v t a
 compact' = liftRec compact''
 
-compact'' :: ParserF (Combinator v) a -> ParserF (Combinator v) a
+compact'' :: ParserF (Combinator v t) a -> ParserF (Combinator v t) a
 compact'' parser = case parser of
   Cat (Rec (In Nul)) _ -> Nul
   Cat _ (Rec (In Nul)) -> Nul
