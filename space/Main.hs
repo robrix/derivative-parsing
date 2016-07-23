@@ -18,5 +18,5 @@ wgroup prefix = fmap (() <$) . traverse $ \ w ->
 
 newtype Weighable a b = Weighable { runWeighable :: (String -> (b -> a) -> b -> Weigh ()) -> Weigh () }
 
-weigh :: NFData a => String -> (b -> a) -> b -> Weighable a b
+weigh :: String -> (b -> a) -> b -> Weighable a b
 weigh s f a = Weighable $ \ g -> g s f a
