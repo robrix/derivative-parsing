@@ -98,14 +98,14 @@ spec = do
 
     describe "pure" $ do
       prop "has the null derivative" $
-        \ a c -> pure (a :: Char) `deriv` c `shouldBe` empty
+        \ a c -> pure (a :: Char) `deriv` (c :: Char) `shouldBe` empty
 
     it "terminates on cyclic grammars" $
       compact (lam `deriv` 'x') `shouldNotBe` empty
 
     describe "ret" $ do
       prop "annihilates" $
-        \ a c -> parser (ret (a :: String)) `deriv` c `shouldBe` empty
+        \ a c -> parser (ret (a :: String)) `deriv` (c :: Char) `shouldBe` empty
 
     describe "label" $ do
       prop "distributivity" $

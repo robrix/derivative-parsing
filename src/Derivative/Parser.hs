@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor, FlexibleInstances, GADTs, MultiParamTypeClasses, RankNTypes #-}
+{-# LANGUAGE DeriveFunctor, FlexibleInstances, GADTs, MultiParamTypeClasses, RankNTypes, ScopedTypeVariables #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -120,14 +120,14 @@ data Predicate t where
 
 -- Algorithm
 
-deriv :: Parser Char a -> Char -> Parser Char a
+deriv :: forall a t. Parser t a -> t -> Parser t a
 deriv g c = Graph (deriv' (unGraph g))
-  where deriv' :: Combinator (Combinator v Char) Char a -> Combinator v Char a
+  where deriv' :: forall a v. Combinator (Combinator v t) t a -> Combinator v t a
         deriv' rc = case rc of
           Var v -> v
           Rec (Mu g) -> deriv'' (g (pjoin (Graph.mu g)))
           Rec (In r) -> deriv'' r
-        deriv'' :: ParserF Char (Combinator (Combinator v Char) Char) a -> Combinator v Char a
+        deriv'' :: forall a v. ParserF t (Combinator (Combinator v t) t) a -> Combinator v t a
         deriv'' p = case p of
           Cat a b -> deriv' a `cat` pjoin b <|> delta (pjoin a) `cat` deriv' b
           Alt a b -> deriv' a <|> deriv' b
