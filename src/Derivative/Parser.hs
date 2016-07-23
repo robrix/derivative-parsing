@@ -283,7 +283,7 @@ instance Monad (Graph (ParserF t)) where
   return = pure
   Graph p >>= f = Graph (p >>= unGraph . f)
 
-instance Eq t => HEqF (ParserF t)
+instance HEqF (ParserF t)
   where heqF eq a b = case (a, b) of
           (Cat a1 b1, Cat a2 b2) -> eq a1 a2 && eq b1 b2
           (Alt a1 b1, Alt a2 b2) -> eq a1 a2 && eq b1 b2
