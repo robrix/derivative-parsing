@@ -39,7 +39,7 @@ import Data.Monoid hiding (Alt)
 
 -- API
 
-parse :: Parser a -> String -> [a]
+parse :: Parser t a -> String -> [a]
 parse p = parseNull . foldl deriv (compact p)
 
 
@@ -88,10 +88,10 @@ mu f = Graph.mu $ \ v -> case f (var v) of
   Rec (In r) -> r
   p -> p `Lab` ""
 
-parser :: (forall v. Combinator v a) -> Parser a
+parser :: (forall v. Combinator v a) -> Parser t a
 parser r = compact $ Graph r
 
-combinator :: Parser a -> Combinator v a
+combinator :: Parser t a -> Combinator v a
 combinator = unGraph
 
 
@@ -111,13 +111,13 @@ data ParserF f a where
   Lab :: f a -> String -> ParserF f a
   Del :: f a -> ParserF f a
 
-type Parser = Graph ParserF
+type Parser t = Graph ParserF
 type Combinator v = Rec ParserF v
 
 
 -- Algorithm
 
-deriv :: Parser a -> Char -> Parser a
+deriv :: Parser t a -> Char -> Parser t a
 deriv g c = Graph (deriv' (unGraph g))
   where deriv' :: Combinator (Combinator v) a -> Combinator v a
         deriv' rc = case rc of
@@ -136,7 +136,7 @@ deriv g c = Graph (deriv' (unGraph g))
           Lab p s -> deriv' p `label` s
           _ -> empty
 
-parseNull :: Parser a -> [a]
+parseNull :: Parser t a -> [a]
 parseNull = (`fold` []) $ \ parser -> case parser of
   Cat a b -> (,) <$> a <*> b
   Alt a b -> a <> b
@@ -148,7 +148,7 @@ parseNull = (`fold` []) $ \ parser -> case parser of
   Del a -> a
   _ -> []
 
-compact :: Parser a -> Parser a
+compact :: Parser t a -> Parser t a
 compact = transform compact''
 
 compact' :: Combinator v a -> Combinator v a
@@ -178,7 +178,7 @@ compact'' parser = case parser of
   Del (Rec (In p)) | isTerminal'' p -> Nul
   a -> a
 
-nullable :: Parser a -> Bool
+nullable :: Parser t a -> Bool
 nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   Cat a b -> Const $ getConst a && getConst b
   Alt a b -> Const $ getConst a || getConst b
@@ -190,7 +190,7 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   Del a -> a
   _ -> Const False
 
-isTerminal :: Parser a -> Bool
+isTerminal :: Parser t a -> Bool
 isTerminal = (getConst .) $ (`fold` Const False) (Const . isTerminal'')
 
 isTerminal'' :: ParserF f a -> Bool
@@ -203,7 +203,7 @@ isTerminal'' p = case p of
   Lab _ _ -> False
   _ -> True
 
-size :: Parser a -> Int
+size :: Parser t a -> Int
 size = getSum . getK . fold ((K (Sum 1) <|>) . hfoldMap id) (K (Sum 0))
 
 

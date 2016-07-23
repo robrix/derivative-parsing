@@ -42,7 +42,7 @@ spec = do
 
     describe "many" $ do
       prop "contains the empty sequence" $
-        \ p -> parseNull (many (getBlind p :: Parser Char)) `shouldBe` [[]]
+        \ p -> parseNull (many (getBlind p :: Parser Char Char)) `shouldBe` [[]]
 
     describe "fmap" $ do
       prop "applies a function to its parse trees" $
@@ -58,11 +58,11 @@ spec = do
 
     describe "empty" $ do
       it "is empty" $
-        parseNull (empty :: Parser Char) `shouldBe` []
+        parseNull (empty :: Parser Char Char) `shouldBe` []
 
     describe "ret" $ do
       prop "is identity" $
-        \ t -> parseNull (parser (ret t) :: Parser Char) `shouldBe` t
+        \ t -> parseNull (parser (ret t) :: Parser Char Char) `shouldBe` t
 
     it "terminates on cyclic grammars" $
       let grammar = parser $ mu (\ a -> a <|> ret ["x"]) in
@@ -125,7 +125,7 @@ spec = do
   describe "nullable" $ do
     describe "cat" $ do
       prop "is the conjunction of its operands’ nullability" $
-        \ a b -> nullable (parser (combinator a `cat` combinator b)) `shouldBe` nullable (a :: Parser Char) && nullable (b :: Parser Char)
+        \ a b -> nullable (parser (combinator a `cat` combinator b)) `shouldBe` nullable (a :: Parser Char Char) && nullable (b :: Parser Char Char)
 
     describe "empty" $
       it "is not nullable" $
@@ -138,7 +138,7 @@ spec = do
 
   describe "compaction" $ do
     prop "reduces parser size" $
-      \ p -> size (compact p :: Parser Char) `shouldSatisfy` (<= size p)
+      \ p -> size (compact p :: Parser Char Char) `shouldSatisfy` (<= size p)
 
 
   describe "Functor" $ do
@@ -154,33 +154,33 @@ spec = do
       \ v -> parseNull (pure id <*> parser (char v) `deriv` v) `shouldBe` parseNull (parser (char v) `deriv` v)
 
     prop "obeys the composition law" $
-      \ u v w -> parseNull (pure (.) <*> (getBlind u :: Parser (Char -> Char)) <*> getBlind v <*> parser (char w) `deriv` w) `shouldBe` parseNull (getBlind u <*> (getBlind v <*> parser (char w)) `deriv` w)
+      \ u v w -> parseNull (pure (.) <*> (getBlind u :: Parser Char (Char -> Char)) <*> getBlind v <*> parser (char w) `deriv` w) `shouldBe` parseNull (getBlind u <*> (getBlind v <*> parser (char w)) `deriv` w)
 
     prop "obeys the homomorphism law" $
       \ x f -> parseNull (pure (getBlind f :: Char -> Char) <*> pure x) `shouldBe` parseNull (pure (getBlind f x))
 
     prop "obeys the interchange law" $
-      \ u y -> parseNull ((getBlind u :: Parser (Char -> Char)) <*> pure y) `shouldBe` parseNull (pure ($ y) <*> getBlind u)
+      \ u y -> parseNull ((getBlind u :: Parser Char (Char -> Char)) <*> pure y) `shouldBe` parseNull (pure ($ y) <*> getBlind u)
 
     prop "obeys the fmap identity" $
       \ f x -> parseNull (pure (getBlind f :: Char -> Char) <*> x) `shouldBe` parseNull (fmap (getBlind f) x)
 
     prop "obeys the return identity" $
-      \ f -> pure (getBlind f :: Char -> Char) `shouldBe` (return (getBlind f :: Char -> Char) :: Parser (Char -> Char))
+      \ f -> pure (getBlind f :: Char -> Char) `shouldBe` (return (getBlind f :: Char -> Char) :: Parser Char (Char -> Char))
 
     prop "obeys the ap identity" $
       \ f x -> parseNull (pure (getBlind f :: Char -> Char) <*> x) `shouldBe` parseNull (pure (getBlind f :: Char -> Char) `ap` x)
 
     prop "obeys the left-discarding identity" $
-      \ u v -> parseNull (u *> v) `shouldBe` parseNull (pure (const id) <*> (u :: Parser Char) <*> (v :: Parser Char))
+      \ u v -> parseNull (u *> v) `shouldBe` parseNull (pure (const id) <*> (u :: Parser Char Char) <*> (v :: Parser Char Char))
 
     prop "obeys the right-discarding identity" $
-      \ u v -> parseNull (u <* v) `shouldBe` parseNull (pure const <*> (u :: Parser Char) <*> (v :: Parser Char))
+      \ u v -> parseNull (u <* v) `shouldBe` parseNull (pure const <*> (u :: Parser Char Char) <*> (v :: Parser Char Char))
 
 
   describe "Alternative" $ do
     prop "obeys the some law" $
-      \ v -> parseNull (some (getBlind v :: Parser Char)) `shouldBe` parseNull ((:) <$> getBlind v <*> many (getBlind v))
+      \ v -> parseNull (some (getBlind v :: Parser Char Char)) `shouldBe` parseNull ((:) <$> getBlind v <*> many (getBlind v))
 
     prop "obeys the many law" $
       \ v -> parseNull (many (parser $ char v)) `shouldBe` parseNull (some (parser $ char v) <|> pure "")
@@ -198,10 +198,10 @@ spec = do
 
   describe "Monad" $ do
     prop "obeys the left identity law" $
-      \ k a -> parseNull (return (a :: Char) >>= getBlind k) `shouldBe` parseNull (getBlind k a :: Parser Char)
+      \ k a -> parseNull (return (a :: Char) >>= getBlind k) `shouldBe` parseNull (getBlind k a :: Parser Char Char)
 
     prop "obeys the right identity law" $
-      \ m -> parseNull (getBlind m >>= return) `shouldBe` parseNull (getBlind m :: Parser Char)
+      \ m -> parseNull (getBlind m >>= return) `shouldBe` parseNull (getBlind m :: Parser Char Char)
 
 
   describe "Show" $ do
@@ -268,20 +268,20 @@ spec = do
 
 -- Grammar
 
-cyclic :: Parser ()
+cyclic :: Parser t ()
 cyclic = parser $ mu $ \ v -> v `label` "cyclic"
 
-varName :: Parser String
+varName :: Parser Char String
 varName = parser $ string "x"
 
-lam :: Parser Lam
+lam :: Parser Char Lam
 lam = parser $ mu (\ lam ->
   let var = Var' . pure <$> char 'x' `label` "var"
       app = (App <$> lam <*> (char ' ' *> lam)) `label` "app"
       abs = (Abs . pure <$> (char '\\' *> char 'x') <*> (char '.' *> lam)) `label` "abs" in
       abs <|> var <|> app) `label` "lambda"
 
-sexpr :: Parser Sexpr
+sexpr :: Parser Char Sexpr
 sexpr = parser $ Derivative.Parser.mu (\ a ->
       Atom <$> identifier
   <|> List <$> (char open *> sep (char ' ') a <* char close))
@@ -302,7 +302,7 @@ data Sexpr
 
 -- Instances
 
-instance Arbitrary a => Arbitrary (Parser a) where
+instance Arbitrary a => Arbitrary (Parser t a) where
   arbitrary = oneof
     [ pure <$> arbitrary
     , pure empty
