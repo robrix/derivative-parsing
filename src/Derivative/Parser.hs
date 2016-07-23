@@ -328,3 +328,8 @@ instance Eq (Predicate t) where
   Equal a == Equal b = a == b
   Category a == Category b = a == b
   _ == _ = False
+
+instance Show t => Show (Predicate t) where
+  showsPrec n p = case p of
+    Equal t -> showParen True $ showString "== " . showsPrec 4 t
+    Category c -> showParen (n >= 9) $ showString "(== " . showsPrec 4 c . showString ") . generalCategory"
