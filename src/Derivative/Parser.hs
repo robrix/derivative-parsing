@@ -114,6 +114,10 @@ data ParserF t f a where
 type Parser t = Graph (ParserF t)
 type Combinator v t = Rec (ParserF t) v
 
+data Predicate t where
+  Equal :: Eq t => t -> Predicate t
+  Category :: GeneralCategory -> Predicate Char
+
 
 -- Algorithm
 
