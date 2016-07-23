@@ -20,6 +20,7 @@ module Derivative.Parser
 , sep1
 , size
 , Derivative.Parser.mu
+, anyToken
 , parser
 , combinator
 , nullable
@@ -89,6 +90,10 @@ mu f = Graph.mu $ \ v -> case f (var v) of
   Rec (In r) -> r
   p -> p `Lab` ""
 
+anyToken :: Combinator v t t
+anyToken = rec (Sat (Constant True))
+
+
 parser :: (forall v. Combinator v t a) -> Parser t a
 parser r = compact $ Graph r
 
@@ -117,6 +122,7 @@ type Combinator v t = Rec (ParserF t) v
 data Predicate t where
   Equal :: Eq t => t -> Predicate t
   Category :: GeneralCategory -> Predicate Char
+  Constant :: Bool -> Predicate t
 
 
 -- Algorithm
@@ -220,6 +226,7 @@ satisfies :: t -> Predicate t -> Bool
 satisfies t p = case p of
   Equal t' -> t == t'
   Category c -> generalCategory t == c
+  Constant c -> c
 
 
 -- Instances
@@ -302,6 +309,7 @@ instance Show t => HShowF (ParserF t)
           Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
           Sat (Equal c) -> showParen (n >= 10) $ showString "char " . shows c
           Sat (Category c) -> showParen (n >= 10) $ showString "category " . shows c
+          Sat (Constant _) -> showString "anyToken"
           Ret [_] -> showParen (n >= 10) $ showString "pure t"
           Ret t -> showString "ret [" . showIndices (length t) . showString "]"
           Nul -> showString "empty"
@@ -324,9 +332,11 @@ instance Monoid a => Monad (K a)
 instance Eq (Predicate t) where
   Equal a == Equal b = a == b
   Category a == Category b = a == b
+  Constant a == Constant b = a == b
   _ == _ = False
 
 instance Show t => Show (Predicate t) where
   showsPrec n p = case p of
     Equal t -> showParen True $ showString "== " . showsPrec 4 t
     Category c -> showParen (n >= 9) $ showString "(== " . showsPrec 4 c . showString ") . generalCategory"
+    Constant c -> showsPrec n c
