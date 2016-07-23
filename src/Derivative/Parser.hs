@@ -43,10 +43,10 @@ parse :: Parser t a -> String -> [a]
 parse p = parseNull . foldl deriv (compact p)
 
 
-commaSep1 :: Combinator v t a -> Combinator v t [a]
+commaSep1 :: Combinator v Char a -> Combinator v Char [a]
 commaSep1 = sep1 (char ',')
 
-commaSep :: Combinator v t a -> Combinator v t [a]
+commaSep :: Combinator v Char a -> Combinator v Char [a]
 commaSep = sep (char ',')
 
 sep1 :: Combinator v t sep -> Combinator v t a -> Combinator v t [a]
