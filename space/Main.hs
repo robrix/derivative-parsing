@@ -1,6 +1,7 @@
 module Main where
 
 import Control.Applicative
+import Control.DeepSeq
 import Derivative.Parser
 import Weigh
 
@@ -10,3 +11,6 @@ main = mainWith $ do
   func "many/1" (parse p) (replicate (10 ^ 0) 'a')
 
 newtype Weighable a b = Weighable { runWeighable :: ((b -> a) -> b -> Weigh ()) -> Weigh () }
+
+weigh :: NFData a => (b -> a) -> b -> Weighable a b
+weigh f a = Weighable $ \ g -> g f a

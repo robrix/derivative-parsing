@@ -64,6 +64,7 @@ benchmark derivative-parsing-space
   main-is:             Main.hs
   hs-source-dirs:      space
   build-depends:       base
+                     , deepseq
                      , derivative-parsing
                      , weigh
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -j -O2 -static
