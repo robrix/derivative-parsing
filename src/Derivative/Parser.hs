@@ -217,6 +217,12 @@ newtype K a b = K { getK :: a }
   deriving (Eq, Functor, Ord, Show)
 
 
+satisfies :: t -> Predicate t -> Bool
+satisfies t p = case p of
+  Equal t' -> t == t'
+  Category c -> generalCategory t == c
+
+
 -- Instances
 
 instance HFunctor (ParserF t) where
