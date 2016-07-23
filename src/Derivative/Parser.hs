@@ -104,7 +104,7 @@ data ParserF t f a where
   Rep :: f a -> ParserF t f [a]
   Map :: (a -> b) -> f a -> ParserF t f b
   Bnd :: f a -> (a -> f b) -> ParserF t f b
-  Tok :: Char -> ParserF Char f Char
+  Tok :: t -> ParserF t f t
   Uni :: GeneralCategory -> ParserF t f Char
   Ret :: [a] -> ParserF t f a
   Nul :: ParserF t f a
