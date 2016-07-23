@@ -6,4 +6,5 @@ import Weigh
 
 main :: IO ()
 main = mainWith $ do
-  func "many/1" (parse (parser (many (char 'a')))) (replicate (10 ^ 0) 'a')
+  let p = parser (many (char 'a'))
+  func "many/1" (parse p) (replicate (10 ^ 0) 'a')
