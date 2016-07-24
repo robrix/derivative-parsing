@@ -206,6 +206,7 @@ size = getSum . getK . fold ((K (Sum 1) <|>) . hfoldMap id) (K (Sum 0))
 newtype K a b = K { getK :: a }
   deriving (Eq, Functor, Ord, Show)
 
+
 rec :: PatternF t (Rec (PatternF t) v) a -> Rec (PatternF t) v a
 rec = compact' . Graph.rec
 
