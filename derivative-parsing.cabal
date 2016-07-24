@@ -20,6 +20,7 @@ library
                      , Data.Higher.Functor.Show
                      , Data.Higher.Graph
                      , Data.Higher.Transformation
+                     , Data.Predicate
                      , Derivative.Lexer
                      , Derivative.Parser
                      , Derivative.Parser.Char
