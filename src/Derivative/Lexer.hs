@@ -1,9 +1,14 @@
 {-# LANGUAGE GADTs #-}
 module Derivative.Lexer
-( LexerF(..)
+( Lexer
 ) where
 
+import Data.Higher.Fix
 import Data.Pattern
+
+-- Types
+
+type Lexer t = Fix (PatternF t)
 
 
 -- Instances
