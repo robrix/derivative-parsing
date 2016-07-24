@@ -35,7 +35,8 @@ import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
-import Data.Higher.Graph as Graph
+import qualified Data.Higher.Graph as Graph
+import Data.Higher.Graph hiding (rec, mu)
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
 import Data.Pattern
@@ -65,7 +66,7 @@ oneOf = getAlt . foldMap Monoid.Alt
 infixl 4 `cat`
 
 cat :: Combinator v t a -> Combinator v t b -> Combinator v t (a, b)
-cat a = compact' . rec . Cat a
+cat a = rec . Cat a
 
 char :: Char -> Combinator v Char Char
 char = rec . Sat . Equal
@@ -74,7 +75,7 @@ category :: GeneralCategory -> Combinator v Char Char
 category = rec . Sat . Category
 
 delta :: Combinator v t a -> Combinator v t a
-delta = compact' . rec . Del
+delta = rec . Del
 
 ret :: [a] -> Combinator v t a
 ret = rec . Ret
@@ -82,7 +83,7 @@ ret = rec . Ret
 infixr 2 `label`
 
 label :: Combinator v t a -> String -> Combinator v t a
-label p = compact' . rec . Lab p
+label p = rec . Lab p
 
 string :: String -> Combinator v Char String
 string string = sequenceA (rec . Sat . Equal <$> string)
@@ -205,11 +206,14 @@ size = getSum . getK . fold ((K (Sum 1) <|>) . hfoldMap id) (K (Sum 0))
 newtype K a b = K { getK :: a }
   deriving (Eq, Functor, Ord, Show)
 
+rec :: PatternF t (Rec (PatternF t) v) a -> Rec (PatternF t) v a
+rec = compact' . Graph.rec
+
 
 -- Instances
 
 instance Functor (Rec (PatternF t) v) where
-  fmap f = compact' . rec . Map f
+  fmap f = rec . Map f
 
 instance Functor (Graph (PatternF t)) where
   fmap f (Graph rec) = Graph (f <$> rec)
@@ -224,9 +228,9 @@ instance Applicative (Graph (PatternF t)) where
 
 instance Alternative (Rec (PatternF t) v) where
   empty = rec Nul
-  a <|> b = compact' (rec (Alt a b))
+  a <|> b = rec (Alt a b)
   some v = (:) <$> v <*> many v
-  many = compact' . rec . Rep
+  many = rec . Rep
 
 instance Alternative (Graph (PatternF t)) where
   empty = Graph empty
@@ -236,7 +240,7 @@ instance Alternative (Graph (PatternF t)) where
 
 instance Monad (Rec (PatternF t) v) where
   return = pure
-  (>>=) = (compact' .) . (rec .) . Bnd
+  (>>=) = (rec .) . Bnd
 
 instance Monad (Graph (PatternF t)) where
   return = pure
