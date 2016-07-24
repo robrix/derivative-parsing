@@ -216,7 +216,7 @@ instance Functor (Graph (PatternF t)) where
 
 instance Applicative (Rec (PatternF t) v) where
   pure = rec . Ret . pure
-  a <*> b = compact' (uncurry ($) <$> (a `cat` b))
+  a <*> b = uncurry ($) <$> (a `cat` b)
 
 instance Applicative (Graph (PatternF t)) where
   pure a = Graph (pure a)
