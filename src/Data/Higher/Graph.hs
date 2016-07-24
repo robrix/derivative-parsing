@@ -15,6 +15,7 @@ module Data.Higher.Graph
 , liftRec
 , pjoin
 , modifyGraph
+, eqRec
 ) where
 
 import Control.Applicative

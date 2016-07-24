@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor, FlexibleInstances, GADTs, RankNTypes, ScopedTypeVariables #-}
+{-# LANGUAGE DeriveFunctor, FlexibleInstances, GADTs, RankNTypes, ScopedTypeVariables, TypeSynonymInstances #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -36,7 +36,7 @@ import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
 import qualified Data.Higher.Graph as Graph
-import Data.Higher.Graph hiding (rec, mu)
+import Data.Higher.Graph hiding (rec, mu, fold, transform)
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
 import Data.Pattern
@@ -98,22 +98,19 @@ anyToken = rec (Sat (Constant True))
 
 
 parser :: (forall v. Combinator v t a) -> Parser t a
-parser r = compact $ Graph r
-
-combinator :: Parser t a -> Combinator v t a
-combinator = unGraph
+parser r = compact $ Parser r
 
 
 -- Types
 
-type Parser t = Graph (PatternF t)
+newtype Parser t a = Parser { combinator :: forall v. Combinator v t a }
 type Combinator v t = Rec (PatternF t) v
 
 
 -- Algorithm
 
 deriv :: forall a t. Parser t a -> t -> Parser t a
-deriv g c = Graph (deriv' (unGraph g))
+deriv g c = Parser (deriv' (combinator g))
   where deriv' :: forall a v. Combinator (Combinator v t) t a -> Combinator v t a
         deriv' rc = case rc of
           Var v -> v
@@ -207,45 +204,57 @@ newtype K a b = K { getK :: a }
   deriving (Eq, Functor, Ord, Show)
 
 
-rec :: PatternF t (Rec (PatternF t) v) a -> Rec (PatternF t) v a
+rec :: PatternF t (Combinator v t) a -> Combinator v t a
 rec = compact' . Graph.rec
+
+fold :: (forall a. PatternF t c a -> c a) -> (forall a. c a) -> Parser t a -> c a
+fold f z = Graph.fold f z . toGraph
+
+transform :: (forall a v. PatternF t (Rec (PatternF t) v) a -> PatternF t (Rec (PatternF t) v) a) -> Parser t a -> Parser t a
+transform f = fromGraph . Graph.transform f . toGraph
+
+toGraph :: Parser t a -> Graph (PatternF t) a
+toGraph (Parser r) = Graph r
+
+fromGraph :: Graph (PatternF t) a -> Parser t a
+fromGraph (Graph r) = Parser r
 
 
 -- Instances
 
-instance Functor (Rec (PatternF t) v) where
+instance Functor (Combinator v t) where
   fmap f = rec . Map f
 
-instance Functor (Graph (PatternF t)) where
-  fmap f (Graph rec) = Graph (f <$> rec)
+instance Functor (Parser t) where
+  fmap f (Parser rec) = Parser (f <$> rec)
 
-instance Applicative (Rec (PatternF t) v) where
+instance Applicative (Combinator v t) where
   pure = rec . Ret . pure
   a <*> b = uncurry ($) <$> (a `cat` b)
 
-instance Applicative (Graph (PatternF t)) where
-  pure a = Graph (pure a)
-  Graph f <*> Graph a = Graph (f <*> a)
+instance Applicative (Parser t) where
+  pure a = Parser (pure a)
+  Parser f <*> Parser a = Parser (f <*> a)
 
-instance Alternative (Rec (PatternF t) v) where
+instance Alternative (Combinator v t) where
   empty = rec Nul
   a <|> b = rec (Alt a b)
   some v = (:) <$> v <*> many v
   many = rec . Rep
 
-instance Alternative (Graph (PatternF t)) where
-  empty = Graph empty
-  Graph a <|> Graph b = Graph (a <|> b)
-  some (Graph p) = Graph (some p)
-  many (Graph p) = Graph (many p)
+instance Alternative (Parser t) where
+  empty = Parser empty
+  Parser a <|> Parser b = Parser (a <|> b)
+  some (Parser p) = Parser (some p)
+  many (Parser p) = Parser (many p)
 
-instance Monad (Rec (PatternF t) v) where
+instance Monad (Combinator v t) where
   return = pure
   (>>=) = (rec .) . Bnd
 
-instance Monad (Graph (PatternF t)) where
+instance Monad (Parser t) where
   return = pure
-  Graph p >>= f = Graph (p >>= unGraph . f)
+  Parser p >>= f = Parser (p >>= combinator . f)
 
 instance Monoid a => Applicative (K a)
   where pure = const (K mempty)
@@ -258,3 +267,9 @@ instance Monoid a => Alternative (K a)
 instance Monoid a => Monad (K a)
   where return = pure
         K a >>= _ = K a
+
+instance Eq (Parser t a)
+  where a == b = eqRec 0 (combinator a) (combinator b)
+
+instance Show t => Show (Parser t a)
+  where showsPrec n = showsPrec n . (combinator :: Parser t a -> Rec (PatternF t) (Const Char) a)
