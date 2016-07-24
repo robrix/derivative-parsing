@@ -3,12 +3,15 @@ module Derivative.Lexer
 ( LexerF(..)
 ) where
 
+import Data.Predicate
+
 data LexerF t f a where
   Cat :: f a -> f b -> LexerF t f (a, b)
   Alt :: f a -> f b -> LexerF t f (a, b)
   Rep :: f a -> LexerF t f [a]
   Map :: (a -> b) -> f a -> LexerF t f b
   Bnd :: f a -> (a -> f b) -> LexerF t f b
+  Sat :: Predicate t -> LexerF t f t
   Ret :: [a] -> LexerF t f a
   Nul :: LexerF t f a
   Lab :: f a -> String -> LexerF t f a
