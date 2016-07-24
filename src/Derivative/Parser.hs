@@ -38,6 +38,7 @@ import Data.Higher.Functor.Show
 import Data.Higher.Graph as Graph
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
+import Data.Predicate
 
 -- API
 
@@ -118,11 +119,6 @@ data ParserF t f a where
 
 type Parser t = Graph (ParserF t)
 type Combinator v t = Rec (ParserF t) v
-
-data Predicate t where
-  Equal :: Eq t => t -> Predicate t
-  Category :: GeneralCategory -> Predicate Char
-  Constant :: Bool -> Predicate t
 
 
 -- Algorithm
@@ -220,13 +216,6 @@ size = getSum . getK . fold ((K (Sum 1) <|>) . hfoldMap id) (K (Sum 0))
 
 newtype K a b = K { getK :: a }
   deriving (Eq, Functor, Ord, Show)
-
-
-satisfies :: t -> Predicate t -> Bool
-satisfies t p = case p of
-  Equal t' -> t == t'
-  Category c -> generalCategory t == c
-  Constant c -> c
 
 
 -- Instances
@@ -328,15 +317,3 @@ instance Monoid a => Alternative (K a)
 instance Monoid a => Monad (K a)
   where return = pure
         K a >>= _ = K a
-
-instance Eq (Predicate t) where
-  Equal a == Equal b = a == b
-  Category a == Category b = a == b
-  Constant a == Constant b = a == b
-  _ == _ = False
-
-instance Show t => Show (Predicate t) where
-  showsPrec n p = case p of
-    Equal t -> showParen True $ showString "== " . showsPrec 4 t
-    Category c -> showParen (n >= 9) $ showString "(== " . showsPrec 4 c . showString ") . generalCategory"
-    Constant c -> showsPrec n c
