@@ -10,3 +10,4 @@ class HFunctor (Base t) => HRecursive t where
   hproject :: t a -> Base t t a
 
   hcata :: (Base t a ~> a) -> t ~> a
+  hcata f = f . hfmap (hcata f) . hproject
