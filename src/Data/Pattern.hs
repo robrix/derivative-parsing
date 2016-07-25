@@ -8,6 +8,7 @@ import Data.Predicate
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
+import Data.Higher.Functor.Recursive
 import Data.Higher.Functor.Show
 import Data.Higher.Graph
 
@@ -95,3 +96,18 @@ instance Alternative (Rec (PatternF t) v) where
 instance Monad (Rec (PatternF t) v) where
   return = pure
   (>>=) = (rec .) . Bnd
+
+instance (HCorecursive r, Base r ~ PatternF t) => Functor (PatternF t r)
+  where fmap f = Map f . hembed
+
+instance (HCorecursive r, Base r ~ PatternF t) => Applicative (PatternF t r)
+  where pure = Ret . pure
+        a <*> b = uncurry ($) <$> Cat (hembed a) (hembed b)
+
+instance (HCorecursive r, Base r ~ PatternF t) => Alternative (PatternF t r)
+  where empty = Nul
+        a <|> b = Alt (hembed a) (hembed b)
+
+instance (HCorecursive r, Base r ~ PatternF t) => Monad (PatternF t r)
+  where return = pure
+        (>>=) a = Bnd (hembed a) . (hembed .)
