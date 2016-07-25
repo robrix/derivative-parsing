@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, InstanceSigs, MultiParamTypeClasses, PolyKinds, RankNTypes, ScopedTypeVariables, TypeOperators #-}
+{-# LANGUAGE FlexibleInstances, InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeOperators #-}
 module Data.Higher.Graph
 ( Rec(..)
 , RecF(..)
@@ -136,4 +136,4 @@ instance HFunctor f => HFunctor (RecF f v)
           Mu g -> Mu (hfmap f . g)
           In r -> In (hfmap f r)
 
-instance HFunctor f => HCorecursive Rec f where hembed = rec
+instance HCorecursive Rec where hembed = rec

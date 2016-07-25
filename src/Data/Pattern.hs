@@ -79,19 +79,19 @@ instance Show t => HShowF (PatternF t)
           where showIndices n = foldr (.) id ((showChar 't' .) . shows <$> take n (iterate succ (0 :: Integer)))
 
 
-instance HCorecursive r (PatternF t) => Functor (r (PatternF t) v)
+instance HCorecursive r => Functor (r (PatternF t) v)
   where fmap = (hembed .) . Map
 
-instance HCorecursive r (PatternF t) => Applicative (r (PatternF t) v)
+instance HCorecursive r => Applicative (r (PatternF t) v)
   where pure = hembed . Ret . pure
         (<*>) = ((fmap (uncurry ($)) . hembed) .) . Cat
 
-instance HCorecursive r (PatternF t) => Alternative (r (PatternF t) v)
+instance HCorecursive r => Alternative (r (PatternF t) v)
   where empty = hembed Nul
         (<|>) = (hembed .) . Alt
         some v = (:) <$> v <*> many v
         many = hembed . Rep
 
-instance HCorecursive r (PatternF t) => Monad (r (PatternF t) v)
+instance HCorecursive r => Monad (r (PatternF t) v)
   where return = pure
         (>>=) = (hembed .) . Bnd
