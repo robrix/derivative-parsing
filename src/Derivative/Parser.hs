@@ -268,4 +268,4 @@ instance Eq (Parser t a)
 instance Show t => Show (Parser t a)
   where showsPrec n = showsPrec n . (toRec . combinator :: Parser t a -> Graph.Rec (PatternF t) (Const Char) a)
 
-instance HCorecursive Rec (PatternF t) where hembed = compact' . fromRec . Graph.rec . hfmap toRec
+instance HCorecursive Rec (PatternF t) where hembed = compact' . fromRec . wrap . hfmap toRec

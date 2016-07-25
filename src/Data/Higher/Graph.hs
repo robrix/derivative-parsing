@@ -5,7 +5,7 @@ module Data.Higher.Graph
 , Graph(..)
 , var
 , mu
-, rec
+, wrap
 , gfold
 , grfold
 , fold
@@ -42,8 +42,8 @@ var = Var
 mu :: (v a -> f (Rec f v) a) -> Rec f v a
 mu = Rec . Mu
 
-rec :: f (Rec f v) a -> Rec f v a
-rec = Rec . In
+wrap :: f (Rec f v) a -> Rec f v a
+wrap = Rec . In
 
 
 -- Folds
@@ -78,18 +78,18 @@ transform f = modifyGraph (graphMap f)
 graphMap :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Rec g a
 graphMap f = iter var $ \ rc -> case rc of
   Mu g -> mu (f . g)
-  In r -> rec (f r)
+  In r -> wrap (f r)
 
 liftRec :: (f (Rec f v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
 liftRec f rc = case rc of
   Var v -> var v
   Rec (Mu g) -> mu (f . g)
-  Rec (In r) -> rec (f r)
+  Rec (In r) -> wrap (f r)
 
 pjoin :: HFunctor f => Rec f (Rec f v) ~> Rec f v
 pjoin = iter id $ \ rc -> case rc of
   Mu g -> mu (g . var)
-  In r -> rec r
+  In r -> wrap r
 
 modifyGraph :: (forall v. Rec f v ~> Rec g v) -> Graph f ~> Graph g
 modifyGraph f g = Graph (f (unGraph g))
@@ -136,4 +136,4 @@ instance HFunctor f => HFunctor (RecF f v)
           Mu g -> Mu (hfmap f . g)
           In r -> In (hfmap f r)
 
-instance HFunctor f => HCorecursive Rec f where hembed = rec
+instance HFunctor f => HCorecursive Rec f where hembed = wrap
