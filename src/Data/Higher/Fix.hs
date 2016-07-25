@@ -6,6 +6,9 @@ module Data.Higher.Fix
 import Data.Higher.Functor
 import Data.Higher.Functor.Recursive
 
+
+-- Types
+
 newtype Fix f a = Fix { unFix :: f (Fix f) a }
 
 
