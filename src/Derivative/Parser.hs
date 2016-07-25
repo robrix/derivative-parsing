@@ -33,8 +33,6 @@ import Data.Char
 import Data.Foldable (foldl')
 import Data.Higher.Foldable
 import Data.Higher.Functor
-import Data.Higher.Functor.Eq
-import Data.Higher.Functor.Show
 import qualified Data.Higher.Graph as Graph
 import Data.Higher.Graph hiding (rec, mu, fold, transform)
 import qualified Data.Monoid as Monoid
