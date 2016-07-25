@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, GADTs, MultiParamTypeClasses #-}
 module Data.Pattern
 ( PatternF(..)
+, isTerminal
 ) where
 
 import Control.Applicative
@@ -26,6 +27,16 @@ data PatternF t f a where
 
 wrap :: HCorecursive r (PatternF t) => PatternF t (r (PatternF t) v) a -> r (PatternF t) v a
 wrap = hembed
+
+isTerminal :: PatternF t f a -> Bool
+isTerminal p = case p of
+  Cat _ _ -> False
+  Alt _ _ -> False
+  Rep _ -> False
+  Map _ _ -> False
+  Bnd _ _ -> False
+  Lab _ _ -> False
+  _ -> True
 
 
 -- Instances

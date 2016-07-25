@@ -24,7 +24,7 @@ module Derivative.Parser
 , parser
 , combinator
 , nullable
-, isTerminal
+, Derivative.Parser.isTerminal
 ) where
 
 import Control.Applicative
@@ -38,7 +38,7 @@ import qualified Data.Higher.Graph as Graph
 import Data.Higher.Graph hiding (mu, fold, transform, liftRec, pjoin, Rec(..))
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
-import Data.Pattern
+import Data.Pattern as Pattern
 import Data.Predicate
 
 -- API
@@ -166,7 +166,7 @@ compact'' parser = case parser of
   Del (Rec (In Nul)) -> Nul
   Del (Rec (In (Del p))) -> Del p
   Del (Rec (In (Ret a))) -> Ret a
-  Del (Rec (In p)) | isTerminal'' p -> Nul
+  Del (Rec (In p)) | Pattern.isTerminal p -> Nul
   a -> a
 
 nullable :: Parser t a -> Bool
@@ -182,17 +182,8 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   _ -> Const False
 
 isTerminal :: Parser t a -> Bool
-isTerminal = (getConst .) $ (`fold` Const False) (Const . isTerminal'')
+isTerminal = (getConst .) $ (`fold` Const False) (Const . Pattern.isTerminal)
 
-isTerminal'' :: PatternF t f a -> Bool
-isTerminal'' p = case p of
-  Cat _ _ -> False
-  Alt _ _ -> False
-  Rep _ -> False
-  Map _ _ -> False
-  Bnd _ _ -> False
-  Lab _ _ -> False
-  _ -> True
 
 size :: Parser t a -> Int
 size = getSum . getK . fold ((K (Sum 1) <|>) . hfoldMap id) (K (Sum 0))
