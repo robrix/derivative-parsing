@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances, GADTs, MultiParamTypeClasses, UndecidableInstances #-}
 module Data.Pattern
 ( PatternF(..)
 ) where
@@ -10,7 +10,6 @@ import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Recursive
 import Data.Higher.Functor.Show
-import Data.Higher.Graph
 
 data PatternF t f a where
   Cat :: f a -> f b -> PatternF t f (a, b)
@@ -80,34 +79,19 @@ instance Show t => HShowF (PatternF t)
           where showIndices n = foldr (.) id ((showChar 't' .) . shows <$> take n (iterate succ (0 :: Integer)))
 
 
-instance Functor (Rec (PatternF t) v)
-  where fmap f = rec . Map f
+instance (HCorecursive (r (PatternF t) v), Base (r (PatternF t) v) ~ PatternF t) => Functor (r (PatternF t) v)
+  where fmap = (hembed .) . Map
 
-instance Applicative (Rec (PatternF t) v) where
-  pure = rec . Ret . pure
-  a <*> b = uncurry ($) <$> rec (Cat a b)
+instance (HCorecursive (r (PatternF t) v), Base (r (PatternF t) v) ~ PatternF t) => Applicative (r (PatternF t) v)
+  where pure = hembed . Ret . pure
+        (<*>) = ((fmap (uncurry ($)) . hembed) .) . Cat
 
-instance Alternative (Rec (PatternF t) v) where
-  empty = rec Nul
-  a <|> b = rec (Alt a b)
-  some v = (:) <$> v <*> many v
-  many = rec . Rep
+instance (HCorecursive (r (PatternF t) v), Base (r (PatternF t) v) ~ PatternF t) => Alternative (r (PatternF t) v)
+  where empty = hembed Nul
+        (<|>) = (hembed .) . Alt
+        some v = (:) <$> v <*> many v
+        many = hembed . Rep
 
-instance Monad (Rec (PatternF t) v) where
-  return = pure
-  (>>=) = (rec .) . Bnd
-
-instance (HCorecursive r, Base r ~ PatternF t) => Functor (PatternF t r)
-  where fmap f = Map f . hembed
-
-instance (HCorecursive r, Base r ~ PatternF t) => Applicative (PatternF t r)
-  where pure = Ret . pure
-        a <*> b = uncurry ($) <$> Cat (hembed a) (hembed b)
-
-instance (HCorecursive r, Base r ~ PatternF t) => Alternative (PatternF t r)
-  where empty = Nul
-        a <|> b = Alt (hembed a) (hembed b)
-
-instance (HCorecursive r, Base r ~ PatternF t) => Monad (PatternF t r)
+instance (HCorecursive (r (PatternF t) v), Base (r (PatternF t) v) ~ PatternF t) => Monad (r (PatternF t) v)
   where return = pure
-        (>>=) a = Bnd (hembed a) . (hembed .)
+        (>>=) = (hembed .) . Bnd
