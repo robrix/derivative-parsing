@@ -9,6 +9,7 @@ import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Show
+import Data.Higher.Graph
 
 data PatternF t f a where
   Cat :: f a -> f b -> PatternF t f (a, b)
@@ -76,3 +77,7 @@ instance Show t => HShowF (PatternF t)
           Lab p s -> showParen (n > 2) $ showsPrec 3 p . showString " `label` " . shows s
           Del a -> showParen (n >= 10) $ showString "delta " . showsPrec 10 a
           where showIndices n = foldr (.) id ((showChar 't' .) . shows <$> take n (iterate succ (0 :: Integer)))
+
+
+instance Functor (Rec (PatternF t) v)
+  where fmap f = rec . Map f
