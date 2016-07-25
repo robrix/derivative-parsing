@@ -34,7 +34,7 @@ import Data.Foldable (foldl')
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import qualified Data.Higher.Graph as Graph
-import Data.Higher.Graph hiding (rec, mu, fold, transform)
+import Data.Higher.Graph hiding (rec, mu, fold, transform, liftRec, pjoin, Rec(..))
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
 import Data.Pattern
@@ -87,7 +87,7 @@ string :: String -> Combinator v Char String
 string string = sequenceA (rec . Sat . Equal <$> string)
 
 mu :: (Combinator v t a -> Combinator v t a) -> Combinator v t a
-mu f = Graph.mu $ \ v -> case f (var v) of
+mu f = Rec $ Mu $ \ v -> case f (Var v) of
   Rec (In r) -> r
   p -> p `Lab` ""
 
@@ -102,19 +102,19 @@ parser r = compact $ Parser r
 -- Types
 
 newtype Parser t a = Parser { combinator :: forall v. Combinator v t a }
-type Combinator v t = Rec (PatternF t) v
+data Combinator v t a = Var (v a) | Rec (RecF (PatternF t) v (Combinator v t) a)
 
 
 -- Algorithm
 
 deriv :: forall a t. Parser t a -> t -> Parser t a
 deriv g c = Parser (deriv' (combinator g))
-  where deriv' :: forall a v. Combinator (Combinator v t) t a -> Combinator v t a
+  where deriv' :: forall a v. Combinator (Graph.Rec (PatternF t) v) t a -> Combinator v t a
         deriv' rc = case rc of
-          Var v -> v
-          Rec (Mu g) -> deriv'' (g (pjoin (Graph.mu g)))
+          Var v -> fromRec v
+          Rec (Mu g) -> deriv'' (g (Graph.pjoin (Graph.mu (hfmap toRec . g))))
           Rec (In r) -> deriv'' r
-        deriv'' :: forall a v. PatternF t (Combinator (Combinator v t) t) a -> Combinator v t a
+        deriv'' :: forall a v. PatternF t (Combinator (Graph.Rec (PatternF t) v) t) a -> Combinator v t a
         deriv'' p = case p of
           Cat a b -> deriv' a `cat` pjoin b <|> delta (pjoin a) `cat` deriv' b
           Alt a b -> deriv' a <|> deriv' b
@@ -203,19 +203,33 @@ newtype K a b = K { getK :: a }
 
 
 rec :: PatternF t (Combinator v t) a -> Combinator v t a
-rec = compact' . Graph.rec
+rec = compact' . fromRec . Graph.rec . hfmap toRec
 
 fold :: (forall a. PatternF t c a -> c a) -> (forall a. c a) -> Parser t a -> c a
 fold f z = Graph.fold f z . toGraph
 
-transform :: (forall a v. PatternF t (Rec (PatternF t) v) a -> PatternF t (Rec (PatternF t) v) a) -> Parser t a -> Parser t a
-transform f = fromGraph . Graph.transform f . toGraph
+transform :: (forall a v. PatternF t (Combinator v t) a -> PatternF t (Combinator v t) a) -> Parser t a -> Parser t a
+transform f = fromGraph . Graph.transform (hfmap toRec . f . hfmap fromRec) . toGraph
+
+liftRec :: (forall a. PatternF t (Combinator v t) a -> PatternF t (Combinator v t) a) -> Combinator v t a -> Combinator v t a
+liftRec f = fromRec . Graph.liftRec (hfmap toRec . f . hfmap fromRec) . toRec
+
+pjoin :: Combinator (Graph.Rec (PatternF t) v) t a -> Combinator v t a
+pjoin = fromRec . Graph.pjoin . toRec
 
 toGraph :: Parser t a -> Graph (PatternF t) a
-toGraph (Parser r) = Graph r
+toGraph (Parser r) = Graph (toRec r)
 
 fromGraph :: Graph (PatternF t) a -> Parser t a
-fromGraph (Graph r) = Parser r
+fromGraph (Graph r) = Parser (fromRec r)
+
+fromRec :: Graph.Rec (PatternF t) v a -> Combinator v t a
+fromRec (Graph.Var v) = Var v
+fromRec (Graph.Rec r) = Rec (hfmap fromRec r)
+
+toRec :: Combinator v t a -> Graph.Rec (PatternF t) v a
+toRec (Var v) = Graph.Var v
+toRec (Rec r) = Graph.Rec (hfmap toRec r)
 
 
 -- Instances
@@ -267,7 +281,7 @@ instance Monoid a => Monad (K a)
         K a >>= _ = K a
 
 instance Eq (Parser t a)
-  where a == b = eqRec 0 (combinator a) (combinator b)
+  where a == b = eqRec 0 (toRec (combinator a)) (toRec (combinator b))
 
 instance Show t => Show (Parser t a)
-  where showsPrec n = showsPrec n . (combinator :: Parser t a -> Rec (PatternF t) (Const Char) a)
+  where showsPrec n = showsPrec n . (toRec . combinator :: Parser t a -> Graph.Rec (PatternF t) (Const Char) a)
