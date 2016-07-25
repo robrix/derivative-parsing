@@ -1,8 +1,13 @@
-{-# LANGUAGE FlexibleContexts, MultiParamTypeClasses, PolyKinds, RankNTypes, TypeOperators #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, PolyKinds, RankNTypes, TypeOperators #-}
 module Data.Higher.Functor.Recursive where
 
 import Data.Higher.Functor
 import Data.Higher.Transformation
+
+
+-- Types
+
+newtype Fix f v a = Fix { unFix :: f (Fix f v) a }
 
 
 -- Classes
@@ -18,3 +23,8 @@ class HFunctor f => HCorecursive t f where
 
   hana :: (a ~> f a) -> a ~> t f a
   hana f = hembed . hfmap (hana f) . f
+
+
+-- Instances
+
+instance HFunctor f => HRecursive Fix f where hproject = unFix

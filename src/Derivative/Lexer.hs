@@ -4,7 +4,7 @@ module Derivative.Lexer
 ) where
 
 import Control.Applicative
-import Data.Higher.Fix
+import Data.Higher.Functor.Recursive
 import Data.Pattern
 
 -- Types
