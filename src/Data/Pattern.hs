@@ -85,3 +85,9 @@ instance Functor (Rec (PatternF t) v)
 instance Applicative (Rec (PatternF t) v) where
   pure = rec . Ret . pure
   a <*> b = uncurry ($) <$> rec (Cat a b)
+
+instance Alternative (Rec (PatternF t) v) where
+  empty = rec Nul
+  a <|> b = rec (Alt a b)
+  some v = (:) <$> v <*> many v
+  many = rec . Rep
