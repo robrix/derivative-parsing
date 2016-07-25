@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, PolyKinds #-}
 module Data.Higher.Fix
 ( Fix(..)
 ) where
@@ -9,11 +9,9 @@ import Data.Higher.Functor.Recursive
 
 -- Types
 
-newtype Fix f a = Fix { unFix :: f (Fix f) a }
+newtype Fix f v a = Fix { unFix :: f (Fix f v) a }
 
 
 -- Instances
 
-type instance Base (Fix f) = f
-
-instance HFunctor f => HRecursive (Fix f) where hproject = unFix
+instance HFunctor f => HRecursive Fix f where hproject = unFix
