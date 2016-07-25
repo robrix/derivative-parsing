@@ -65,27 +65,27 @@ oneOf = getAlt . foldMap Monoid.Alt
 infixl 4 `cat`
 
 cat :: Combinator t v a -> Combinator t v b -> Combinator t v (a, b)
-cat a = rec . Cat a
+cat a = hembed . Cat a
 
 char :: Char -> Combinator Char v Char
-char = rec . Sat . Equal
+char = hembed . Sat . Equal
 
 category :: GeneralCategory -> Combinator Char v Char
-category = rec . Sat . Category
+category = hembed . Sat . Category
 
 delta :: Combinator t v a -> Combinator t v a
-delta = rec . Del
+delta = hembed . Del
 
 ret :: [a] -> Combinator t v a
-ret = rec . Ret
+ret = hembed . Ret
 
 infixr 2 `label`
 
 label :: Combinator t v a -> String -> Combinator t v a
-label p = rec . Lab p
+label p = hembed . Lab p
 
 string :: String -> Combinator Char v String
-string string = sequenceA (rec . Sat . Equal <$> string)
+string string = sequenceA (hembed . Sat . Equal <$> string)
 
 mu :: (Combinator t v a -> Combinator t v a) -> Combinator t v a
 mu f = Rec $ Mu $ \ v -> case f (Var v) of
@@ -93,7 +93,7 @@ mu f = Rec $ Mu $ \ v -> case f (Var v) of
   p -> p `Lab` ""
 
 anyToken :: Combinator t v t
-anyToken = rec (Sat (Constant True))
+anyToken = hembed (Sat (Constant True))
 
 
 parser :: (forall v. Combinator t v a) -> Parser t a
@@ -204,9 +204,6 @@ newtype K a b = K { getK :: a }
   deriving (Eq, Functor, Ord, Show)
 
 
-rec :: PatternF t (Combinator t v) a -> Combinator t v a
-rec = compact' . fromRec . Graph.rec . hfmap toRec
-
 fold :: (forall a. PatternF t c a -> c a) -> (forall a. c a) -> Parser t a -> c a
 fold f z = Graph.fold f z . toGraph
 
@@ -271,4 +268,4 @@ instance Eq (Parser t a)
 instance Show t => Show (Parser t a)
   where showsPrec n = showsPrec n . (toRec . combinator :: Parser t a -> Graph.Rec (PatternF t) (Const Char) a)
 
-instance HCorecursive Rec (PatternF t) where hembed = rec
+instance HCorecursive Rec (PatternF t) where hembed = compact' . fromRec . Graph.rec . hfmap toRec
