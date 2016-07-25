@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor, FlexibleInstances, GADTs, RankNTypes, ScopedTypeVariables, TypeSynonymInstances #-}
+{-# LANGUAGE DeriveFunctor, FlexibleInstances, GADTs, MultiParamTypeClasses, RankNTypes, ScopedTypeVariables, TypeSynonymInstances #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -103,7 +103,8 @@ parser r = compact $ Parser r
 -- Types
 
 newtype Parser t a = Parser { combinator :: forall v. Combinator t v a }
-data Combinator t v a = Var (v a) | Rec (RecF (PatternF t) v (Combinator t v) a)
+data Rec f v a = Var (v a) | Rec (RecF f v (Rec f v) a)
+type Combinator t = Rec (PatternF t)
 
 
 -- Algorithm
@@ -235,35 +236,18 @@ toRec (Rec r) = Graph.Rec (hfmap toRec r)
 
 -- Instances
 
-instance Functor (Combinator v t) where
-  fmap f = rec . Map f
-
 instance Functor (Parser t) where
   fmap f (Parser rec) = Parser (f <$> rec)
-
-instance Applicative (Combinator v t) where
-  pure = rec . Ret . pure
-  a <*> b = uncurry ($) <$> (a `cat` b)
 
 instance Applicative (Parser t) where
   pure a = Parser (pure a)
   Parser f <*> Parser a = Parser (f <*> a)
-
-instance Alternative (Combinator v t) where
-  empty = rec Nul
-  a <|> b = rec (Alt a b)
-  some v = (:) <$> v <*> many v
-  many = rec . Rep
 
 instance Alternative (Parser t) where
   empty = Parser empty
   Parser a <|> Parser b = Parser (a <|> b)
   some (Parser p) = Parser (some p)
   many (Parser p) = Parser (many p)
-
-instance Monad (Combinator v t) where
-  return = pure
-  (>>=) = (rec .) . Bnd
 
 instance Monad (Parser t) where
   return = pure
@@ -286,3 +270,5 @@ instance Eq (Parser t a)
 
 instance Show t => Show (Parser t a)
   where showsPrec n = showsPrec n . (toRec . combinator :: Parser t a -> Graph.Rec (PatternF t) (Const Char) a)
+
+instance HCorecursive Rec (PatternF t) where hembed = rec
