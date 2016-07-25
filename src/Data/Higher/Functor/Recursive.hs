@@ -14,3 +14,9 @@ class HFunctor (Base t) => HRecursive t where
 
   hcata :: (Base t a ~> a) -> t ~> a
   hcata f = f . hfmap (hcata f) . hproject
+
+class HFunctor (Base t) => HCorecursive t where
+  hembed :: Base t t ~> t
+
+  hana :: (a ~> Base t a) -> a ~> t
+  hana f = hembed . hfmap (hana f) . f
