@@ -81,3 +81,7 @@ instance Show t => HShowF (PatternF t)
 
 instance Functor (Rec (PatternF t) v)
   where fmap f = rec . Map f
+
+instance Applicative (Rec (PatternF t) v) where
+  pure = rec . Ret . pure
+  a <*> b = uncurry ($) <$> rec (Cat a b)
