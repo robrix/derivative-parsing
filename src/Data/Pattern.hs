@@ -24,6 +24,10 @@ data PatternF t f a where
   Del :: f a -> PatternF t f a
 
 
+wrap :: HCorecursive r (PatternF t) => PatternF t (r (PatternF t) v) a -> r (PatternF t) v a
+wrap = hembed
+
+
 -- Instances
 
 instance HFunctor (PatternF t) where
@@ -80,18 +84,18 @@ instance Show t => HShowF (PatternF t)
 
 
 instance HCorecursive r (PatternF t) => Functor (r (PatternF t) v)
-  where fmap = (hembed .) . Map
+  where fmap = (wrap .) . Map
 
 instance HCorecursive r (PatternF t) => Applicative (r (PatternF t) v)
-  where pure = hembed . Ret . pure
+  where pure = wrap . Ret . pure
         (<*>) = ((fmap (uncurry ($)) . hembed) .) . Cat
 
 instance HCorecursive r (PatternF t) => Alternative (r (PatternF t) v)
-  where empty = hembed Nul
-        (<|>) = (hembed .) . Alt
+  where empty = wrap Nul
+        (<|>) = (wrap .) . Alt
         some v = (:) <$> v <*> many v
-        many = hembed . Rep
+        many = wrap . Rep
 
 instance HCorecursive r (PatternF t) => Monad (r (PatternF t) v)
   where return = pure
-        (>>=) = (hembed .) . Bnd
+        (>>=) = (wrap .) . Bnd
