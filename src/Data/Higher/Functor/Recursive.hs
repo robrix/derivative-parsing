@@ -6,6 +6,9 @@ import Data.Higher.Transformation
 
 type family Base (t :: k -> *) :: (k -> *) -> k -> *
 
+
+-- Classes
+
 class HFunctor (Base t) => HRecursive t where
   hproject :: t a -> Base t t a
 
