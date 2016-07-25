@@ -91,3 +91,7 @@ instance Alternative (Rec (PatternF t) v) where
   a <|> b = rec (Alt a b)
   some v = (:) <$> v <*> many v
   many = rec . Rep
+
+instance Monad (Rec (PatternF t) v) where
+  return = pure
+  (>>=) = (rec .) . Bnd
