@@ -21,6 +21,7 @@ library
                      , Data.Higher.Functor.Show
                      , Data.Higher.Graph
                      , Data.Higher.Transformation
+                     , Data.Higher.Traversable
                      , Data.Pattern
                      , Data.Predicate
                      , Derivative.Lexer
