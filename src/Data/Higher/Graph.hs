@@ -73,7 +73,7 @@ rfold alg k = grfold id ($ k) alg
 -- Maps
 
 transform :: HFunctor f => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> Graph g
-transform f = modifyGraph (graphMap f)
+transform f = modifyGraph (hoist f)
 
 graphMap :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Rec g a
 graphMap f = iter var $ \ rc -> case rc of
