@@ -21,6 +21,7 @@ module Data.Higher.Graph
 import Control.Applicative
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
+import Data.Higher.Functor.Recursive
 import Data.Higher.Functor.Show
 import Data.Higher.Transformation
 
@@ -134,3 +135,8 @@ instance HFunctor f => HFunctor (RecF f v)
   where hfmap f rec = case rec of
           Mu g -> Mu (hfmap f . g)
           In r -> In (hfmap f r)
+
+instance HHoist Rec where
+  hoist f = iter var $ \ rc -> case rc of
+    Mu g -> mu (f . g)
+    In r -> wrap (f r)
