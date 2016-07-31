@@ -11,7 +11,6 @@ module Data.Higher.Graph
 , fold
 , rfold
 , transform
-, graphMap
 , liftRec
 , pjoin
 , modifyGraph
@@ -74,11 +73,6 @@ rfold alg k = grfold id ($ k) alg
 
 transform :: HFunctor f => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> Graph g
 transform f = modifyGraph (hoist f)
-
-graphMap :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Rec g a
-graphMap f = iter var $ \ rc -> case rc of
-  Mu g -> mu (f . g)
-  In r -> wrap (f r)
 
 liftRec :: (f (Rec f v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
 liftRec f rc = case rc of
