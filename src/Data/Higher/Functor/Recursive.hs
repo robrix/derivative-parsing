@@ -14,6 +14,12 @@ data Free f v a
   | Impure (f (Free f v) a)
 
 
+iter :: HFunctor f => (f a ~> a) -> Free f a ~> a
+iter algebra = (\ a -> case a of
+  Pure a -> a
+  Impure r -> algebra (hfmap (iter algebra) r))
+
+
 -- Classes
 
 class HFunctor f => HRecursive t f where
