@@ -9,6 +9,10 @@ import Data.Higher.Transformation
 
 newtype Fix f a = Fix { unFix :: f (Fix f) a }
 
+data Free f v a
+  = Pure (v a)
+  | Impure (f (Free f v) a)
+
 
 -- Classes
 
