@@ -111,7 +111,7 @@ data SexprT = OpenT | CloseT | AtomT String
 sexprL :: Lexer Char [SexprT]
 sexprL
   = many space
-  *> many ((AtomT .) . (:) <$> letter <*> many alphaNum
+  *> many (((AtomT .) . (:) <$> letter <*> many alphaNum
   <|> OpenT <$ char '('
   <|> CloseT <$ char ')')
-  <* many space
+  <* many space)
