@@ -66,6 +66,10 @@ isTerminal p = case p of
   _ -> True
 
 
+wrap :: PatternF t (Rec (PatternF t) v) a -> Rec (PatternF t) v a
+wrap = liftRec compactF . Graph.wrap
+
+
 -- Instances
 
 instance HFunctor (PatternF t) where
@@ -119,10 +123,6 @@ instance Show t => HShowF (PatternF t)
           Lab p s -> showParen (n > 2) $ showsPrec 3 p . showString " `label` " . shows s
           Del a -> showParen (n >= 10) $ showString "delta " . showsPrec 10 a
           where showIndices n = foldr (.) id ((showChar 't' .) . shows <$> take n (iterate succ (0 :: Integer)))
-
-
-wrap :: PatternF t (Rec (PatternF t) v) a -> Rec (PatternF t) v a
-wrap = liftRec compactF . Graph.wrap
 
 instance Functor (Rec (PatternF t) v)
   where fmap = (wrap .) . Map
