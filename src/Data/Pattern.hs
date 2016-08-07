@@ -244,3 +244,10 @@ instance HCorecursive (Rec (PatternF t) v)
 
 instance HCorecursive (Fix (PatternF t))
   where hembed = Fix
+
+instance Pattern (Rec (PatternF t) v) t
+  where pattern (Rec (In r)) = Just r
+        pattern _ = Nothing
+
+instance Pattern (Fix (PatternF t)) t
+  where pattern = Just . unFix
