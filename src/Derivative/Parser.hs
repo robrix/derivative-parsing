@@ -53,10 +53,10 @@ type Combinator t = Rec (PatternF t)
 
 deriv :: forall a t. Parser t a -> t -> Parser t a
 deriv g c = Graph (deriv' (combinator g))
-  where deriv' :: forall a v. Combinator t (Graph.Rec (PatternF t) v) a -> Combinator t v a
+  where deriv' :: forall a v. Combinator t (Rec (PatternF t) v) a -> Combinator t v a
         deriv' rc = case rc of
           Var v -> v
-          Rec (Mu g) -> deriv'' (g (Graph.pjoin (Graph.mu g)))
+          Rec (Mu g) -> deriv'' (g (pjoin (Graph.mu g)))
           Rec (In r) -> deriv'' r
         deriv'' :: forall a v. PatternF t (Combinator t (Graph.Rec (PatternF t) v)) a -> Combinator t v a
         deriv'' p = case p of
