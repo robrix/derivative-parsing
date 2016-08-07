@@ -2,6 +2,7 @@
 module Derivative.Lexer
 ( Lexer
 , parseNull
+, compact
 , size
 , module Pattern
 ) where
@@ -31,6 +32,11 @@ parseNull = cata $ \ parser -> case parser of
   Lab p _ -> p
   Del a -> a
   _ -> []
+
+
+compact :: Lexer t a -> Lexer t a
+compact = Fix . compactF . unFix
+
 
 size :: Lexer t a -> Int
 size = getSum . getK . cata ((K (Sum 1) <|>) . hfoldMap id)
