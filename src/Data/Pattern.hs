@@ -130,6 +130,12 @@ isTerminal p = case p of
   _ -> True
 
 
+-- Classes
+
+class (HCorecursive r, Base r ~ PatternF t) => Pattern r t
+  where pattern :: r a -> Maybe (Base r r a)
+
+
 -- Instances
 
 instance HFunctor (PatternF t) where
