@@ -36,3 +36,6 @@ class HFunctor f => HCorecursive t f where
 
 class HHoist t where
   hoist :: HFunctor f => (f (t g a) ~> g (t g a)) -> t f a ~> t g a
+
+class HFree m f where
+  wrap :: f (m a) ~> m a

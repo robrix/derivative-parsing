@@ -41,9 +41,6 @@ var = Var
 mu :: (v a -> f (Rec f v) a) -> Rec f v a
 mu = Rec . Mu
 
-wrap :: f (Rec f v) a -> Rec f v a
-wrap = Rec . In
-
 
 -- Folds
 
@@ -134,3 +131,6 @@ instance HHoist Rec where
   hoist f = iter var $ \ rc -> case rc of
     Mu g -> mu (f . g)
     In r -> wrap (f r)
+
+instance HFree (Rec f) f where
+  wrap = Rec . In
