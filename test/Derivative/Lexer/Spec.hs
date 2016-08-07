@@ -5,7 +5,9 @@ import Data.Pattern.Char
 import Derivative.Lexer
 import Test.Hspec
 import Test.Hspec.QuickCheck
+import Test.QuickCheck hiding (label)
 
+{-# ANN module "HLint: ignore Redundant do" #-}
 {-# ANN module "HLint: ignore Functor law" #-}
 {-# ANN module "HLint: ignore Monad law, right identity" #-}
 
@@ -31,6 +33,52 @@ spec = do
 
       prop "returns ambiguous parse trees" $
         \ a b -> parseNull (pure a <|> pure b) `shouldBe` [a, b :: Char]
+
+  describe "deriv" $ do
+    describe "many" $ do
+      prop "produces a list of successful parses" $
+        \ c -> parseNull (many (char c) `deriv` c) `shouldBe` [[c]]
+
+      prop "produces no parse trees when unsuccessful" $
+        \ c -> parseNull (many (char c) `deriv` succ c) `shouldBe` []
+
+      prop "is constant in lexer size" $
+        \ c i -> let p = many (char c) in
+          take i (size <$> iterate (`deriv` c) p) `shouldBe` take i (size p : repeat (succ (size p)))
+
+    describe "fmap" $ do
+      prop "distributivity" $
+        \ f c -> parseNull (fmap (getBlind f :: Char -> Char) (pure c)) `shouldBe` [getBlind f c]
+
+    describe "char" $ do
+      prop "represents unmatched content with the empty lexer" $
+        \ a -> char a `deriv` succ a `shouldBe` empty
+
+      prop "represents matched content with ε reduction lexers" $
+        \ a -> char a `deriv` a `shouldBe` ret [a]
+
+    describe "<|>" $ do
+      prop "distributivity" $
+        \ a b c -> (char a <|> char b) `deriv` c `shouldBe` (char a `deriv` c) <|> (char b `deriv` c)
+
+    describe "pure" $ do
+      prop "has the null derivative" $
+        \ a c -> pure (a :: Char) `deriv` (c :: Char) `shouldBe` empty
+
+    describe "ret" $ do
+      prop "annihilates" $
+        \ a c -> ret (a :: String) `deriv` (c :: Char) `shouldBe` empty
+
+    describe "label" $ do
+      prop "distributivity" $
+        \ c s -> ((char c `label` s) `deriv` c) `shouldBe` ((char c `deriv` c) `label` s)
+
+    describe "cat" $ do
+      prop "does not pass through non-nullable lexers" $
+        \ c -> (char c `cat` pure (succ c)) `deriv` succ c `shouldBe` (empty `cat` char (succ c) <|> empty `cat` pure (succ c))
+
+      prop "passes through nullable lexers" $
+        \ c d -> (ret [c :: Char] `cat` char d) `deriv` d `shouldBe` (empty `cat` char d <|> ret [c] `cat` ret [d])
 
   describe "size" $ do
     prop "is 1 for terminals" $
