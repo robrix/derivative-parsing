@@ -8,4 +8,4 @@ import Data.Pattern
 
 -- Types
 
-type Lexer t v = Fix (PatternF t) v
+type Lexer t = Fix (PatternF t)
