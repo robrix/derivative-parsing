@@ -28,7 +28,6 @@ module Derivative.Parser
 ) where
 
 import Control.Applicative
-import Data.Bifunctor (first)
 import Data.Char
 import Data.Foldable (foldl')
 import Data.Higher.Foldable
@@ -140,31 +139,7 @@ parseNull = (`fold` []) $ \ parser -> case parser of
   _ -> []
 
 compact :: Parser t a -> Parser t a
-compact = transform compact''
-
-compact'' :: PatternF t (Combinator t v) a -> PatternF t (Combinator t v) a
-compact'' parser = case parser of
-  Cat (Rec (In Nul)) _ -> Nul
-  Cat _ (Rec (In Nul)) -> Nul
-  Cat (Rec (In (Ret [t]))) b -> Map ((,) t) b
-  Cat a (Rec (In (Ret [t]))) -> Map (flip (,) t) a
-  Cat (Rec (In (Cat a b))) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (cat a (cat b c))
-  Cat (Rec (In (Map f a))) b -> Map (first f) (cat a b)
-  Alt (Rec (In Nul)) (Rec (In p)) -> p
-  Alt (Rec (In p)) (Rec (In Nul)) -> p
-  Alt (Rec (In (Ret a))) (Rec (In (Ret b))) -> Ret (a <> b)
-  Rep (Rec (In Nul)) -> Ret [[]]
-  Map f (Rec (In (Ret as))) -> Ret (f <$> as)
-  Map g (Rec (In (Map f p))) -> Map (g . f) p
-  Map _ (Rec (In Nul)) -> Nul
-  Lab (Rec (In Nul)) _ -> Nul
-  Lab (Rec (In (Ret t))) _ -> Ret t
-  Lab (Rec (In (Del p))) _ -> Del p
-  Del (Rec (In Nul)) -> Nul
-  Del (Rec (In (Del p))) -> Del p
-  Del (Rec (In (Ret a))) -> Ret a
-  Del (Rec (In p)) | Pattern.isTerminal p -> Nul
-  a -> a
+compact = transform compactF
 
 nullable :: Parser t a -> Bool
 nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
