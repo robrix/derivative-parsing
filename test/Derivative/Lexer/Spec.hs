@@ -107,6 +107,9 @@ spec = do
     it "skips leading whitespace" $
       sexprL `lex` "   ()" `shouldBe` [[ OpenT, CloseT ]]
 
+    it "skips trailing whitespace" $
+      sexprL `lex` "()   " `shouldBe` [[ OpenT, CloseT ]]
+
 
 data LamT = Lambda | Dot | Identifier String
 
