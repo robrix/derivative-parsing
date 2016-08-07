@@ -32,6 +32,7 @@ import Data.Char
 import Data.Foldable (foldl')
 import Data.Functor.K
 import Data.Higher.Foldable
+import Data.Higher.Functor.Recursive
 import Data.Higher.Graph as Graph hiding (wrap)
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
@@ -62,27 +63,27 @@ oneOf = getAlt . foldMap Monoid.Alt
 infixl 4 `cat`
 
 cat :: Combinator t v a -> Combinator t v b -> Combinator t v (a, b)
-cat a = wrap . Cat a
+cat a = hembed . Cat a
 
 char :: Char -> Combinator Char v Char
-char = wrap . Sat . Equal
+char = hembed . Sat . Equal
 
 category :: GeneralCategory -> Combinator Char v Char
-category = wrap . Sat . Category
+category = hembed . Sat . Category
 
 delta :: Combinator t v a -> Combinator t v a
-delta = wrap . Del
+delta = hembed . Del
 
 ret :: [a] -> Combinator t v a
-ret = wrap . Ret
+ret = hembed . Ret
 
 infixr 2 `label`
 
 label :: Combinator t v a -> String -> Combinator t v a
-label p = wrap . Lab p
+label p = hembed . Lab p
 
 string :: String -> Combinator Char v String
-string string = sequenceA (wrap . Sat . Equal <$> string)
+string string = sequenceA (hembed . Sat . Equal <$> string)
 
 mu :: (Combinator t v a -> Combinator t v a) -> Combinator t v a
 mu f = Rec $ Mu $ \ v -> case f (Var v) of
@@ -90,7 +91,7 @@ mu f = Rec $ Mu $ \ v -> case f (Var v) of
   p -> p `Lab` ""
 
 anyToken :: Combinator t v t
-anyToken = wrap (Sat (Constant True))
+anyToken = hembed (Sat (Constant True))
 
 
 parser :: (forall v. Combinator t v a) -> Parser t a
