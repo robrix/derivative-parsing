@@ -1,5 +1,6 @@
 module Derivative.Lexer.Spec where
 
+import Control.Applicative
 import Derivative.Lexer
 import Test.Hspec
 import Test.Hspec.QuickCheck
@@ -10,3 +11,9 @@ spec = do
     describe "cat" $ do
       prop "returns pairs of its parse trees" $
         \ a b -> parseNull (pure a `cat` pure b) `shouldBe` [(a, b) :: (Char, Char)]
+
+      prop "is empty when its left operand is empty" $
+        \ b -> parseNull (empty `cat` pure b) `shouldBe` ([] :: [(Char, Char)])
+
+      prop "is empty when its right operand is empty" $
+        \ a -> parseNull (pure a `cat` empty) `shouldBe` ([] :: [(Char, Char)])
