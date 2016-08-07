@@ -160,3 +160,7 @@ instance Monad (Graph (PatternF t))
 
 instance Functor (Fix (PatternF t))
   where fmap = (Fix .) . Map
+
+instance Applicative (Fix (PatternF t))
+  where pure = Fix . Ret . pure
+        (<*>) = (((fmap (uncurry ($))) . Fix) .) . Cat
