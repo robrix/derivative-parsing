@@ -42,7 +42,8 @@ test-suite derivative-parsing-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  other-modules:       Derivative.Parser.Char.Spec
+  other-modules:       Derivative.Lexer.Spec
+                     , Derivative.Parser.Char.Spec
                      , Derivative.Parser.Spec
   build-depends:       base
                      , derivative-parsing
