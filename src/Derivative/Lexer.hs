@@ -2,6 +2,7 @@
 module Derivative.Lexer
 ( Lexer
 , cat
+, char
 , ret
 , parseNull
 ) where
@@ -9,11 +10,15 @@ module Derivative.Lexer
 import Data.Higher.Functor.Fix
 import Data.Monoid hiding (Alt)
 import Data.Pattern
+import Data.Predicate
 
 -- API
 
 cat :: Lexer t a -> Lexer t b -> Lexer t (a, b)
 cat a = Fix . Cat a
+
+char :: Char -> Lexer Char Char
+char = Fix . Sat . Equal
 
 ret :: [a] -> Lexer t a
 ret = Fix . Ret
