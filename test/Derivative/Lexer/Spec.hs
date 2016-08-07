@@ -27,3 +27,5 @@ spec = do
 
       prop "returns ambiguous parse trees" $
         \ a b -> parseNull (pure a <|> pure b) `shouldBe` [a, b :: Char]
+
+data LamT = Lambda | Dot | Identifier String
