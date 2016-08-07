@@ -3,6 +3,7 @@ module Data.Pattern
 ( PatternF(..)
 , compactF
 , isTerminal
+, wrap
 ) where
 
 import Control.Applicative
@@ -11,9 +12,9 @@ import Data.Predicate
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
-import Data.Higher.Functor.Recursive
 import Data.Higher.Functor.Show
-import Data.Higher.Graph
+import qualified Data.Higher.Graph as Graph
+import Data.Higher.Graph hiding (wrap)
 import Data.Monoid hiding (Alt)
 
 data PatternF t f a where
@@ -119,24 +120,25 @@ instance Show t => HShowF (PatternF t)
           where showIndices n = foldr (.) id ((showChar 't' .) . shows <$> take n (iterate succ (0 :: Integer)))
 
 
-instance HCorecursive (Rec (PatternF t) v) where hembed = liftRec compactF . wrap
+wrap :: PatternF t (Rec (PatternF t) v) a -> Rec (PatternF t) v a
+wrap = liftRec compactF . Graph.wrap
 
 instance Functor (Rec (PatternF t) v)
-  where fmap = (hembed .) . Map
+  where fmap = (wrap .) . Map
 
 instance Applicative (Rec (PatternF t) v)
-  where pure = hembed . Ret . pure
-        (<*>) = ((fmap (uncurry ($)) . hembed) .) . Cat
+  where pure = wrap . Ret . pure
+        (<*>) = ((fmap (uncurry ($)) . wrap) .) . Cat
 
 instance Alternative (Rec (PatternF t) v)
-  where empty = hembed Nul
-        (<|>) = (hembed .) . Alt
+  where empty = wrap Nul
+        (<|>) = (wrap .) . Alt
         some v = (:) <$> v <*> many v
-        many = hembed . Rep
+        many = wrap . Rep
 
 instance Monad (Rec (PatternF t) v)
   where return = pure
-        (>>=) = (hembed .) . Bnd
+        (>>=) = (wrap .) . Bnd
 
 instance Functor (Graph (PatternF t)) where
   fmap f (Graph rec) = Graph (f <$> rec)
