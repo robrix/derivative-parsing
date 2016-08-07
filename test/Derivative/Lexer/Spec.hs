@@ -58,6 +58,7 @@ lexer
 
 
 data SexprT = OpenT | CloseT | AtomT String
+  deriving (Eq, Show)
 
 sexprL :: Lexer Char [SexprT]
 sexprL
