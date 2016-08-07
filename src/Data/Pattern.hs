@@ -137,3 +137,20 @@ instance Alternative (Rec (PatternF t) v)
 instance Monad (Rec (PatternF t) v)
   where return = pure
         (>>=) = (wrap .) . Bnd
+
+instance Functor (Graph (PatternF t)) where
+  fmap f (Graph rec) = Graph (f <$> rec)
+
+instance Applicative (Graph (PatternF t)) where
+  pure a = Graph (pure a)
+  Graph f <*> Graph a = Graph (f <*> a)
+
+instance Alternative (Graph (PatternF t)) where
+  empty = Graph empty
+  Graph a <|> Graph b = Graph (a <|> b)
+  some (Graph p) = Graph (some p)
+  many (Graph p) = Graph (many p)
+
+instance Monad (Graph (PatternF t)) where
+  return = pure
+  Graph p >>= f = Graph (p >>= unGraph . f)
