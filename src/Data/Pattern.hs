@@ -1,16 +1,19 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, GADTs, MultiParamTypeClasses #-}
 module Data.Pattern
 ( PatternF(..)
+, compactF
 , isTerminal
 ) where
 
 import Control.Applicative
+import Data.Bifunctor (first)
 import Data.Predicate
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Recursive hiding (wrap)
 import Data.Higher.Functor.Show
+import Data.Monoid hiding (Alt)
 
 data PatternF t f a where
   Cat :: f a -> f b -> PatternF t f (a, b)
@@ -27,6 +30,30 @@ data PatternF t f a where
 
 wrap :: HCorecursive r (PatternF t) => PatternF t (r (PatternF t) v) a -> r (PatternF t) v a
 wrap = hembed
+
+compactF :: PatternF t (Fix (PatternF t)) a -> PatternF t (Fix (PatternF t)) a
+compactF pattern = case pattern of
+  Cat (Fix Nul) _ -> Nul
+  Cat _ (Fix Nul) -> Nul
+  Cat (Fix (Ret [t])) b -> Map ((,) t) b
+  Cat a (Fix (Ret [t])) -> Map (flip (,) t) a
+  Cat (Fix (Cat a b)) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (Fix (Cat a (Fix (Cat b c))))
+  Cat (Fix (Map f a)) b -> Map (first f) (Fix (Cat a b))
+  Alt (Fix Nul) (Fix p) -> p
+  Alt (Fix p) (Fix Nul) -> p
+  Alt (Fix (Ret a)) (Fix (Ret b)) -> Ret (a <> b)
+  Rep (Fix Nul) -> Ret [[]]
+  Map f (Fix (Ret as)) -> Ret (f <$> as)
+  Map g (Fix (Map f p)) -> Map (g . f) p
+  Map _ (Fix Nul) -> Nul
+  Lab (Fix Nul) _ -> Nul
+  Lab (Fix (Ret t)) _ -> Ret t
+  Lab (Fix (Del p)) _ -> Del p
+  Del (Fix Nul) -> Nul
+  Del (Fix (Del p)) -> Del p
+  Del (Fix (Ret a)) -> Ret a
+  Del (Fix p) | isTerminal p -> Nul
+  a -> a
 
 isTerminal :: PatternF t f a -> Bool
 isTerminal p = case p of
