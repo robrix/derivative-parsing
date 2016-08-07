@@ -96,9 +96,6 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   Del a -> a
   _ -> Const False
 
-isTerminal :: Parser t a -> Bool
-isTerminal = (getConst .) $ (`fold` Const False) (Const . Pattern.isTerminal)
-
 
 size :: Parser t a -> Int
 size = getSum . getK . fold ((K (Sum 1) <|>) . hfoldMap id) (K (Sum 0))
