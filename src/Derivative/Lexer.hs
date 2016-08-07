@@ -3,7 +3,7 @@ module Derivative.Lexer
 ( Lexer
 ) where
 
-import Data.Higher.Functor.Recursive
+import Data.Higher.Functor.Fix
 import Data.Pattern
 
 -- Types

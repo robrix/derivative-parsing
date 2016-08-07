@@ -2,12 +2,11 @@
 module Data.Higher.Functor.Recursive where
 
 import Data.Higher.Functor
+import Data.Higher.Functor.Fix
 import Data.Higher.Transformation
 
 
 -- Types
-
-newtype Fix f a = Fix { unFix :: f (Fix f) a }
 
 data Free f v a
   = Pure (v a)

@@ -17,6 +17,7 @@ library
   exposed-modules:     Data.Higher.Foldable
                      , Data.Higher.Functor
                      , Data.Higher.Functor.Eq
+                     , Data.Higher.Functor.Fix
                      , Data.Higher.Functor.Recursive
                      , Data.Higher.Functor.Show
                      , Data.Higher.Graph
