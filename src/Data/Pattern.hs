@@ -243,7 +243,7 @@ instance HCorecursive (Rec (PatternF t) v)
   where hembed = liftRec compactF . wrap
 
 instance HCorecursive (Fix (PatternF t))
-  where hembed = Fix
+  where hembed = Fix . compactF
 
 instance Pattern (Rec (PatternF t) v) t
   where pattern (Rec (In r)) = Just r
