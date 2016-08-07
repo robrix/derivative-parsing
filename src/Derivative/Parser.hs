@@ -1,40 +1,25 @@
 {-# LANGUAGE FlexibleInstances, GADTs, RankNTypes, ScopedTypeVariables, TypeSynonymInstances #-}
 module Derivative.Parser
-( cat
-, commaSep
-, commaSep1
-, compact
+( compact
 , deriv
-, label
-, char
-, category
-, string
-, oneOf
 , parse
 , parseNull
 , PatternF(..)
+, module Pattern
 , Parser
 , Combinator
-, ret
-, sep
-, sep1
 , size
 , Derivative.Parser.mu
-, anyToken
 , parser
 , combinator
 , nullable
-, Derivative.Parser.isTerminal
 ) where
 
 import Control.Applicative
-import Data.Char
 import Data.Foldable (foldl')
 import Data.Functor.K
 import Data.Higher.Foldable
-import Data.Higher.Functor.Recursive
 import Data.Higher.Graph as Graph hiding (wrap)
-import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
 import Data.Pattern as Pattern
 import Data.Predicate
@@ -45,53 +30,10 @@ parse :: Foldable f => Parser t a -> f t -> [a]
 parse p = parseNull . foldl' deriv (compact p)
 
 
-commaSep1 :: Combinator Char v a -> Combinator Char v [a]
-commaSep1 = sep1 (char ',')
-
-commaSep :: Combinator Char v a -> Combinator Char v [a]
-commaSep = sep (char ',')
-
-sep1 :: Combinator t v sep -> Combinator t v a -> Combinator t v [a]
-sep1 s p = (:) <$> p <*> many (s *> p)
-
-sep :: Combinator t v sep -> Combinator t v a -> Combinator t v [a]
-sep s p = s `sep1` p <|> pure []
-
-oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
-oneOf = getAlt . foldMap Monoid.Alt
-
-infixl 4 `cat`
-
-cat :: Combinator t v a -> Combinator t v b -> Combinator t v (a, b)
-cat a = hembed . Cat a
-
-char :: Char -> Combinator Char v Char
-char = hembed . Sat . Equal
-
-category :: GeneralCategory -> Combinator Char v Char
-category = hembed . Sat . Category
-
-delta :: Combinator t v a -> Combinator t v a
-delta = hembed . Del
-
-ret :: [a] -> Combinator t v a
-ret = hembed . Ret
-
-infixr 2 `label`
-
-label :: Combinator t v a -> String -> Combinator t v a
-label p = hembed . Lab p
-
-string :: String -> Combinator Char v String
-string string = sequenceA (hembed . Sat . Equal <$> string)
-
 mu :: (Combinator t v a -> Combinator t v a) -> Combinator t v a
 mu f = Rec $ Mu $ \ v -> case f (Var v) of
   Rec (In r) -> r
   p -> p `Lab` ""
-
-anyToken :: Combinator t v t
-anyToken = hembed (Sat (Constant True))
 
 
 parser :: (forall v. Combinator t v a) -> Parser t a

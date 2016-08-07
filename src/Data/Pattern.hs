@@ -1,12 +1,26 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, GADTs, MultiParamTypeClasses #-}
 module Data.Pattern
 ( PatternF(..)
+, commaSep1
+, commaSep
+, sep1
+, sep
+, oneOf
+, cat
+, char
+, category
+, delta
+, ret
+, label
+, string
+, anyToken
 , compactF
 , isTerminal
 ) where
 
 import Control.Applicative
 import Data.Bifunctor (first)
+import Data.Char
 import Data.Predicate
 import Data.Higher.Foldable
 import Data.Higher.Functor
@@ -15,7 +29,10 @@ import Data.Higher.Functor.Fix
 import Data.Higher.Functor.Recursive
 import Data.Higher.Functor.Show
 import Data.Higher.Graph
+import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
+
+-- Types
 
 data PatternF t f a where
   Cat :: f a -> f b -> PatternF t f (a, b)
@@ -29,6 +46,54 @@ data PatternF t f a where
   Lab :: f a -> String -> PatternF t f a
   Del :: f a -> PatternF t f a
 
+
+-- Smart constructors
+
+commaSep1 :: (Alternative r, HCorecursive r, Base r ~ PatternF Char) => r a -> r [a]
+commaSep1 = sep1 (char ',')
+
+commaSep :: (Alternative r, HCorecursive r, Base r ~ PatternF Char) => r a -> r [a]
+commaSep = sep (char ',')
+
+sep1 :: Alternative r => r sep -> r a -> r [a]
+sep1 s p = (:) <$> p <*> many (s *> p)
+
+sep :: Alternative r => r sep -> r a -> r [a]
+sep s p = s `sep1` p <|> pure []
+
+oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
+oneOf = getAlt . foldMap Monoid.Alt
+
+infixl 4 `cat`
+
+cat :: (HCorecursive r, Base r ~ PatternF t) => r a -> r b -> r (a, b)
+cat a = hembed . Cat a
+
+char :: (HCorecursive r, Base r ~ PatternF Char) => Char -> r Char
+char = hembed . Sat . Equal
+
+category :: (HCorecursive r, Base r ~ PatternF Char) => GeneralCategory -> r Char
+category = hembed . Sat . Category
+
+delta :: (HCorecursive r, Base r ~ PatternF t) => r a -> r a
+delta = hembed . Del
+
+ret :: (HCorecursive r, Base r ~ PatternF t) => [a] -> r a
+ret = hembed . Ret
+
+infixr 2 `label`
+
+label :: (HCorecursive r, Base r ~ PatternF t) => r a -> String -> r a
+label p = hembed . Lab p
+
+string :: (Applicative r, HCorecursive r, Base r ~ PatternF Char) => String -> r String
+string string = sequenceA (hembed . Sat . Equal <$> string)
+
+anyToken :: (HCorecursive r, Base r ~ PatternF a) => r a
+anyToken = hembed (Sat (Constant True))
+
+
+-- API
 
 compactF :: PatternF t (Rec (PatternF t) v) a -> PatternF t (Rec (PatternF t) v) a
 compactF pattern = case pattern of
