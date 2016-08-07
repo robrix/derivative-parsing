@@ -164,3 +164,7 @@ instance Functor (Fix (PatternF t))
 instance Applicative (Fix (PatternF t))
   where pure = Fix . Ret . pure
         (<*>) = (((fmap (uncurry ($))) . Fix) .) . Cat
+
+instance Alternative (Fix (PatternF t))
+  where empty = Fix Nul
+        (<|>) = (Fix .) . Alt
