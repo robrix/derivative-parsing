@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances, GADTs, ScopedTypeVariables #-}
 module Derivative.Lexer
 ( Lexer
+, lex
 , deriv
 , parseNull
 , compact
@@ -9,12 +10,20 @@ module Derivative.Lexer
 ) where
 
 import Control.Applicative
+import Data.Foldable
 import Data.Functor.K
 import Data.Higher.Foldable
 import Data.Higher.Functor.Fix
 import Data.Monoid hiding (Alt)
 import Data.Pattern as Pattern
 import Data.Predicate
+import Prelude hiding (lex)
+
+-- API
+
+lex :: Foldable f => Lexer t a -> f t -> [a]
+lex p = parseNull . foldl' deriv (compact p)
+
 
 -- Types
 
