@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, PolyKinds, RankNTypes, TypeOperators #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, PolyKinds, RankNTypes, TypeFamilies, TypeOperators #-}
 module Data.Higher.Functor.Recursive where
 
 import Data.Higher.Functor
@@ -35,7 +35,10 @@ class HFunctor f => HCorecursive t f where
   hana f = hembed . hfmap (hana f) . f
 
 class HHoist t where
-  hoist :: HFunctor f => (f (t g a) ~> g (t g a)) -> t f a ~> t g a
+  hoist :: (HFunctor f, HFunctor g) => (f (t g a) ~> g (t g a)) -> t f a ~> t g a
 
-class HFree m f where
-  wrap :: f (m a) ~> m a
+
+type family Base (t :: k -> *) :: (k -> *) -> k -> *
+
+class HFunctor (Base t) => HFree t where
+  wrap :: Base t t ~> t

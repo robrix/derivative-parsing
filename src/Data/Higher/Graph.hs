@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, InstanceSigs, MultiParamTypeClasses, PolyKinds, RankNTypes, ScopedTypeVariables, TypeOperators #-}
+{-# LANGUAGE FlexibleInstances, InstanceSigs, MultiParamTypeClasses, PolyKinds, RankNTypes, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
 module Data.Higher.Graph
 ( Rec(..)
 , RecF(..)
@@ -68,10 +68,10 @@ rfold alg k = grfold id ($ k) alg
 
 -- Maps
 
-transform :: HFunctor f => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> Graph g
+transform :: (HFunctor f, HFunctor g) => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> Graph g
 transform f = modifyGraph (hoist f)
 
-liftRec :: (f (Rec f v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
+liftRec :: HFunctor g => (f (Rec f v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
 liftRec f rc = case rc of
   Var v -> var v
   Rec (Mu g) -> mu (f . g)
@@ -132,5 +132,8 @@ instance HHoist Rec where
     Mu g -> mu (f . g)
     In r -> wrap (f r)
 
-instance HFree (Rec f) f where
+
+type instance Base (Rec f v) = f
+
+instance HFunctor f => HFree (Rec f v) where
   wrap = Rec . In
