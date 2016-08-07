@@ -41,6 +41,9 @@ var = Var
 mu :: (v a -> f (Rec f v) a) -> Rec f v a
 mu = Rec . Mu
 
+wrap :: f (Rec f v) ~> Rec f v
+wrap = Rec . In
+
 
 -- Folds
 
@@ -71,7 +74,7 @@ rfold alg k = grfold id ($ k) alg
 transform :: (HFunctor f, HFunctor g) => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> Graph g
 transform f = modifyGraph (hoist f)
 
-liftRec :: HFunctor g => (f (Rec f v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
+liftRec :: (f (Rec f v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
 liftRec f rc = case rc of
   Var v -> var v
   Rec (Mu g) -> mu (f . g)
@@ -134,9 +137,3 @@ instance HHoist Rec where
 
 
 type instance Base (Rec f v) = f
-
-instance HFunctor f => HFree (Rec f v) where
-  wrap = Rec . In
-
-  unwrap (Rec (In a)) = Just a
-  unwrap _ = Nothing

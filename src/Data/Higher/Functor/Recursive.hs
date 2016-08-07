@@ -39,11 +39,6 @@ class HFunctor (Base t) => HCorecursive t where
 class HHoist t where
   hoist :: (HFunctor f, HFunctor g) => (f (t g a) ~> g (t g a)) -> t f a ~> t g a
 
-class HFunctor (Base t) => HFree t where
-  wrap :: Base t t ~> t
-
-  unwrap :: t a -> Maybe (Base t t a)
-
 
 -- Instances
 
