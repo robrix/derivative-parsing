@@ -20,7 +20,7 @@ module Data.Higher.Graph
 import Control.Applicative
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
-import Data.Higher.Functor.Recursive
+import Data.Higher.Functor.Recursive hiding (iter)
 import Data.Higher.Functor.Show
 import Data.Higher.Transformation
 
