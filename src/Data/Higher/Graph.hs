@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, InstanceSigs, MultiParamTypeClasses, PolyKinds, RankNTypes, ScopedTypeVariables, TypeOperators #-}
+{-# LANGUAGE FlexibleInstances, InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeOperators #-}
 module Data.Higher.Graph
 ( Rec(..)
 , RecF(..)
