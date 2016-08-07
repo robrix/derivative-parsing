@@ -3,6 +3,7 @@ module Derivative.Lexer.Spec where
 import Control.Applicative
 import Data.Pattern.Char
 import Derivative.Lexer
+import Prelude hiding (lex)
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck hiding (label)
@@ -98,6 +99,11 @@ spec = do
 
     it "terminates on interesting lexers" $
       size lexer `shouldBe` 11
+
+  describe "grammar" $ do
+    it "lexes a sequence of characters into a sequence of characters" $
+      sexprL `lex` "()" `shouldBe` [[ OpenT, CloseT ]]
+
 
 data LamT = Lambda | Dot | Identifier String
 
