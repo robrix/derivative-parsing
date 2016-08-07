@@ -22,25 +22,35 @@ iter algebra a = case a of
 
 -- Classes
 
-class HFunctor f => HRecursive t f where
-  hproject :: t f a ~> f (t f a)
+type family Base (t :: k -> *) :: (k -> *) -> k -> *
 
-  hcata :: (f a ~> a) -> t f a ~> a
+class HFunctor (Base t) => HRecursive t where
+  hproject :: t ~> Base t t
+
+  hcata :: (Base t a ~> a) -> t ~> a
   hcata f = f . hfmap (hcata f) . hproject
 
-class HFunctor f => HCorecursive t f where
-  hembed :: f (t f a) ~> t f a
+class HFunctor (Base t) => HCorecursive t where
+  hembed :: Base t t ~> t
 
-  hana :: (a ~> f a) -> a ~> t f a
+  hana :: (a ~> Base t a) -> a ~> t
   hana f = hembed . hfmap (hana f) . f
 
 class HHoist t where
   hoist :: (HFunctor f, HFunctor g) => (f (t g a) ~> g (t g a)) -> t f a ~> t g a
 
-
-type family Base (t :: k -> *) :: (k -> *) -> k -> *
-
 class HFunctor (Base t) => HFree t where
   wrap :: Base t t ~> t
 
   unwrap :: t a -> Maybe (Base t t a)
+
+
+-- Instances
+
+type instance Base (Fix f) = f
+
+instance HFunctor f => HRecursive (Fix f) where
+  hproject = unFix
+
+instance HFunctor f => HCorecursive (Fix f) where
+  hembed = Fix

@@ -35,7 +35,7 @@ import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Recursive
 import qualified Data.Higher.Graph as Graph
-import Data.Higher.Graph hiding (mu, fold, transform, liftRec, pjoin, Rec(..))
+import Data.Higher.Graph hiding (mu, fold, transform, liftRec, pjoin)
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
 import Data.Pattern as Pattern
@@ -103,7 +103,6 @@ parser r = compact $ Parser r
 -- Types
 
 newtype Parser t a = Parser { combinator :: forall v. Combinator t v a }
-data Rec f v a = Var (v a) | Rec (RecF f v (Rec f v) a)
 type Combinator t = Rec (PatternF t)
 
 
@@ -141,9 +140,6 @@ parseNull = (`fold` []) $ \ parser -> case parser of
 
 compact :: Parser t a -> Parser t a
 compact = transform compact''
-
-compact' :: Combinator v t a -> Combinator v t a
-compact' = liftRec compact''
 
 compact'' :: PatternF t (Combinator t v) a -> PatternF t (Combinator t v) a
 compact'' parser = case parser of
@@ -201,9 +197,6 @@ fold f z = Graph.fold f z . toGraph
 transform :: (forall a v. PatternF t (Combinator t v) a -> PatternF t (Combinator t v) a) -> Parser t a -> Parser t a
 transform f = fromGraph . Graph.transform (hfmap toRec . f . hfmap fromRec) . toGraph
 
-liftRec :: (forall a. PatternF t (Combinator t v) a -> PatternF t (Combinator t v) a) -> Combinator t v a -> Combinator t v a
-liftRec f = fromRec . Graph.liftRec (hfmap toRec . f . hfmap fromRec) . toRec
-
 pjoin :: Combinator t (Graph.Rec (PatternF t) v) a -> Combinator t v a
 pjoin = fromRec . Graph.pjoin . toRec
 
@@ -258,5 +251,3 @@ instance Eq (Parser t a)
 
 instance Show t => Show (Parser t a)
   where showsPrec n = showsPrec n . (toRec . combinator :: Parser t a -> Graph.Rec (PatternF t) (Const Char) a)
-
-instance HCorecursive Rec (PatternF t) where hembed = compact' . fromRec . wrap . hfmap toRec

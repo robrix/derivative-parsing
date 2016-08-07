@@ -13,6 +13,7 @@ import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Recursive hiding (wrap)
 import Data.Higher.Functor.Show
+import Data.Higher.Graph
 import Data.Monoid hiding (Alt)
 
 data PatternF t f a where
@@ -28,31 +29,28 @@ data PatternF t f a where
   Del :: f a -> PatternF t f a
 
 
-wrap :: HCorecursive r (PatternF t) => PatternF t (r (PatternF t) v) a -> r (PatternF t) v a
-wrap = hembed
-
-compactF :: PatternF t (Fix (PatternF t)) a -> PatternF t (Fix (PatternF t)) a
+compactF :: PatternF t (Rec (PatternF t) v) a -> PatternF t (Rec (PatternF t) v) a
 compactF pattern = case pattern of
-  Cat (Fix Nul) _ -> Nul
-  Cat _ (Fix Nul) -> Nul
-  Cat (Fix (Ret [t])) b -> Map ((,) t) b
-  Cat a (Fix (Ret [t])) -> Map (flip (,) t) a
-  Cat (Fix (Cat a b)) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (Fix (Cat a (Fix (Cat b c))))
-  Cat (Fix (Map f a)) b -> Map (first f) (Fix (Cat a b))
-  Alt (Fix Nul) (Fix p) -> p
-  Alt (Fix p) (Fix Nul) -> p
-  Alt (Fix (Ret a)) (Fix (Ret b)) -> Ret (a <> b)
-  Rep (Fix Nul) -> Ret [[]]
-  Map f (Fix (Ret as)) -> Ret (f <$> as)
-  Map g (Fix (Map f p)) -> Map (g . f) p
-  Map _ (Fix Nul) -> Nul
-  Lab (Fix Nul) _ -> Nul
-  Lab (Fix (Ret t)) _ -> Ret t
-  Lab (Fix (Del p)) _ -> Del p
-  Del (Fix Nul) -> Nul
-  Del (Fix (Del p)) -> Del p
-  Del (Fix (Ret a)) -> Ret a
-  Del (Fix p) | isTerminal p -> Nul
+  Cat (Rec (In Nul)) _ -> Nul
+  Cat _ (Rec (In Nul)) -> Nul
+  Cat (Rec (In (Ret [t]))) b -> Map ((,) t) b
+  Cat a (Rec (In (Ret [t]))) -> Map (flip (,) t) a
+  Cat (Rec (In (Cat a b))) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (Rec (In (Cat a (Rec (In (Cat b c))))))
+  Cat (Rec (In (Map f a))) b -> Map (first f) (Rec (In (Cat a b)))
+  Alt (Rec (In Nul)) (Rec (In p)) -> p
+  Alt (Rec (In p)) (Rec (In Nul)) -> p
+  Alt (Rec (In (Ret a))) (Rec (In (Ret b))) -> Ret (a <> b)
+  Rep (Rec (In Nul)) -> Ret [[]]
+  Map f (Rec (In (Ret as))) -> Ret (f <$> as)
+  Map g (Rec (In (Map f p))) -> Map (g . f) p
+  Map _ (Rec (In Nul)) -> Nul
+  Lab (Rec (In Nul)) _ -> Nul
+  Lab (Rec (In (Ret t))) _ -> Ret t
+  Lab (Rec (In (Del p))) _ -> Del p
+  Del (Rec (In Nul)) -> Nul
+  Del (Rec (In (Del p))) -> Del p
+  Del (Rec (In (Ret a))) -> Ret a
+  Del (Rec (In p)) | isTerminal p -> Nul
   a -> a
 
 isTerminal :: PatternF t f a -> Bool
@@ -121,19 +119,21 @@ instance Show t => HShowF (PatternF t)
           where showIndices n = foldr (.) id ((showChar 't' .) . shows <$> take n (iterate succ (0 :: Integer)))
 
 
-instance HCorecursive r (PatternF t) => Functor (r (PatternF t) v)
+instance HCorecursive (Rec (PatternF t) v) where hembed = liftRec compactF . wrap
+
+instance Functor (Rec (PatternF t) v)
   where fmap = (wrap .) . Map
 
-instance HCorecursive r (PatternF t) => Applicative (r (PatternF t) v)
+instance Applicative (Rec (PatternF t) v)
   where pure = wrap . Ret . pure
         (<*>) = ((fmap (uncurry ($)) . hembed) .) . Cat
 
-instance HCorecursive r (PatternF t) => Alternative (r (PatternF t) v)
+instance Alternative (Rec (PatternF t) v)
   where empty = wrap Nul
         (<|>) = (wrap .) . Alt
         some v = (:) <$> v <*> many v
         many = wrap . Rep
 
-instance HCorecursive r (PatternF t) => Monad (r (PatternF t) v)
+instance Monad (Rec (PatternF t) v)
   where return = pure
         (>>=) = (wrap .) . Bnd
