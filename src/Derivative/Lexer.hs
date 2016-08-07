@@ -2,6 +2,7 @@
 module Derivative.Lexer
 ( Lexer
 , cat
+, ret
 , parseNull
 ) where
 
@@ -13,6 +14,9 @@ import Data.Pattern
 
 cat :: Lexer t a -> Lexer t b -> Lexer t (a, b)
 cat a = Fix . Cat a
+
+ret :: [a] -> Lexer t a
+ret = Fix . Ret
 
 
 -- Types
