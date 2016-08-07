@@ -5,6 +5,7 @@ module Derivative.Lexer
 , char
 , ret
 , label
+, string
 , parseNull
 , size
 ) where
@@ -32,6 +33,9 @@ infixr 2 `label`
 
 label :: Lexer t a -> String -> Lexer t a
 label p = Fix . Lab p
+
+string :: String -> Lexer Char String
+string string = sequenceA (Fix . Sat . Equal <$> string)
 
 
 -- Types
