@@ -39,6 +39,9 @@ spec = do
       prop "produces a list of successful parses" $
         \ c -> parseNull (many (char c) `deriv` c) `shouldBe` [[c]]
 
+      prop "produces a list of multiple successful parses" $
+        \ c -> parseNull ((many (char c) `deriv` c) `deriv` c) `shouldBe` [[c, c]]
+
       prop "produces no parse trees when unsuccessful" $
         \ c -> parseNull (many (char c) `deriv` succ c) `shouldBe` []
 
