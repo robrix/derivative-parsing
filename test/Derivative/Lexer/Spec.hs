@@ -113,6 +113,9 @@ spec = do
     it "skips interspersed whitespace" $
       sexprL `lex` "(   )" `shouldBe` [[ OpenT, CloseT ]]
 
+    it "lexes contiguous identifier characters into identifiers" $
+      sexprL `lex` "x12345" `shouldBe` [[ AtomT "x12345" ]]
+
 
 data LamT = Lambda | Dot | Identifier String
 
