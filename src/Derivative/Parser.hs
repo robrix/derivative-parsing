@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor, FlexibleInstances, GADTs, RankNTypes, ScopedTypeVariables, TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances, GADTs, RankNTypes, ScopedTypeVariables, TypeSynonymInstances #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -30,6 +30,7 @@ module Derivative.Parser
 import Control.Applicative
 import Data.Char
 import Data.Foldable (foldl')
+import Data.Functor.K
 import Data.Higher.Foldable
 import Data.Higher.Graph as Graph hiding (wrap)
 import qualified Data.Monoid as Monoid
@@ -158,24 +159,3 @@ isTerminal = (getConst .) $ (`fold` Const False) (Const . Pattern.isTerminal)
 
 size :: Parser t a -> Int
 size = getSum . getK . fold ((K (Sum 1) <|>) . hfoldMap id) (K (Sum 0))
-
-
--- Implementation details
-
-newtype K a b = K { getK :: a }
-  deriving (Eq, Functor, Ord, Show)
-
-
--- Instances
-
-instance Monoid a => Applicative (K a)
-  where pure = const (K mempty)
-        K a <*> K b = K (a <> b)
-
-instance Monoid a => Alternative (K a)
-  where empty = K mempty
-        K a <|> K b = K (a <> b)
-
-instance Monoid a => Monad (K a)
-  where return = pure
-        K a >>= _ = K a
