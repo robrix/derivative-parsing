@@ -122,21 +122,21 @@ instance Show t => HShowF (PatternF t)
 instance HCorecursive (Rec (PatternF t) v) where hembed = liftRec compactF . wrap
 
 instance Functor (Rec (PatternF t) v)
-  where fmap = (wrap .) . Map
+  where fmap = (hembed .) . Map
 
 instance Applicative (Rec (PatternF t) v)
-  where pure = wrap . Ret . pure
+  where pure = hembed . Ret . pure
         (<*>) = ((fmap (uncurry ($)) . hembed) .) . Cat
 
 instance Alternative (Rec (PatternF t) v)
-  where empty = wrap Nul
-        (<|>) = (wrap .) . Alt
+  where empty = hembed Nul
+        (<|>) = (hembed .) . Alt
         some v = (:) <$> v <*> many v
-        many = wrap . Rep
+        many = hembed . Rep
 
 instance Monad (Rec (PatternF t) v)
   where return = pure
-        (>>=) = (wrap .) . Bnd
+        (>>=) = (hembed .) . Bnd
 
 instance Functor (Graph (PatternF t)) where
   fmap f (Graph rec) = Graph (f <$> rec)
