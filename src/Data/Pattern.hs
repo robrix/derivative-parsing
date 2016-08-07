@@ -168,3 +168,7 @@ instance Applicative (Fix (PatternF t))
 instance Alternative (Fix (PatternF t))
   where empty = Fix Nul
         (<|>) = (Fix .) . Alt
+
+instance Monad (Fix (PatternF t))
+  where return = pure
+        (>>=) = (Fix .) . Bnd
