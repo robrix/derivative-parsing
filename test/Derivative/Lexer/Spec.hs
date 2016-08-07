@@ -29,3 +29,9 @@ spec = do
         \ a b -> parseNull (pure a <|> pure b) `shouldBe` [a, b :: Char]
 
 data LamT = Lambda | Dot | Identifier String
+
+lexer :: Lexer Char LamT
+lexer
+    = (Lambda <$ char '\\' `label` "lambda")
+  <|> (Dot <$ char '.' `label` "dot")
+  <|> (Identifier <$> string "x" `label` "identifier")
