@@ -95,28 +95,28 @@ anyToken = hembed (Sat (Constant True))
 
 -- API
 
-compactF :: PatternF t (Rec (PatternF t) v) a -> PatternF t (Rec (PatternF t) v) a
-compactF pattern = case pattern of
-  Cat (Rec (In Nul)) _ -> Nul
-  Cat _ (Rec (In Nul)) -> Nul
-  Cat (Rec (In (Ret [t]))) b -> Map ((,) t) b
-  Cat a (Rec (In (Ret [t]))) -> Map (flip (,) t) a
-  Cat (Rec (In (Cat a b))) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (hembed (Cat a (hembed (Cat b c))))
-  Cat (Rec (In (Map f a))) b -> Map (first f) (hembed (Cat a b))
-  Alt (Rec (In Nul)) (Rec (In p)) -> p
-  Alt (Rec (In p)) (Rec (In Nul)) -> p
-  Alt (Rec (In (Ret a))) (Rec (In (Ret b))) -> Ret (a <> b)
-  Rep (Rec (In Nul)) -> Ret [[]]
-  Map f (Rec (In (Ret as))) -> Ret (f <$> as)
-  Map g (Rec (In (Map f p))) -> Map (g . f) p
-  Map _ (Rec (In Nul)) -> Nul
-  Lab (Rec (In Nul)) _ -> Nul
-  Lab (Rec (In (Ret t))) _ -> Ret t
-  Lab (Rec (In (Del p))) _ -> Del p
-  Del (Rec (In Nul)) -> Nul
-  Del (Rec (In (Del p))) -> Del p
-  Del (Rec (In (Ret a))) -> Ret a
-  Del (Rec (In p)) | isTerminal p -> Nul
+compactF :: Pattern r t => PatternF t r a -> PatternF t r a
+compactF p = case p of
+  Cat a _ | Just Nul <- pattern a -> Nul
+  Cat _ b | Just Nul <- pattern b -> Nul
+  Cat a b | Just (Ret [t]) <- pattern a -> Map ((,) t) b
+  Cat a b | Just (Ret [t]) <- pattern b -> Map (flip (,) t) a
+  Cat l c | Just (Cat a b) <- pattern l -> Map (\ (a, (b, c)) -> ((a, b), c)) (hembed (Cat a (hembed (Cat b c))))
+  Cat l b | Just (Map f a) <- pattern l -> Map (first f) (hembed (Cat a b))
+  Alt a r | Just Nul <- pattern a, Just b <- pattern r -> b
+  Alt a b | Just p <- pattern a, Just Nul <- pattern b -> p
+  Alt l r | Just (Ret a) <- pattern l, Just (Ret b) <- pattern r -> Ret (a <> b)
+  Rep a | Just Nul <- pattern a -> Ret [[]]
+  Map f p | Just (Ret as) <- pattern p -> Ret (f <$> as)
+  Map g a | Just (Map f p) <- pattern a -> Map (g . f) p
+  Map _ p | Just Nul <- pattern p -> Nul
+  Lab p _ | Just Nul <- pattern p -> Nul
+  Lab p _ | Just (Ret t) <- pattern p -> Ret t
+  Lab a _ | Just (Del p) <- pattern a -> Del p
+  Del p | Just Nul <- pattern p -> Nul
+  Del a | Just (Del p) <- pattern a -> Del p
+  Del p | Just (Ret a) <- pattern p -> Ret a
+  Del a | Just p <- pattern a, isTerminal p -> Nul
   a -> a
 
 isTerminal :: PatternF t f a -> Bool
