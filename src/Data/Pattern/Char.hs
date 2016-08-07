@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 module Data.Pattern.Char
 ( space
 , upper
@@ -14,37 +15,38 @@ module Data.Pattern.Char
 
 import Control.Applicative
 import Data.Char
+import Data.Higher.Functor.Recursive
 import Derivative.Parser
 
-space :: Combinator Char v Char
+space :: (Alternative r, HCorecursive r, Base r ~ PatternF Char) => r Char
 space = oneOf (category <$> [Space .. ParagraphSeparator]) <|> oneOf (char <$> "\t\n\r\f\v")
 
-upper :: Combinator Char v Char
+upper :: (HCorecursive r, Base r ~ PatternF Char) => r Char
 upper = category UppercaseLetter
 
-lower :: Combinator Char v Char
+lower :: (HCorecursive r, Base r ~ PatternF Char) => r Char
 lower = category LowercaseLetter
 
-alphaNum :: Combinator Char v Char
+alphaNum :: (Alternative r, HCorecursive r, Base r ~ PatternF Char) => r Char
 alphaNum = letter <|> oneOf (category <$> [DecimalNumber .. OtherNumber])
 
-letter :: Combinator Char v Char
+letter :: (Alternative r, HCorecursive r, Base r ~ PatternF Char) => r Char
 letter = oneOf (category <$> [UppercaseLetter .. OtherLetter])
 
-digit :: Combinator Char v Char
+digit :: (Alternative r, HCorecursive r, Base r ~ PatternF Char) => r Char
 digit = oneOf (char <$> ['0'..'9'])
 
-octDigit :: Combinator Char v Char
+octDigit :: (Alternative r, HCorecursive r, Base r ~ PatternF Char) => r Char
 octDigit = oneOf (char <$> ['0'..'7'])
 
-hexDigit :: Combinator Char v Char
+hexDigit :: (Alternative r, HCorecursive r, Base r ~ PatternF Char) => r Char
 hexDigit = digit <|> oneOf (char <$> ['a'..'f']) <|> oneOf (char <$> ['A'..'F'])
 
-newline :: Combinator Char v Char
+newline :: (HCorecursive r, Base r ~ PatternF Char) => r Char
 newline = char '\n'
 
-crlf :: Combinator Char v Char
+crlf :: (Applicative r, HCorecursive r, Base r ~ PatternF Char) => r Char
 crlf = char '\r' *> newline
 
-endOfLine :: Combinator Char v Char
+endOfLine :: (Alternative r, HCorecursive r, Base r ~ PatternF Char) => r Char
 endOfLine = newline <|> crlf

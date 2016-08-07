@@ -286,6 +286,7 @@ sexpr = parser $ Derivative.Parser.mu (\ a ->
       Atom <$> identifier
   <|> List <$> (char open *> sep (char ' ') a <* char close))
   where (open, close) = ('(', ')')
+        identifier :: Combinator Char v String
         identifier = (:) <$> letter <*> many alphaNum
 
 
