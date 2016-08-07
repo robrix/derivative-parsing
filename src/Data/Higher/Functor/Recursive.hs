@@ -42,3 +42,5 @@ type family Base (t :: k -> *) :: (k -> *) -> k -> *
 
 class HFunctor (Base t) => HFree t where
   wrap :: Base t t ~> t
+
+  unwrap :: t a -> Maybe (Base t t a)

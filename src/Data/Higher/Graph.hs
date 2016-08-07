@@ -137,3 +137,6 @@ type instance Base (Rec f v) = f
 
 instance HFunctor f => HFree (Rec f v) where
   wrap = Rec . In
+
+  unwrap (Rec (In a)) = Just a
+  unwrap _ = Nothing
