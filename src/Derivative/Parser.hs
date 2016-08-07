@@ -19,7 +19,7 @@ import Control.Applicative
 import Data.Foldable (foldl')
 import Data.Functor.K
 import Data.Higher.Foldable
-import Data.Higher.Graph as Graph hiding (wrap)
+import Data.Higher.Graph as Graph
 import Data.Monoid hiding (Alt)
 import Data.Pattern as Pattern
 import Data.Predicate
