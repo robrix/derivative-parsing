@@ -101,8 +101,8 @@ compactF pattern = case pattern of
   Cat _ (Rec (In Nul)) -> Nul
   Cat (Rec (In (Ret [t]))) b -> Map ((,) t) b
   Cat a (Rec (In (Ret [t]))) -> Map (flip (,) t) a
-  Cat (Rec (In (Cat a b))) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (Rec (In (Cat a (Rec (In (Cat b c))))))
-  Cat (Rec (In (Map f a))) b -> Map (first f) (Rec (In (Cat a b)))
+  Cat (Rec (In (Cat a b))) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (hembed (Cat a (hembed (Cat b c))))
+  Cat (Rec (In (Map f a))) b -> Map (first f) (hembed (Cat a b))
   Alt (Rec (In Nul)) (Rec (In p)) -> p
   Alt (Rec (In p)) (Rec (In Nul)) -> p
   Alt (Rec (In (Ret a))) (Rec (In (Ret b))) -> Ret (a <> b)
