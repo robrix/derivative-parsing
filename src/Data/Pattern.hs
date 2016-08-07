@@ -191,6 +191,9 @@ instance Show t => HShowF (PatternF t)
           Del a -> showParen (n >= 10) $ showString "delta " . showsPrec 10 a
           where showIndices n = foldr (.) id ((showChar 't' .) . shows <$> take n (iterate succ (0 :: Integer)))
 
+instance Pattern r t => Functor (PatternF t r)
+  where fmap f p = compactF (Map f (hembed p))
+
 instance Functor (Rec (PatternF t) v)
   where fmap = (hembed .) . Map
 
