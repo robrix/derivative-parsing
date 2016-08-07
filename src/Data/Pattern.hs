@@ -100,10 +100,10 @@ compactF :: Pattern r t => PatternF t r a -> PatternF t r a
 compactF p = case p of
   Cat a _ | Just Nul <- pattern a -> Nul
   Cat _ b | Just Nul <- pattern b -> Nul
-  Cat a b | Just (Ret [t]) <- pattern a -> Map ((,) t) b
-  Cat a b | Just (Ret [t]) <- pattern b -> Map (flip (,) t) a
-  Cat l c | Just (Cat a b) <- pattern l -> Map (\ (a, (b, c)) -> ((a, b), c)) (hembed (Cat a (hembed (Cat b c))))
-  Cat l b | Just (Map f a) <- pattern l -> Map (first f) (hembed (Cat a b))
+  Cat l r | Just (Ret [t]) <- pattern l, Just b <- pattern r -> ((,) t) <$> b
+  Cat l r | Just a <- pattern l, Just (Ret [t]) <- pattern r -> flip (,) t <$> a
+  Cat l c | Just (Cat a b) <- pattern l -> (\ (a, (b, c)) -> ((a, b), c)) <$> Cat a (hembed (Cat b c))
+  Cat l b | Just (Map f a) <- pattern l -> first f <$> Cat a b
   Alt a r | Just Nul <- pattern a, Just b <- pattern r -> b
   Alt a b | Just p <- pattern a, Just Nul <- pattern b -> p
   Alt l r | Just (Ret a) <- pattern l, Just (Ret b) <- pattern r -> Ret (a <> b)
