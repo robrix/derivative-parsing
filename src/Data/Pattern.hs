@@ -12,6 +12,7 @@ import Data.Predicate
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
+import Data.Higher.Functor.Fix
 import Data.Higher.Functor.Show
 import qualified Data.Higher.Graph as Graph
 import Data.Higher.Graph hiding (wrap)
@@ -156,3 +157,6 @@ instance Alternative (Graph (PatternF t)) where
 instance Monad (Graph (PatternF t)) where
   return = pure
   Graph p >>= f = Graph (p >>= unGraph . f)
+
+instance Functor (Fix (PatternF t))
+  where fmap = (Fix .) . Map
