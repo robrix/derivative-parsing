@@ -1,8 +1,8 @@
-module Derivative.Parser.Char.Spec where
+module Data.Pattern.Char.Spec where
 
 import Data.Char
+import Data.Pattern.Char
 import Derivative.Parser
-import Derivative.Parser.Char
 import Test.Hspec
 import Test.Hspec.QuickCheck
 

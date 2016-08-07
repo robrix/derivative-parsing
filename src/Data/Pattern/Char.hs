@@ -1,4 +1,4 @@
-module Derivative.Parser.Char
+module Data.Pattern.Char
 ( space
 , upper
 , lower

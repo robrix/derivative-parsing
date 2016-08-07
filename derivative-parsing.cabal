@@ -24,10 +24,10 @@ library
                      , Data.Higher.Graph
                      , Data.Higher.Transformation
                      , Data.Pattern
+                     , Data.Pattern.Char
                      , Data.Predicate
                      , Derivative.Lexer
                      , Derivative.Parser
-                     , Derivative.Parser.Char
   build-depends:       base >= 4.7 && < 5
   default-language:    Haskell2010
   ghc-options:         -Wall -fno-warn-name-shadowing
@@ -44,8 +44,8 @@ test-suite derivative-parsing-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  other-modules:       Derivative.Lexer.Spec
-                     , Derivative.Parser.Char.Spec
+  other-modules:       Data.Pattern.Char.Spec
+                     , Derivative.Lexer.Spec
                      , Derivative.Parser.Spec
   build-depends:       base
                      , derivative-parsing
