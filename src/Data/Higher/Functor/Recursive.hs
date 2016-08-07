@@ -36,9 +36,6 @@ class HFunctor (Base t) => HCorecursive t where
   hana :: (a ~> Base t a) -> a ~> t
   hana f = hembed . hfmap (hana f) . f
 
-class HHoist t where
-  hoist :: (HFunctor f, HFunctor g) => (f (t g a) ~> g (t g a)) -> t f a ~> t g a
-
 
 -- Instances
 

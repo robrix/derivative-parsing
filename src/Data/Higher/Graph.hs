@@ -71,8 +71,13 @@ rfold alg k = grfold id ($ k) alg
 
 -- Maps
 
-transform :: (HFunctor f, HFunctor g) => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> Graph g
+transform :: HFunctor f => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> Graph g
 transform f = modifyGraph (hoist f)
+
+hoist :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Rec g a
+hoist f = iter var $ \ rc -> case rc of
+  Mu g -> mu (f . g)
+  In r -> wrap (f r)
 
 liftRec :: (f (Rec f v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
 liftRec f rc = case rc of
@@ -129,11 +134,6 @@ instance HFunctor f => HFunctor (RecF f v)
   where hfmap f rec = case rec of
           Mu g -> Mu (hfmap f . g)
           In r -> In (hfmap f r)
-
-instance HHoist Rec where
-  hoist f = iter var $ \ rc -> case rc of
-    Mu g -> mu (f . g)
-    In r -> wrap (f r)
 
 
 type instance Base (Rec f v) = f
