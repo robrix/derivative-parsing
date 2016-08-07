@@ -3,7 +3,7 @@ module Derivative.Lexer
 ( Lexer
 , lex
 , deriv
-, parseNull
+, lexNull
 , compact
 , size
 , module Pattern
@@ -22,7 +22,7 @@ import Prelude hiding (lex)
 -- API
 
 lex :: Foldable f => Lexer t a -> f t -> [a]
-lex p = parseNull . foldl' deriv (compact p)
+lex p = lexNull . foldl' deriv (compact p)
 
 
 -- Types
@@ -45,8 +45,8 @@ deriv g c = deriv' g
           Lab p s -> deriv' p `label` s
           _ -> empty
 
-parseNull :: Lexer t a -> [a]
-parseNull = cata $ \ parser -> case parser of
+lexNull :: Lexer t a -> [a]
+lexNull = cata $ \ parser -> case parser of
   Cat a b -> (,) <$> a <*> b
   Alt a b -> a <> b
   Rep _ -> [[]]

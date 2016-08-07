@@ -14,37 +14,37 @@ import Test.QuickCheck hiding (label)
 
 spec :: Spec
 spec = do
-  describe "parseNull" $ do
+  describe "lexNull" $ do
     describe "cat" $ do
       prop "returns pairs of its parse trees" $
-        \ a b -> parseNull (pure a `cat` pure b) `shouldBe` [(a, b) :: (Char, Char)]
+        \ a b -> lexNull (pure a `cat` pure b) `shouldBe` [(a, b) :: (Char, Char)]
 
       prop "is empty when its left operand is empty" $
-        \ b -> parseNull (empty `cat` pure b) `shouldBe` ([] :: [(Char, Char)])
+        \ b -> lexNull (empty `cat` pure b) `shouldBe` ([] :: [(Char, Char)])
 
       prop "is empty when its right operand is empty" $
-        \ a -> parseNull (pure a `cat` empty) `shouldBe` ([] :: [(Char, Char)])
+        \ a -> lexNull (pure a `cat` empty) `shouldBe` ([] :: [(Char, Char)])
 
     describe "<|>" $ do
       prop "returns left parse trees" $
-        \ a -> parseNull (pure a <|> empty) `shouldBe` [a :: Char]
+        \ a -> lexNull (pure a <|> empty) `shouldBe` [a :: Char]
 
       prop "returns right parse trees" $
-        \ b -> parseNull (empty <|> pure b) `shouldBe` [b :: Char]
+        \ b -> lexNull (empty <|> pure b) `shouldBe` [b :: Char]
 
       prop "returns ambiguous parse trees" $
-        \ a b -> parseNull (pure a <|> pure b) `shouldBe` [a, b :: Char]
+        \ a b -> lexNull (pure a <|> pure b) `shouldBe` [a, b :: Char]
 
   describe "deriv" $ do
     describe "many" $ do
       prop "produces a list of successful parses" $
-        \ c -> parseNull (many (char c) `deriv` c) `shouldBe` [[c]]
+        \ c -> lexNull (many (char c) `deriv` c) `shouldBe` [[c]]
 
       prop "produces a list of multiple successful parses" $
-        \ c -> parseNull ((many (char c) `deriv` c) `deriv` c) `shouldBe` [[c, c]]
+        \ c -> lexNull ((many (char c) `deriv` c) `deriv` c) `shouldBe` [[c, c]]
 
       prop "produces no parse trees when unsuccessful" $
-        \ c -> parseNull (many (char c) `deriv` succ c) `shouldBe` []
+        \ c -> lexNull (many (char c) `deriv` succ c) `shouldBe` []
 
       prop "is constant in lexer size" $
         \ c i -> let p = many (char c) in
@@ -52,7 +52,7 @@ spec = do
 
     describe "fmap" $ do
       prop "distributivity" $
-        \ f c -> parseNull (fmap (getBlind f :: Char -> Char) (pure c)) `shouldBe` [getBlind f c]
+        \ f c -> lexNull (fmap (getBlind f :: Char -> Char) (pure c)) `shouldBe` [getBlind f c]
 
     describe "char" $ do
       prop "represents unmatched content with the empty lexer" $
