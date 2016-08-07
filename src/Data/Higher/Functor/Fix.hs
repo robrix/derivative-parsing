@@ -2,6 +2,7 @@
 module Data.Higher.Functor.Fix where
 
 import Data.Higher.Functor
+import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Recursive
 import Data.Higher.Transformation
 
@@ -14,3 +15,6 @@ cata algebra = algebra . hfmap (cata algebra) . unFix
 -- Instances
 
 type instance Base (Fix f) = f
+
+instance HEqF f => Eq (Fix f a)
+  where Fix a == Fix b = heqF (==) a b
