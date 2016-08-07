@@ -235,6 +235,8 @@ instance Applicative (Fix (PatternF t))
 instance Alternative (Fix (PatternF t))
   where empty = Fix Nul
         (<|>) = (Fix .) . Alt
+        some v = (:) <$> v <*> many v
+        many = hembed . Rep
 
 instance Monad (Fix (PatternF t))
   where return = pure
