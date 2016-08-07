@@ -46,7 +46,7 @@ spec = do
       size (char 'c') `shouldBe` 1
 
     it "terminates on interesting lexers" $
-      size lexer `shouldBe` 12
+      size lexer `shouldBe` 11
 
 data LamT = Lambda | Dot | Identifier String
 
