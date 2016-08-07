@@ -6,8 +6,12 @@ module Derivative.Lexer
 , ret
 , label
 , parseNull
+, size
 ) where
 
+import Control.Applicative
+import Data.Functor.K
+import Data.Higher.Foldable
 import Data.Higher.Functor.Fix
 import Data.Monoid hiding (Alt)
 import Data.Pattern
@@ -48,3 +52,6 @@ parseNull = cata $ \ parser -> case parser of
   Lab p _ -> p
   Del a -> a
   _ -> []
+
+size :: Lexer t a -> Int
+size = getSum . getK . cata ((K (Sum 1) <|>) . hfoldMap id)
