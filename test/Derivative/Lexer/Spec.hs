@@ -104,6 +104,9 @@ spec = do
     it "lexes a sequence of characters into a sequence of characters" $
       sexprL `lex` "()" `shouldBe` [[ OpenT, CloseT ]]
 
+    it "skips leading whitespace" $
+      sexprL `lex` "   ()" `shouldBe` [[ OpenT, CloseT ]]
+
 
 data LamT = Lambda | Dot | Identifier String
 
