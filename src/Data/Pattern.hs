@@ -226,21 +226,21 @@ instance Monad (Graph (PatternF t))
         Graph p >>= f = Graph (p >>= unGraph . f)
 
 instance Functor (Fix (PatternF t))
-  where fmap = (Fix .) . Map
+  where fmap = (hembed .) . Map
 
 instance Applicative (Fix (PatternF t))
-  where pure = Fix . Ret . pure
-        (<*>) = (((fmap (uncurry ($))) . Fix) .) . Cat
+  where pure = hembed . Ret . pure
+        (<*>) = (((fmap (uncurry ($))) . hembed) .) . Cat
 
 instance Alternative (Fix (PatternF t))
-  where empty = Fix Nul
-        (<|>) = (Fix .) . Alt
+  where empty = hembed Nul
+        (<|>) = (hembed .) . Alt
         some v = (:) <$> v <*> many v
         many = hembed . Rep
 
 instance Monad (Fix (PatternF t))
   where return = pure
-        (>>=) = (Fix .) . Bnd
+        (>>=) = (hembed .) . Bnd
 
 instance HCorecursive (Rec (PatternF t) v)
   where hembed = liftRec compactF . wrap
