@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, GADTs, MultiParamTypeClasses #-}
 module Data.Pattern
 ( PatternF(..)
+, Pattern(..)
 , commaSep1
 , commaSep
 , sep1
@@ -49,10 +50,10 @@ data PatternF t f a where
 
 -- Smart constructors
 
-commaSep1 :: (Alternative r, HCorecursive r, Base r ~ PatternF Char) => r a -> r [a]
+commaSep1 :: (Alternative r, Pattern r Char) => r a -> r [a]
 commaSep1 = sep1 (char ',')
 
-commaSep :: (Alternative r, HCorecursive r, Base r ~ PatternF Char) => r a -> r [a]
+commaSep :: (Alternative r, Pattern r Char) => r a -> r [a]
 commaSep = sep (char ',')
 
 sep1 :: Alternative r => r sep -> r a -> r [a]
@@ -66,30 +67,30 @@ oneOf = getAlt . foldMap Monoid.Alt
 
 infixl 4 `cat`
 
-cat :: (HCorecursive r, Base r ~ PatternF t) => r a -> r b -> r (a, b)
+cat :: Pattern r t => r a -> r b -> r (a, b)
 cat a = hembed . Cat a
 
-char :: (HCorecursive r, Base r ~ PatternF Char) => Char -> r Char
+char :: Pattern r Char => Char -> r Char
 char = hembed . Sat . Equal
 
-category :: (HCorecursive r, Base r ~ PatternF Char) => GeneralCategory -> r Char
+category :: Pattern r Char => GeneralCategory -> r Char
 category = hembed . Sat . Category
 
-delta :: (HCorecursive r, Base r ~ PatternF t) => r a -> r a
+delta :: Pattern r t => r a -> r a
 delta = hembed . Del
 
-ret :: (HCorecursive r, Base r ~ PatternF t) => [a] -> r a
+ret :: Pattern r t => [a] -> r a
 ret = hembed . Ret
 
 infixr 2 `label`
 
-label :: (HCorecursive r, Base r ~ PatternF t) => r a -> String -> r a
+label :: Pattern r t => r a -> String -> r a
 label p = hembed . Lab p
 
-string :: (Applicative r, HCorecursive r, Base r ~ PatternF Char) => String -> r String
+string :: (Applicative r, Pattern r Char) => String -> r String
 string string = sequenceA (hembed . Sat . Equal <$> string)
 
-anyToken :: (HCorecursive r, Base r ~ PatternF a) => r a
+anyToken :: Pattern r t => r t
 anyToken = hembed (Sat (Constant True))
 
 
