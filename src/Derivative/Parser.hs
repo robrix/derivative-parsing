@@ -32,10 +32,8 @@ import Data.Bifunctor (first)
 import Data.Char
 import Data.Foldable (foldl')
 import Data.Higher.Foldable
-import Data.Higher.Functor
 import Data.Higher.Functor.Recursive
-import qualified Data.Higher.Graph as Graph
-import Data.Higher.Graph hiding (mu, fold, transform, liftRec, pjoin)
+import Data.Higher.Graph as Graph
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
 import Data.Pattern as Pattern
@@ -97,23 +95,26 @@ anyToken = hembed (Sat (Constant True))
 
 
 parser :: (forall v. Combinator t v a) -> Parser t a
-parser r = compact $ Parser r
+parser r = compact $ Graph r
+
+combinator :: Parser t a -> Combinator t v a
+combinator = unGraph
 
 
 -- Types
 
-newtype Parser t a = Parser { combinator :: forall v. Combinator t v a }
+type Parser t = Graph (PatternF t)
 type Combinator t = Rec (PatternF t)
 
 
 -- Algorithm
 
 deriv :: forall a t. Parser t a -> t -> Parser t a
-deriv g c = Parser (deriv' (combinator g))
+deriv g c = Graph (deriv' (combinator g))
   where deriv' :: forall a v. Combinator t (Graph.Rec (PatternF t) v) a -> Combinator t v a
         deriv' rc = case rc of
-          Var v -> fromRec v
-          Rec (Mu g) -> deriv'' (g (Graph.pjoin (Graph.mu (hfmap toRec . g))))
+          Var v -> v
+          Rec (Mu g) -> deriv'' (g (Graph.pjoin (Graph.mu g)))
           Rec (In r) -> deriv'' r
         deriv'' :: forall a v. PatternF t (Combinator t (Graph.Rec (PatternF t) v)) a -> Combinator t v a
         deriv'' p = case p of
@@ -191,48 +192,7 @@ newtype K a b = K { getK :: a }
   deriving (Eq, Functor, Ord, Show)
 
 
-fold :: (forall a. PatternF t c a -> c a) -> (forall a. c a) -> Parser t a -> c a
-fold f z = Graph.fold f z . toGraph
-
-transform :: (forall a v. PatternF t (Combinator t v) a -> PatternF t (Combinator t v) a) -> Parser t a -> Parser t a
-transform f = fromGraph . Graph.transform (hfmap toRec . f . hfmap fromRec) . toGraph
-
-pjoin :: Combinator t (Graph.Rec (PatternF t) v) a -> Combinator t v a
-pjoin = fromRec . Graph.pjoin . toRec
-
-toGraph :: Parser t a -> Graph (PatternF t) a
-toGraph (Parser r) = Graph (toRec r)
-
-fromGraph :: Graph (PatternF t) a -> Parser t a
-fromGraph (Graph r) = Parser (fromRec r)
-
-fromRec :: Graph.Rec (PatternF t) v a -> Combinator t v a
-fromRec (Graph.Var v) = Var v
-fromRec (Graph.Rec r) = Rec (hfmap fromRec r)
-
-toRec :: Combinator t v a -> Graph.Rec (PatternF t) v a
-toRec (Var v) = Graph.Var v
-toRec (Rec r) = Graph.Rec (hfmap toRec r)
-
-
 -- Instances
-
-instance Functor (Parser t) where
-  fmap f (Parser rec) = Parser (f <$> rec)
-
-instance Applicative (Parser t) where
-  pure a = Parser (pure a)
-  Parser f <*> Parser a = Parser (f <*> a)
-
-instance Alternative (Parser t) where
-  empty = Parser empty
-  Parser a <|> Parser b = Parser (a <|> b)
-  some (Parser p) = Parser (some p)
-  many (Parser p) = Parser (many p)
-
-instance Monad (Parser t) where
-  return = pure
-  Parser p >>= f = Parser (p >>= combinator . f)
 
 instance Monoid a => Applicative (K a)
   where pure = const (K mempty)
@@ -245,9 +205,3 @@ instance Monoid a => Alternative (K a)
 instance Monoid a => Monad (K a)
   where return = pure
         K a >>= _ = K a
-
-instance Eq (Parser t a)
-  where a == b = eqRec 0 (toRec (combinator a)) (toRec (combinator b))
-
-instance Show t => Show (Parser t a)
-  where showsPrec n = showsPrec n . (toRec . combinator :: Parser t a -> Graph.Rec (PatternF t) (Const Char) a)
