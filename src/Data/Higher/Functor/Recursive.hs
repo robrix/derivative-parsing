@@ -15,9 +15,9 @@ data Free f v a
 
 
 iter :: HFunctor f => (f a ~> a) -> Free f a ~> a
-iter algebra = (\ a -> case a of
+iter algebra a = case a of
   Pure a -> a
-  Impure r -> algebra (hfmap (iter algebra) r))
+  Impure r -> algebra (hfmap (iter algebra) r)
 
 
 -- Classes
