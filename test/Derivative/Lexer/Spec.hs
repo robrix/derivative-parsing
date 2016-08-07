@@ -28,6 +28,10 @@ spec = do
       prop "returns ambiguous parse trees" $
         \ a b -> parseNull (pure a <|> pure b) `shouldBe` [a, b :: Char]
 
+  describe "size" $ do
+    it "terminates on interesting lexers" $
+      size lexer `shouldBe` 15
+
 data LamT = Lambda | Dot | Identifier String
 
 lexer :: Lexer Char LamT
