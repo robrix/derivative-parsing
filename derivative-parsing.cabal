@@ -17,9 +17,13 @@ library
   exposed-modules:     Data.Higher.Foldable
                      , Data.Higher.Functor
                      , Data.Higher.Functor.Eq
+                     , Data.Higher.Functor.Fix
                      , Data.Higher.Functor.Show
                      , Data.Higher.Graph
                      , Data.Higher.Transformation
+                     , Data.Pattern
+                     , Data.Predicate
+                     , Derivative.Lexer
                      , Derivative.Parser
                      , Derivative.Parser.Char
   build-depends:       base >= 4.7 && < 5

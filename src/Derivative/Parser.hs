@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor, FlexibleInstances, GADTs, MultiParamTypeClasses, RankNTypes, ScopedTypeVariables #-}
+{-# LANGUAGE DeriveFunctor, FlexibleInstances, GADTs, RankNTypes, ScopedTypeVariables, TypeSynonymInstances #-}
 module Derivative.Parser
 ( cat
 , commaSep
@@ -12,7 +12,7 @@ module Derivative.Parser
 , oneOf
 , parse
 , parseNull
-, ParserF(..)
+, PatternF(..)
 , Parser
 , Combinator
 , ret
@@ -24,20 +24,18 @@ module Derivative.Parser
 , parser
 , combinator
 , nullable
-, isTerminal
+, Derivative.Parser.isTerminal
 ) where
 
 import Control.Applicative
-import Data.Bifunctor (first)
 import Data.Char
 import Data.Foldable (foldl')
 import Data.Higher.Foldable
-import Data.Higher.Functor
-import Data.Higher.Functor.Eq
-import Data.Higher.Functor.Show
-import Data.Higher.Graph as Graph
+import Data.Higher.Graph as Graph hiding (wrap)
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
+import Data.Pattern as Pattern
+import Data.Predicate
 
 -- API
 
@@ -45,16 +43,16 @@ parse :: Foldable f => Parser t a -> f t -> [a]
 parse p = parseNull . foldl' deriv (compact p)
 
 
-commaSep1 :: Combinator v Char a -> Combinator v Char [a]
+commaSep1 :: Combinator Char v a -> Combinator Char v [a]
 commaSep1 = sep1 (char ',')
 
-commaSep :: Combinator v Char a -> Combinator v Char [a]
+commaSep :: Combinator Char v a -> Combinator Char v [a]
 commaSep = sep (char ',')
 
-sep1 :: Combinator v t sep -> Combinator v t a -> Combinator v t [a]
+sep1 :: Combinator t v sep -> Combinator t v a -> Combinator t v [a]
 sep1 s p = (:) <$> p <*> many (s *> p)
 
-sep :: Combinator v t sep -> Combinator v t a -> Combinator v t [a]
+sep :: Combinator t v sep -> Combinator t v a -> Combinator t v [a]
 sep s p = s `sep1` p <|> pure []
 
 oneOf :: (Foldable t, Alternative f) => t (f a) -> f a
@@ -62,79 +60,61 @@ oneOf = getAlt . foldMap Monoid.Alt
 
 infixl 4 `cat`
 
-cat :: Combinator v t a -> Combinator v t b -> Combinator v t (a, b)
-cat a = compact' . rec . Cat a
+cat :: Combinator t v a -> Combinator t v b -> Combinator t v (a, b)
+cat a = wrap . Cat a
 
-char :: Char -> Combinator v Char Char
-char = rec . Sat . Equal
+char :: Char -> Combinator Char v Char
+char = wrap . Sat . Equal
 
-category :: GeneralCategory -> Combinator v Char Char
-category = rec . Sat . Category
+category :: GeneralCategory -> Combinator Char v Char
+category = wrap . Sat . Category
 
-delta :: Combinator v t a -> Combinator v t a
-delta = compact' . rec . Del
+delta :: Combinator t v a -> Combinator t v a
+delta = wrap . Del
 
-ret :: [a] -> Combinator v t a
-ret = rec . Ret
+ret :: [a] -> Combinator t v a
+ret = wrap . Ret
 
 infixr 2 `label`
 
-label :: Combinator v t a -> String -> Combinator v t a
-label p = compact' . rec . Lab p
+label :: Combinator t v a -> String -> Combinator t v a
+label p = wrap . Lab p
 
-string :: String -> Combinator v Char String
-string string = sequenceA (rec . Sat . Equal <$> string)
+string :: String -> Combinator Char v String
+string string = sequenceA (wrap . Sat . Equal <$> string)
 
-mu :: (Combinator v t a -> Combinator v t a) -> Combinator v t a
-mu f = Graph.mu $ \ v -> case f (var v) of
+mu :: (Combinator t v a -> Combinator t v a) -> Combinator t v a
+mu f = Rec $ Mu $ \ v -> case f (Var v) of
   Rec (In r) -> r
   p -> p `Lab` ""
 
-anyToken :: Combinator v t t
-anyToken = rec (Sat (Constant True))
+anyToken :: Combinator t v t
+anyToken = wrap (Sat (Constant True))
 
 
-parser :: (forall v. Combinator v t a) -> Parser t a
+parser :: (forall v. Combinator t v a) -> Parser t a
 parser r = compact $ Graph r
 
-combinator :: Parser t a -> Combinator v t a
+combinator :: Parser t a -> Combinator t v a
 combinator = unGraph
 
 
 -- Types
 
--- | A parser type encoding concatenation, alternation, repetition, &c. as first-order constructors.
-data ParserF t f a where
-  Cat :: f a -> f b -> ParserF t f (a, b)
-  Alt :: f a -> f a -> ParserF t f a
-  Rep :: f a -> ParserF t f [a]
-  Map :: (a -> b) -> f a -> ParserF t f b
-  Bnd :: f a -> (a -> f b) -> ParserF t f b
-  Sat :: Predicate t -> ParserF t f t
-  Ret :: [a] -> ParserF t f a
-  Nul :: ParserF t f a
-  Lab :: f a -> String -> ParserF t f a
-  Del :: f a -> ParserF t f a
-
-type Parser t = Graph (ParserF t)
-type Combinator v t = Rec (ParserF t) v
-
-data Predicate t where
-  Equal :: Eq t => t -> Predicate t
-  Category :: GeneralCategory -> Predicate Char
-  Constant :: Bool -> Predicate t
+type Parser t = Graph (PatternF t)
+type Combinator t = Rec (PatternF t)
 
 
 -- Algorithm
 
 deriv :: forall a t. Parser t a -> t -> Parser t a
-deriv g c = Graph (deriv' (unGraph g))
-  where deriv' :: forall a v. Combinator (Combinator v t) t a -> Combinator v t a
+deriv g c = Graph (deriv' (combinator g))
+  where deriv' :: forall a v. Combinator t (Graph.Rec (PatternF t) v) a -> Combinator t v a
         deriv' rc = case rc of
           Var v -> v
-          Rec (Mu g) -> deriv'' (g (pjoin (Graph.mu g)))
+          Rec (Mu g) -> deriv'' (g (Graph.pjoin (Graph.mu g)))
           Rec (In r) -> deriv'' r
-        deriv'' :: forall a v. ParserF t (Combinator (Combinator v t) t) a -> Combinator v t a
+        deriv'' :: forall a v. PatternF t (Combinator t (Graph.Rec (PatternF t) v)) a -> Combinator t v a
         deriv'' p = case p of
           Cat a b -> deriv' a `cat` pjoin b <|> delta (pjoin a) `cat` deriv' b
           Alt a b -> deriv' a <|> deriv' b
@@ -158,34 +138,7 @@ parseNull = (`fold` []) $ \ parser -> case parser of
   _ -> []
 
 compact :: Parser t a -> Parser t a
-compact = transform compact''
-
-compact' :: Combinator v t a -> Combinator v t a
-compact' = liftRec compact''
-
-compact'' :: ParserF t (Combinator v t) a -> ParserF t (Combinator v t) a
-compact'' parser = case parser of
-  Cat (Rec (In Nul)) _ -> Nul
-  Cat _ (Rec (In Nul)) -> Nul
-  Cat (Rec (In (Ret [t]))) b -> Map ((,) t) b
-  Cat a (Rec (In (Ret [t]))) -> Map (flip (,) t) a
-  Cat (Rec (In (Cat a b))) c -> Map (\ (a, (b, c)) -> ((a, b), c)) (cat a (cat b c))
-  Cat (Rec (In (Map f a))) b -> Map (first f) (cat a b)
-  Alt (Rec (In Nul)) (Rec (In p)) -> p
-  Alt (Rec (In p)) (Rec (In Nul)) -> p
-  Alt (Rec (In (Ret a))) (Rec (In (Ret b))) -> Ret (a <> b)
-  Rep (Rec (In Nul)) -> Ret [[]]
-  Map f (Rec (In (Ret as))) -> Ret (f <$> as)
-  Map g (Rec (In (Map f p))) -> Map (g . f) p
-  Map _ (Rec (In Nul)) -> Nul
-  Lab (Rec (In Nul)) _ -> Nul
-  Lab (Rec (In (Ret t))) _ -> Ret t
-  Lab (Rec (In (Del p))) _ -> Del p
-  Del (Rec (In Nul)) -> Nul
-  Del (Rec (In (Del p))) -> Del p
-  Del (Rec (In (Ret a))) -> Ret a
-  Del (Rec (In p)) | isTerminal'' p -> Nul
-  a -> a
+compact = transform compactF
 
 nullable :: Parser t a -> Bool
 nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
@@ -200,17 +153,8 @@ nullable = (getConst .) $ (`fold` Const False) $ \ p -> case p of
   _ -> Const False
 
 isTerminal :: Parser t a -> Bool
-isTerminal = (getConst .) $ (`fold` Const False) (Const . isTerminal'')
+isTerminal = (getConst .) $ (`fold` Const False) (Const . Pattern.isTerminal)
 
-isTerminal'' :: ParserF t f a -> Bool
-isTerminal'' p = case p of
-  Cat _ _ -> False
-  Alt _ _ -> False
-  Rep _ -> False
-  Map _ _ -> False
-  Bnd _ _ -> False
-  Lab _ _ -> False
-  _ -> True
 
 size :: Parser t a -> Int
 size = getSum . getK . fold ((K (Sum 1) <|>) . hfoldMap id) (K (Sum 0))
@@ -222,100 +166,7 @@ newtype K a b = K { getK :: a }
   deriving (Eq, Functor, Ord, Show)
 
 
-satisfies :: t -> Predicate t -> Bool
-satisfies t p = case p of
-  Equal t' -> t == t'
-  Category c -> generalCategory t == c
-  Constant c -> c
-
-
 -- Instances
-
-instance HFunctor (ParserF t) where
-  hfmap f p = case p of
-    Cat a b -> Cat (f a) (f b)
-    Alt a b -> Alt (f a) (f b)
-    Rep a -> Rep (f a)
-    Map g p -> Map g (f p)
-    Bnd p g -> Bnd (f p) (f . g)
-    Sat p -> Sat p
-    Ret as -> Ret as
-    Nul -> Nul
-    Lab p s -> Lab (f p) s
-    Del a -> Del (f a)
-
-instance (Alternative a, Monad a) => HFoldable (ParserF t) a where
-  hfoldMap f p = case p of
-    Cat a b -> f ((,) <$> a <*> b)
-    Alt a b -> f (a <|> b)
-    Map g p -> f (g <$> p)
-    Bnd p g -> f (p >>= g)
-    Lab p _ -> f p
-    Del a -> f a
-    _ -> empty
-
-instance Functor (Rec (ParserF t) v) where
-  fmap f = compact' . rec . Map f
-
-instance Functor (Graph (ParserF t)) where
-  fmap f (Graph rec) = Graph (f <$> rec)
-
-instance Applicative (Rec (ParserF t) v) where
-  pure = rec . Ret . pure
-  a <*> b = compact' (uncurry ($) <$> (a `cat` b))
-
-instance Applicative (Graph (ParserF t)) where
-  pure a = Graph (pure a)
-  Graph f <*> Graph a = Graph (f <*> a)
-
-instance Alternative (Rec (ParserF t) v) where
-  empty = rec Nul
-  a <|> b = compact' (rec (Alt a b))
-  some v = (:) <$> v <*> many v
-  many = compact' . rec . Rep
-
-instance Alternative (Graph (ParserF t)) where
-  empty = Graph empty
-  Graph a <|> Graph b = Graph (a <|> b)
-  some (Graph p) = Graph (some p)
-  many (Graph p) = Graph (many p)
-
-instance Monad (Rec (ParserF t) v) where
-  return = pure
-  (>>=) = (compact' .) . (rec .) . Bnd
-
-instance Monad (Graph (ParserF t)) where
-  return = pure
-  Graph p >>= f = Graph (p >>= unGraph . f)
-
-instance HEqF (ParserF t)
-  where heqF eq a b = case (a, b) of
-          (Cat a1 b1, Cat a2 b2) -> eq a1 a2 && eq b1 b2
-          (Alt a1 b1, Alt a2 b2) -> eq a1 a2 && eq b1 b2
-          -- (Map f1 p1, Map f2 p2) -> eq p1 p2
-          -- (Bnd p1 f1, Bnd p2 f2) -> eq p1 p2
-          (Sat p1, Sat p2) -> p1 == p2
-          (Ret r1, Ret r2) -> length r1 == length r2
-          (Nul, Nul) -> True
-          (Lab p1 s1, Lab p2 s2) -> s1 == s2 && eq p1 p2
-          _ -> False
-
-instance Show t => HShowF (ParserF t)
-  where hshowsPrecF showsPrec n p = case p of
-          Cat a b -> showParen (n > 4) $ showsPrec 4 a . showString " `cat` " . showsPrec 5 b
-          Alt a b -> showParen (n > 3) $ showsPrec 3 a . showString " <|> " . showsPrec 4 b
-          Rep a -> showParen (n >= 10) $ showString "many " . showsPrec 10 a
-          Map _ p -> showParen (n > 4) $ showString "f <$> " . showsPrec 5 p
-          Bnd p _ -> showParen (n > 1) $ showsPrec 1 p . showString " >>= f"
-          Sat (Equal c) -> showParen (n >= 10) $ showString "char " . shows c
-          Sat (Category c) -> showParen (n >= 10) $ showString "category " . shows c
-          Sat (Constant _) -> showString "anyToken"
-          Ret [_] -> showParen (n >= 10) $ showString "pure t"
-          Ret t -> showString "ret [" . showIndices (length t) . showString "]"
-          Nul -> showString "empty"
-          Lab p s -> showParen (n > 2) $ showsPrec 3 p . showString " `label` " . shows s
-          Del a -> showParen (n >= 10) $ showString "delta " . showsPrec 10 a
-          where showIndices n = foldr (.) id ((showChar 't' .) . shows <$> take n (iterate succ (0 :: Integer)))
 
 instance Monoid a => Applicative (K a)
   where pure = const (K mempty)
@@ -328,15 +179,3 @@ instance Monoid a => Alternative (K a)
 instance Monoid a => Monad (K a)
   where return = pure
         K a >>= _ = K a
-
-instance Eq (Predicate t) where
-  Equal a == Equal b = a == b
-  Category a == Category b = a == b
-  Constant a == Constant b = a == b
-  _ == _ = False
-
-instance Show t => Show (Predicate t) where
-  showsPrec n p = case p of
-    Equal t -> showParen True $ showString "== " . showsPrec 4 t
-    Category c -> showParen (n >= 9) $ showString "(== " . showsPrec 4 c . showString ") . generalCategory"
-    Constant c -> showsPrec n c

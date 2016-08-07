@@ -16,35 +16,35 @@ import Control.Applicative
 import Data.Char
 import Derivative.Parser
 
-space :: Combinator v Char Char
+space :: Combinator Char v Char
 space = oneOf (category <$> [Space .. ParagraphSeparator]) <|> oneOf (char <$> "\t\n\r\f\v")
 
-upper :: Combinator v Char Char
+upper :: Combinator Char v Char
 upper = category UppercaseLetter
 
-lower :: Combinator v Char Char
+lower :: Combinator Char v Char
 lower = category LowercaseLetter
 
-alphaNum :: Combinator v Char Char
+alphaNum :: Combinator Char v Char
 alphaNum = letter <|> oneOf (category <$> [DecimalNumber .. OtherNumber])
 
-letter :: Combinator v Char Char
+letter :: Combinator Char v Char
 letter = oneOf (category <$> [UppercaseLetter .. OtherLetter])
 
-digit :: Combinator v Char Char
+digit :: Combinator Char v Char
 digit = oneOf (char <$> ['0'..'9'])
 
-octDigit :: Combinator v Char Char
+octDigit :: Combinator Char v Char
 octDigit = oneOf (char <$> ['0'..'7'])
 
-hexDigit :: Combinator v Char Char
+hexDigit :: Combinator Char v Char
 hexDigit = digit <|> oneOf (char <$> ['a'..'f']) <|> oneOf (char <$> ['A'..'F'])
 
-newline :: Combinator v Char Char
+newline :: Combinator Char v Char
 newline = char '\n'
 
-crlf :: Combinator v Char Char
+crlf :: Combinator Char v Char
 crlf = char '\r' *> newline
 
-endOfLine :: Combinator v Char Char
+endOfLine :: Combinator Char v Char
 endOfLine = newline <|> crlf

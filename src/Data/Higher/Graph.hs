@@ -1,20 +1,20 @@
-{-# LANGUAGE FlexibleInstances, InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
+{-# LANGUAGE FlexibleInstances, InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeOperators #-}
 module Data.Higher.Graph
 ( Rec(..)
 , RecF(..)
 , Graph(..)
 , var
 , mu
-, rec
+, wrap
 , gfold
 , grfold
 , fold
 , rfold
 , transform
-, graphMap
 , liftRec
 , pjoin
 , modifyGraph
+, eqRec
 ) where
 
 import Control.Applicative
@@ -40,8 +40,8 @@ var = Var
 mu :: (v a -> f (Rec f v) a) -> Rec f v a
 mu = Rec . Mu
 
-rec :: f (Rec f v) a -> Rec f v a
-rec = Rec . In
+wrap :: f (Rec f v) ~> Rec f v
+wrap = Rec . In
 
 
 -- Folds
@@ -71,23 +71,23 @@ rfold alg k = grfold id ($ k) alg
 -- Maps
 
 transform :: HFunctor f => (forall v. f (Rec g v) ~> g (Rec g v)) -> Graph f ~> Graph g
-transform f = modifyGraph (graphMap f)
+transform f = modifyGraph (hoist f)
 
-graphMap :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Rec g a
-graphMap f = iter var $ \ rc -> case rc of
+hoist :: HFunctor f => (f (Rec g a) ~> g (Rec g a)) -> Rec f a ~> Rec g a
+hoist f = iter var $ \ rc -> case rc of
   Mu g -> mu (f . g)
-  In r -> rec (f r)
+  In r -> wrap (f r)
 
 liftRec :: (f (Rec f v) ~> g (Rec g v)) -> Rec f v ~> Rec g v
 liftRec f rc = case rc of
   Var v -> var v
   Rec (Mu g) -> mu (f . g)
-  Rec (In r) -> rec (f r)
+  Rec (In r) -> wrap (f r)
 
 pjoin :: HFunctor f => Rec f (Rec f v) ~> Rec f v
 pjoin = iter id $ \ rc -> case rc of
   Mu g -> mu (g . var)
-  In r -> rec r
+  In r -> wrap r
 
 modifyGraph :: (forall v. Rec f v ~> Rec g v) -> Graph f ~> Graph g
 modifyGraph f g = Graph (f (unGraph g))
