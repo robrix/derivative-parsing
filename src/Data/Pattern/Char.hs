@@ -15,7 +15,6 @@ module Data.Pattern.Char
 
 import Control.Applicative
 import Data.Char
-import Data.Higher.Functor.Recursive
 import Derivative.Parser
 
 space :: (Alternative r, Pattern r Char) => r Char
