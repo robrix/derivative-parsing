@@ -1,6 +1,7 @@
 module Derivative.Lexer.Spec where
 
 import Control.Applicative
+import Data.Pattern.Char
 import Derivative.Lexer
 import Test.Hspec
 import Test.Hspec.QuickCheck
@@ -54,3 +55,15 @@ lexer
     = (Lambda <$ char '\\' `label` "lambda")
   <|> (Dot <$ char '.' `label` "dot")
   <|> (Identifier <$> string "x" `label` "identifier")
+
+
+data SexprT = OpenT | CloseT | AtomT String
+
+sexprL :: Lexer Char [SexprT]
+sexprL
+    = many
+    $ space
+  *> ((AtomT .) . (:) <$> letter <*> many alphaNum
+  <|> OpenT <$ char '('
+  <|> CloseT <$ char ')')
+  <* space
