@@ -4,6 +4,7 @@ module Derivative.Lexer
 , cat
 , char
 , ret
+, label
 , parseNull
 ) where
 
@@ -22,6 +23,11 @@ char = Fix . Sat . Equal
 
 ret :: [a] -> Lexer t a
 ret = Fix . Ret
+
+infixr 2 `label`
+
+label :: Lexer t a -> String -> Lexer t a
+label p = Fix . Lab p
 
 
 -- Types
