@@ -13,6 +13,7 @@ import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
 import Data.Higher.Functor.Fix
+import Data.Higher.Functor.Recursive
 import Data.Higher.Functor.Show
 import qualified Data.Higher.Graph as Graph
 import Data.Higher.Graph hiding (wrap)
@@ -172,3 +173,9 @@ instance Alternative (Fix (PatternF t))
 instance Monad (Fix (PatternF t))
   where return = pure
         (>>=) = (Fix .) . Bnd
+
+instance HCorecursive (Rec (PatternF t) v)
+  where hembed = liftRec compactF . Graph.wrap
+
+instance HCorecursive (Fix (PatternF t))
+  where hembed = Fix
