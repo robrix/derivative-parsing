@@ -5,6 +5,9 @@ import Derivative.Lexer
 import Test.Hspec
 import Test.Hspec.QuickCheck
 
+{-# ANN module "HLint: ignore Functor law" #-}
+{-# ANN module "HLint: ignore Monad law, right identity" #-}
+
 spec :: Spec
 spec = do
   describe "parseNull" $ do
@@ -29,6 +32,18 @@ spec = do
         \ a b -> parseNull (pure a <|> pure b) `shouldBe` [a, b :: Char]
 
   describe "size" $ do
+    prop "is 1 for terminals" $
+      \ a b -> let terminals = [ ret a, char b, empty, ret [] ] in sum (size <$> terminals) `shouldBe` length terminals
+
+    prop "is 1 + the sum for unary nonterminals" $
+      \ a s -> [ size (fmap id (char a)), size (char a >>= return), size (char a `label` s) ] `shouldBe` [ 2, 2, 2 ]
+
+    prop "is 1 + the sum for binary nonterminals" $
+      \ a b -> [ size (char a `cat` char b), size (char a <|> char b) ] `shouldBe` [ 3, 3 ]
+
+    it "terminates on unlabelled acyclic grammars" $
+      size (char 'c') `shouldBe` 1
+
     it "terminates on interesting lexers" $
       size lexer `shouldBe` 15
 
