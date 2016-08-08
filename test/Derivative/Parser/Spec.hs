@@ -8,7 +8,7 @@ import Data.Pattern.Char
 import Data.Pattern.Char.Spec
 import Derivative.Lexer hiding (compact, size, deriv)
 import Derivative.Parser
-import Prelude hiding (abs)
+import Prelude hiding (abs, lex)
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck hiding (label)
@@ -263,6 +263,9 @@ spec = do
 
     it "parses variables" $
       lam `parse` "x" `shouldBe` [ Var' "x" ]
+
+    it "parses a list of lexemes" $
+      parse sexprP <$> (sexprL `lex` "(() a (b c))") `shouldBe` [ [ List [ List [], Atom "a", List [ Atom "b", Atom "c" ] ] ] ]
 
   describe "Char" Data.Pattern.Char.Spec.spec
 
