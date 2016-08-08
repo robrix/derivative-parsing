@@ -24,7 +24,6 @@ module Data.Pattern
 import Control.Applicative
 import Data.Bifunctor (first)
 import Data.Char
-import Data.Predicate
 import Data.Higher.Foldable
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
@@ -34,6 +33,7 @@ import Data.Higher.Functor.Show
 import Data.Higher.Graph
 import qualified Data.Monoid as Monoid
 import Data.Monoid hiding (Alt)
+import Data.Predicate
 
 -- Types
 
