@@ -66,6 +66,7 @@ deriv g c = Graph (deriv' (combinator g))
           Map f p -> f <$> deriv' p
           Bnd p f -> deriv' p >>= pjoin . f
           Sat p -> if c `satisfies` p then pure c else empty
+          Mat p -> case p c of { Just a -> pure a ; _ -> empty }
           Lab p s -> deriv' p `label` s
           _ -> empty
 
