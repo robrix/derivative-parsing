@@ -72,7 +72,7 @@ cat :: Pattern r t => r a -> r b -> r (a, b)
 cat a = hembed . Cat a
 
 char :: Pattern r Char => Char -> r Char
-char = hembed . Sat . Equal
+char = token
 
 token :: (Eq t, Pattern r t) => t -> r t
 token = hembed . Sat . Equal
