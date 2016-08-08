@@ -11,6 +11,7 @@ module Data.Pattern
 , char
 , token
 , category
+, satisfy
 , delta
 , ret
 , label
@@ -79,6 +80,9 @@ token = hembed . Sat . Equal
 
 category :: Pattern r Char => GeneralCategory -> r Char
 category = hembed . Sat . Category
+
+satisfy :: Pattern r t => (t -> Bool) -> r t
+satisfy = hembed . Sat . Satisfy
 
 delta :: Pattern r t => r a -> r a
 delta = hembed . Del
@@ -188,6 +192,7 @@ instance Show t => HShowF (PatternF t)
           Sat (Equal c) -> showParen (n >= 10) $ showString "char " . shows c
           Sat (Category c) -> showParen (n >= 10) $ showString "category " . shows c
           Sat (Constant _) -> showString "anyToken"
+          Sat (Satisfy _) -> showParen (n >= 10) $ showString "satisfy f"
           Ret [_] -> showParen (n >= 10) $ showString "pure t"
           Ret t -> showString "ret [" . showIndices (length t) . showString "]"
           Nul -> showString "empty"
