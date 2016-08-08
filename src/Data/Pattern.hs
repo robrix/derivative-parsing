@@ -80,7 +80,7 @@ token :: (Eq t, Pattern r t) => t -> r t
 token = hembed . Sat . Equal
 
 category :: Pattern r Char => GeneralCategory -> r Char
-category c = match (\ t -> if generalCategory t == c then Just t else Nothing)
+category = hembed . Sat . Category
 
 match :: Pattern r t => (t -> Maybe u) -> r u
 match = hembed . Mat
