@@ -12,6 +12,7 @@ module Data.Pattern
 , token
 , category
 , satisfy
+, match
 , delta
 , ret
 , label
@@ -84,6 +85,9 @@ category = hembed . Sat . Category
 
 satisfy :: Pattern r t => (t -> Bool) -> r t
 satisfy = hembed . Sat . Satisfy
+
+match :: Pattern r t => (t -> Maybe u) -> r u
+match = hembed . Mat
 
 delta :: Pattern r t => r a -> r a
 delta = hembed . Del
