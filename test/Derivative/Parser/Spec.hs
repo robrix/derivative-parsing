@@ -6,6 +6,7 @@ import Control.Applicative
 import Control.Monad
 import Data.Pattern.Char
 import Data.Pattern.Char.Spec
+import Derivative.Lexer hiding (compact, size, deriv)
 import Derivative.Parser
 import Prelude hiding (abs)
 import Test.Hspec
@@ -289,6 +290,19 @@ sexpr = parser $ Derivative.Parser.mu (\ a ->
         identifier :: Combinator Char v String
         identifier = (:) <$> letter <*> many alphaNum
 
+sexprL :: Lexer Char [SexprT]
+sexprL
+  = many space
+  *> many (((AtomT .) . (:) <$> letter <*> many alphaNum
+  <|> OpenT <$ char '('
+  <|> CloseT <$ char ')')
+  <* many space)
+
+sexprP :: Parser SexprT Sexpr
+sexprP = parser $ Derivative.Parser.mu (\ a ->
+      Atom . (\ (AtomT s) -> s) <$> satisfy (\ t -> case t of { AtomT _ -> True ; _ -> False })
+  <|> List <$> (token OpenT *> many a) <* token CloseT)
+
 
 -- Types
 
@@ -298,6 +312,9 @@ data Lam = Var' String | Abs String Lam | App Lam Lam
 data Sexpr
   = Atom String
   | List [Sexpr]
+  deriving (Eq, Show)
+
+data SexprT = OpenT | CloseT | AtomT String
   deriving (Eq, Show)
 
 
