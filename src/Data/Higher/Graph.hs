@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeOperators #-}
+{-# LANGUAGE FlexibleInstances, InstanceSigs, PolyKinds, RankNTypes, ScopedTypeVariables, TypeFamilies, TypeOperators #-}
 module Data.Higher.Graph
 ( Rec(..)
 , RecF(..)
@@ -20,6 +20,7 @@ module Data.Higher.Graph
 import Control.Applicative
 import Data.Higher.Functor
 import Data.Higher.Functor.Eq
+import Data.Higher.Functor.Recursive
 import Data.Higher.Functor.Show
 import Data.Higher.Transformation
 
@@ -133,3 +134,5 @@ instance HFunctor f => HFunctor (RecF f v)
   where hfmap f rec = case rec of
           Mu g -> Mu (hfmap f . g)
           In r -> In (hfmap f r)
+
+type instance Base (Rec f v) = f

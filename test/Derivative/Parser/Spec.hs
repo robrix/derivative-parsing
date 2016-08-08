@@ -4,10 +4,11 @@ module Derivative.Parser.Spec where
 
 import Control.Applicative
 import Control.Monad
+import Data.Pattern.Char
+import Data.Pattern.Char.Spec
+import Derivative.Lexer hiding (compact, size, deriv)
 import Derivative.Parser
-import Derivative.Parser.Char
-import Derivative.Parser.Char.Spec
-import Prelude hiding (abs)
+import Prelude hiding (abs, lex)
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck hiding (label)
@@ -263,7 +264,10 @@ spec = do
     it "parses variables" $
       lam `parse` "x" `shouldBe` [ Var' "x" ]
 
-  describe "Char" Derivative.Parser.Char.Spec.spec
+    it "parses a list of lexemes" $
+      parse sexprP <$> (sexprL `lex` "(() a (b c))") `shouldBe` [ [ List [ List [], Atom "a", List [ Atom "b", Atom "c" ] ] ] ]
+
+  describe "Char" Data.Pattern.Char.Spec.spec
 
 
 -- Grammar
@@ -286,7 +290,21 @@ sexpr = parser $ Derivative.Parser.mu (\ a ->
       Atom <$> identifier
   <|> List <$> (char open *> sep (char ' ') a <* char close))
   where (open, close) = ('(', ')')
+        identifier :: Combinator Char v String
         identifier = (:) <$> letter <*> many alphaNum
+
+sexprL :: Lexer Char [SexprT]
+sexprL
+  = many space
+  *> many (((AtomT .) . (:) <$> letter <*> many alphaNum
+  <|> OpenT <$ char '('
+  <|> CloseT <$ char ')')
+  <* many space)
+
+sexprP :: Parser SexprT Sexpr
+sexprP = parser $ Derivative.Parser.mu (\ a ->
+      Atom <$> match (\ t -> case t of { AtomT a -> Just a ; _ -> Nothing })
+  <|> List <$> (token OpenT *> many a) <* token CloseT)
 
 
 -- Types
@@ -297,6 +315,9 @@ data Lam = Var' String | Abs String Lam | App Lam Lam
 data Sexpr
   = Atom String
   | List [Sexpr]
+  deriving (Eq, Show)
+
+data SexprT = OpenT | CloseT | AtomT String
   deriving (Eq, Show)
 
 
