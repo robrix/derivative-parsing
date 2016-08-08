@@ -9,6 +9,7 @@ module Data.Pattern
 , oneOf
 , cat
 , char
+, token
 , category
 , delta
 , ret
@@ -72,6 +73,9 @@ cat a = hembed . Cat a
 
 char :: Pattern r Char => Char -> r Char
 char = hembed . Sat . Equal
+
+token :: (Eq t, Pattern r t) => t -> r t
+token = hembed . Sat . Equal
 
 category :: Pattern r Char => GeneralCategory -> r Char
 category = hembed . Sat . Category
