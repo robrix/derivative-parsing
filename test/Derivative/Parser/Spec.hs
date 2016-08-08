@@ -300,7 +300,7 @@ sexprL
 
 sexprP :: Parser SexprT Sexpr
 sexprP = parser $ Derivative.Parser.mu (\ a ->
-      Atom . (\ (AtomT s) -> s) <$> satisfy (\ t -> case t of { AtomT _ -> True ; _ -> False })
+      Atom <$> match (\ t -> case t of { AtomT a -> Just a ; _ -> Nothing })
   <|> List <$> (token OpenT *> many a) <* token CloseT)
 
 
