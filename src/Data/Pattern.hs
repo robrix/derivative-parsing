@@ -44,6 +44,7 @@ data PatternF t f a where
   Map :: (a -> b) -> f a -> PatternF t f b
   Bnd :: f a -> (a -> f b) -> PatternF t f b
   Sat :: Predicate t -> PatternF t f t
+  Mat :: (t -> Maybe u) -> PatternF t f u
   Ret :: [a] -> PatternF t f a
   Nul :: PatternF t f a
   Lab :: f a -> String -> PatternF t f a
@@ -155,6 +156,7 @@ instance HFunctor (PatternF t) where
     Map g p -> Map g (f p)
     Bnd p g -> Bnd (f p) (f . g)
     Sat p -> Sat p
+    Mat p -> Mat p
     Ret as -> Ret as
     Nul -> Nul
     Lab p s -> Lab (f p) s
@@ -193,6 +195,7 @@ instance Show t => HShowF (PatternF t)
           Sat (Category c) -> showParen (n >= 10) $ showString "category " . shows c
           Sat (Constant _) -> showString "anyToken"
           Sat (Satisfy _) -> showParen (n >= 10) $ showString "satisfy f"
+          Mat _ -> showParen (n >= 10) $ showString "match f"
           Ret [_] -> showParen (n >= 10) $ showString "pure t"
           Ret t -> showString "ret [" . showIndices (length t) . showString "]"
           Nul -> showString "empty"
