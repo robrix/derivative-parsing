@@ -2,7 +2,6 @@
 module Data.Functor.K (K(..)) where
 
 import Control.Applicative
-import Data.Monoid
 
 newtype K a b = K { getK :: a }
   deriving (Eq, Functor, Ord, Show)

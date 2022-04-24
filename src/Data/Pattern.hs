@@ -244,7 +244,7 @@ instance Functor (Fix (PatternF t))
 
 instance Applicative (Fix (PatternF t))
   where pure = hembed . Ret . pure
-        (<*>) = (((fmap (uncurry ($))) . hembed) .) . Cat
+        (<*>) = ((fmap (uncurry ($)) . hembed) .) . Cat
 
 instance Alternative (Fix (PatternF t))
   where empty = hembed Nul

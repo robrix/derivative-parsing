@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, RankNTypes, ScopedTypeVariables, TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances, GADTs, RankNTypes, ScopedTypeVariables #-}
 module Derivative.Parser
 ( compact
 , deriv
@@ -53,7 +53,7 @@ type Combinator t = Rec (PatternF t)
 
 deriv :: forall a t. Parser t a -> t -> Parser t a
 deriv g c = Graph (deriv' (combinator g))
-  where deriv' :: forall a v. Combinator t (Combinator t v) a -> Combinator t v a
+  where deriv' :: forall a v. Combinator t (Combinator t v) a -> Combinator t v a
         deriv' rc = case rc of
           Var v -> v
           Rec (Mu g) -> deriv'' (g (pjoin (Graph.mu g)))
