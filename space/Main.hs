@@ -3,7 +3,7 @@ module Main where
 import Control.Applicative
 import Control.DeepSeq
 import Derivative.Parser
-import Weigh
+import Weigh hiding (wgroup)
 
 main :: IO ()
 main = mainWith $ do
