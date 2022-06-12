@@ -237,7 +237,7 @@ instance Alternative (Graph (PatternF t))
 
 instance Monad (Graph (PatternF t))
   where return = pure
-        Graph p >>= f = Graph (p >>= unGraph . f)
+        Graph p >>= f = Graph (p >>= \g -> let (Graph rec) = f g in rec)
 
 instance Functor (Fix (PatternF t))
   where fmap = (hembed .) . Map
