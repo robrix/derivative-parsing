@@ -40,8 +40,7 @@ parser :: (forall v. Combinator t v a) -> Parser t a
 parser r = compact $ Graph r
 
 combinator :: Parser t a -> Combinator t v a
-combinator = unGraph
-
+combinator p = unGraph p
 
 -- Types
 

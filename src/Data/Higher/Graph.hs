@@ -55,7 +55,7 @@ iter f alg = go
           Rec r -> alg (hfmap go r)
 
 gfold :: HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Graph f ~> c
-gfold var bind recur = grfold var bind recur . unGraph
+gfold var bind recur (Graph rec) = grfold var bind recur rec
 
 grfold :: forall f v c. HFunctor f => (v ~> c) -> (forall a. (v a -> c a) -> c a) -> (f c ~> c) -> Rec f v ~> c
 grfold var bind algebra = iter var $ \ rec -> case rec of
@@ -63,7 +63,7 @@ grfold var bind algebra = iter var $ \ rec -> case rec of
   In fa -> algebra fa
 
 fold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Graph f ~> c
-fold alg k = rfold alg k . unGraph
+fold alg k (Graph rec) = rfold alg k rec
 
 rfold :: HFunctor f => (f c ~> c) -> (forall a. c a) -> Rec f c ~> c
 rfold alg k = grfold id ($ k) alg
@@ -125,7 +125,7 @@ instance HEqF f => Eq (Rec f (Const Int) a)
   where a == b = eqRec 0 a b
 
 instance HShowF f => Show (Graph f a)
-  where showsPrec n = showsPrec n . (unGraph :: Graph f ~> Rec f (Const Char))
+  where showsPrec n (Graph rec) = showsPrec n (rec :: Rec f (Const Char) a)
 
 instance HShowF f => Show (Rec f (Const Char) a)
   where showsPrec = showsRec (iterate succ 'a')
